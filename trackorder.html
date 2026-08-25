@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Track Order - Pill Point Delivery</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- Header -->
+<div class="header">
+
+    <span class="menu-btn" onclick="openNav()">&#9776;</span>
+
+    <h1 class="header-title">Pill Point Delivery</h1>
+
+    <a href="myaccount.html">
+        <img src="photo.jpeg" class="profile-icon" alt="Profile">
+    </a>
+
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+
+    <a href="dashboard.html">Dashboard</a>
+    <a href="shop.html">Shop Medication</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="reminders.html">Reminders</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="cart.html">My Cart</a>
+    <a href="trackorder.html">Track Order</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="contact.html">Contact Us</a>
+    <a href="login.html">Logout</a>
+
+</div>
+
+<!-- Track Order -->
+<div class="track-container">
+
+    <h2>Track Your Order</h2>
+
+    <p>Enter your order number below.</p>
+
+    <input type="text" id="orderNumber" placeholder="Enter Order Number">
+
+    <button class="track-btn" onclick="trackOrder()">
+        Track Order
+    </button>
+
+    <div id="trackingResult" class="tracking-result" style="display:none;">
+
+        <h3>Order Status</h3>
+
+        <p><strong>Order Number:</strong> <span id="displayOrder"></span></p>
+
+        <p><strong>Status:</strong> Out for Delivery</p>
+
+        <p><strong>Estimated Delivery:</strong> Today before 17:00</p>
+
+        <div class="progress">
+
+            <div class="step active">Order Received</div>
+            <div class="step active">Packed</div>
+            <div class="step active">Out for Delivery</div>
+            <div class="step">Delivered</div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+
+<script>
+function trackOrder(){
+
+    var order = document.getElementById("orderNumber").value;
+
+    if(order==""){
+        alert("Please enter your order number.");
+        return;
+    }
+
+    document.getElementById("displayOrder").innerHTML = order;
+
+    document.getElementById("trackingResult").style.display="block";
+}
+</script>
+
+</body>
+</html>

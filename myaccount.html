@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Account - Pill Point Delivery</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- Header -->
+<div class="header">
+
+    <span class="menu-btn" onclick="openNav()">&#9776;</span>
+
+    <h1 class="header-title">Pill Point Delivery</h1>
+
+   
+
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+
+    <a href="dashboard.html">Dashboard</a>
+    <a href="shop.html">Shop Medication</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="reminders.html">Reminders</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="cart.html">Cart</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="contact.html">Contact Us</a>
+    <a href="login.html">Logout</a>
+
+</div>
+
+<div class="account-container">
+
+    <h2>My Account</h2>
+
+    <div class="profile-picture">
+
+        <img src="photo.jpeg" alt="Profile">
+
+    </div>
+
+    <form>
+
+        <div class="row">
+
+            <div class="input-box">
+                <label>First Name</label>
+                <input type="text" placeholder="First Name">
+            </div>
+
+            <div class="input-box">
+                <label>Last Name</label>
+                <input type="text" placeholder="Last Name">
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="input-box">
+                <label>Email</label>
+                <input type="email" placeholder="Email">
+            </div>
+
+            <div class="input-box">
+                <label>Phone Number</label>
+                <input type="text" placeholder="Phone Number">
+            </div>
+
+        </div>
+
+        <div class="input-box full">
+
+            <label>Address</label>
+            <textarea placeholder="Home Address"></textarea>
+
+        </div>
+
+        <div class="input-box full">
+
+            <label>Password</label>
+            <input type="password" placeholder="New Password">
+
+        </div>
+
+        <button class="save-btn">
+            Save Changes
+        </button>
+
+        <a href="login.html" class="logout-btn">
+            Logout
+        </a>
+
+    </form>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

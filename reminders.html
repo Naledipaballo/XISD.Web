@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medication Reminders</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!--header-->
+    <div class="header">
+        <span class="menu-btn" onclick="openNav()">&#9776</span>
+     <h1 class="header-title">Pill Point Delivery</h1>
+    </div>
+
+    <!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+   
+
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+
+    <a href="dashboard.html">Dashboard</a>
+    <a href="shop.html">Shop Medication</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="reminders.html">Reminders</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="contact.html">Contact Us</a>
+    <a href="login.html">Logout</a>
+
+</div>
+
+
+<div class="reminder-container">
+
+   
+    <h2>Medication Reminders</h2>
+
+    <form>
+
+        <div class="row">
+
+            <div class="input-box">
+                <label>Medication Name</label>
+                <input type="text" placeholder="Enter medication name" required>
+            </div>
+
+            <div class="input-box">
+                <label>Dosage</label>
+                <input type="text" placeholder="e.g. 2 Tablets" required>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="input-box">
+                <label>Reminder Time</label>
+                <input type="time" required>
+            </div>
+
+            <div class="input-box">
+                <label>Reminder Date</label>
+                <input type="date" required>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="input-box">
+                <label>Repeat</label>
+
+                <select required>
+                    <option value="">Select</option>
+                    <option>Daily</option>
+                    <option>Weekly</option>
+                    <option>Monthly</option>
+                </select>
+
+            </div>
+
+            <div class="input-box">
+                <label>Notification Type</label>
+
+                <select required>
+                    <option value="">Select</option>
+                    <option>Email</option>
+                    <option>SMS</option>
+                    <option>App Notification</option>
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="input-box full">
+
+            <label>Notes</label>
+
+            <textarea placeholder="Additional instructions..."></textarea>
+
+        </div>
+
+        <button type="submit" class="btn">
+            Save Reminder
+        </button>
+
+    </form>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

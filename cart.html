@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Cart - Pill Point Delivery</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- Header -->
+<div class="header">
+
+    <span class="menu-btn" onclick="openNav()">&#9776;</span>
+
+    <h1 class="header-title">Pill Point Delivery</h1>
+
+    <a href="myaccount.html">
+        <img src="photo.jpeg" class="profile-icon" alt="Profile">
+    </a>
+
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+
+    <a href="dashboard.html">Dashboard</a>
+    <a href="shop.html">Shop Medication</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="reminders.html">Reminders</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="cart.html">My Cart</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="contact.html">Contact Us</a>
+    <a href="login.html">Logout</a>
+
+</div>
+
+<!-- Cart -->
+<div class="cart-container">
+
+    <h2>My Shopping Cart</h2>
+
+    <table class="cart-table">
+
+        <tr>
+            <th>Medicine</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Action</th>
+        </tr>
+
+        <tr>
+            <td>Paracetamol</td>
+            <td>R45.00</td>
+            <td>
+                <input type="number" value="1" min="1">
+            </td>
+            <td>R45.00</td>
+            <td>
+                <button class="remove-btn" onclick="removeItem(this)">
+                    Remove
+                </button>
+            </td>
+        </tr>
+
+        <tr>
+            <td>Vitamin C</td>
+            <td>R120.00</td>
+            <td>
+                <input type="number" value="2" min="1">
+            </td>
+            <td>R240.00</td>
+            <td>
+                <button class="remove-btn" onclick="removeItem(this)">
+                    Remove
+                </button>
+            </td>
+        </tr>
+
+    </table>
+
+    <div class="cart-total">
+
+        <h3>Total: R285.00</h3>
+
+    </div>
+
+    <div class="cart-buttons">
+
+        <a href="shop.html" class="continue-btn">
+            Continue Shopping
+        </a>
+
+        <a href="checkout.html" class="checkout-btn">
+            Checkout
+        </a>
+
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

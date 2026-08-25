@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shop Medication - Pill Point Delivery</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- Header -->
+<div class="header">
+
+    <span class="menu-btn" onclick="openNav()">&#9776;</span>
+
+    <h1 class="header-title">Pill Point Delivery</h1>
+
+    <a href="myaccount.html">
+        <img src="photo.jpeg" class="profile-icon">
+    </a>
+
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+
+    <a href="dashboard.html">Dashboard</a>
+    <a href="shop.html">Shop Medication</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="cart.html">My Cart</a>
+    <a href="trackorder.html">Track Order</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="contact.html">Contact Us</a>
+    <a href="login.html">Logout</a>
+
+</div>
+
+<!-- Shop -->
+
+<div class="shop-container">
+
+<h2>Shop Medication</h2>
+
+<input
+type="text"
+id="searchInput"
+placeholder="Search medication..."
+onkeyup="searchMedicine()"
+class="search-box">
+
+<div class="products" id="products">
+
+    <div class="product-card">
+
+        <img src="medication/andolex-c-oralgel.jpg">
+
+        <h3>andolex-c oral gel</h3>
+        <h4>18g</h4>
+
+        <p>R126.99</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>
+
+    <div class="product-card">
+
+        <img src="medication/vicks-syrup.jpeg">
+
+        <h3>Vicks Syrup</h3>
+
+        <p>R120.00</p>
+
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>
+
+    <div class="product-card">
+
+        <img src="medication/allergex-syrup.jpg">
+
+        <h3>allergex syrup</h3>
+
+        <p>R18.99</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>
+
+    <div class="product-card">
+
+        <img src="medication/allergex-tablets.jpg">
+
+        <h3>allergex tablets</h3>
+
+        <p>R25.99</p>
+
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>
+
+      <div class="product-card">
+
+        <img src="medication/band-aid-plastic.jpg">
+
+        <h3>Band Aid Plastic</h3>
+
+        <p>R39.99</p>
+
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>  
+
+
+      <div class="product-card">
+
+        <img src="medication/benelyin-syrup.jpg">
+
+        <h3>Benelyin Syrup</h3>
+        <h4>100ml</h4>
+
+        <p>R79.99</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>  
+  
+<div class="product-card">
+
+        <img src="medication/berocca.jpg">
+
+        <h3>Berocca</h3>
+
+        <p>R120.00</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>
+    
+    <div class="product-card">
+
+        <img src="medication/calpol.jpg">
+
+        <h3>Calpol</h3>
+        <h4>100ml</h4>
+
+        <p>R67.99</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>  
+
+    <div class="product-card">
+
+        <img src="medication/canvexv.jpeg">
+
+        <h3>Canvex V</h3>
+
+        <p>R89.00</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>  
+
+    <div class="product-card">
+
+        <img src="medication/compral.jpg">
+
+        <h3>Compral</h3>
+
+        <p>R83.99</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div> 
+    
+    <div class="product-card">
+
+        <img src="medication/coryx.png">
+
+        <h3>Coryx Effervescent Tablets</h3>
+
+        <p>R72.99</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div> 
+    
+    <div class="product-card">
+
+        <img src="medication/deepheat.jpg">
+
+        <h3>Deep Heat</h3>
+        <h4>35g</h4>
+
+        <p>R74.99</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>  
+
+     <div class="product-card">
+
+        <img src="medication/linctagon-tablets.jpg">
+
+        <h3>Linctagon Effervescent Tablet</h3>
+
+        <p>R178.00</p>
+
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>  
+
+     <div class="product-card">
+
+        <img src="medication/med-lemon.jpg">
+
+        <h3>Med-Lemon</h3>
+
+        <p>R89.99</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>  
+
+     <div class="product-card">
+
+        <img src="medication/panado-effervescent.jpg">
+
+        <h3>Panado Effervescent Tablets</h3>
+
+        <p>R62.99</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div> 
+    
+     <div class="product-card">
+
+        <img src="medication/panado-tablets.jpg">
+
+        <h3>Panado Tablets</h3>
+        <h4>500mg</h4>
+
+        <p>R37.99</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>
+    
+     <div class="product-card">
+
+        <img src="medication/rennie.jpg">
+
+        <h3>Rennie</h3>
+
+        <p>R143.20</p>
+
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>  
+
+     <div class="product-card">
+
+        <img src="medication/sinutab-nasalspray.jpg">
+
+        <h3>SinuTab Nasal Spray</h3>
+        <h4>10ml</h4>
+
+        <p>R74.99</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div>
+    
+     <div class="product-card">
+
+        <img src="medication/slowmag.png">
+
+        <h3>Slow Mag</h3>
+
+        <p>R83.99</p>
+
+        <button class="cart-btn">
+            Add to Cart
+        </button>
+
+    </div> 
+    
+      
+</div>
+
+</div>
+
+<script src="script.js"></script>
+
+<script>
+
+function searchMedicine(){
+
+let input =
+document.getElementById("searchInput").value.toUpperCase();
+
+let cards =
+document.getElementsByClassName("product-card");
+
+for(let i=0;i<cards.length;i++){
+
+let title=
+cards[i].getElementsByTagName("h3")[0];
+
+if(title.innerHTML.toUpperCase().indexOf(input)>-1){
+
+cards[i].style.display="block";
+
+}
+else{
+
+cards[i].style.display="none";
+
+}
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
