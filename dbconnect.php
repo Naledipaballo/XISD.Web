@@ -1,42 +1,16 @@
 <?php
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$database = "pillpointdelivery";
+$serverName = ".\\SQLEXPRESS";
 
-$conn = mysqli_connect($servername,$username,$password,$database);
+$connectionOptions = array(
+    "Database" => "PillPointDelivery",
+    "TrustServerCertificate" => true
+);
 
-if(!$conn)
-{
-    die("Connection Failed: " . mysqli_connect_error());
+$conn = sqlsrv_connect($serverName, $connectionOptions);
+
+if ($conn === false) {
+    die("Database Connection Failed:<br><pre>" . print_r(sqlsrv_errors(), true) . "</pre>");
 }
 
-?>
-
-<?php
-include("dbconnect.php");
-
-$medicine = $_POST['medicine_name'];
-$price = $_POST['price'];
-
-$check = mysqli_query($conn,
-"SELECT * FROM cart WHERE medicine_name='$medicine'");
-
-if(mysqli_num_rows($check) > 0)
-{
-    mysqli_query($conn,
-    "UPDATE cart
-     SET quantity = quantity + 1
-     WHERE medicine_name='$medicine'");
-}
-else
-{
-    mysqli_query($conn,
-    "INSERT INTO cart (medicine_name, price, quantity)
-     VALUES ('$medicine', '$price', 1)");
-}
-
-header("Location: cart.php");
-exit();
 ?>
