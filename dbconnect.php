@@ -1,16 +1,12 @@
 <?php
+$servername = "localhost";
+$username   = "root";
+$password   = "";
+$dbname     = "xisd_db";
 
-$serverName = ".\\SQLEXPRESS";
+$conn = mysqli_connect($servername, $username, $password, $dbname);
 
-$connectionOptions = array(
-    "Database" => "PillPointDelivery",
-    "TrustServerCertificate" => true
-);
-
-$conn = sqlsrv_connect($serverName, $connectionOptions);
-
-if ($conn === false) {
-    die("Database Connection Failed:<br><pre>" . print_r(sqlsrv_errors(), true) . "</pre>");
+if (!$conn) {
+    die("Database Connection Failed: " . mysqli_connect_error());
 }
-
 ?>

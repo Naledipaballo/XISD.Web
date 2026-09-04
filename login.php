@@ -1,67 +1,53 @@
 <?php
-
 session_start();
-
 include("dbconnect.php");
 
-if ($_SERVER["REQUEST_METHOD"] != "POST") {
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     header("Location: login.html");
     exit();
 }
 
-$username = trim($_POST['username']);
-$password = $_POST['password'];
+$username = trim($_POST['username'] ?? '');
+$password = trim($_POST['password'] ?? '');
 
-$stmt = mysqli_prepare(
-    $conn,
-    "SELECT id, first_name, last_name, username, password
-     FROM customers
-     WHERE username = ?"
-);
-
-mysqli_stmt_bind_param(
-    $stmt,
-    "s",
-    $username
-);
-
-mysqli_stmt_execute($stmt);
-
-$result = mysqli_stmt_get_result($stmt);
-
-if (mysqli_num_rows($result) == 1) {
-
-    $user = mysqli_fetch_assoc($result);
-
-    if (password_verify($password, $user['password'])) {
-
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['first_name'] = $user['first_name'];
-        $_SESSION['last_name'] = $user['last_name'];
-        $_SESSION['username'] = $user['username'];
-
-        header("Location: home.html");
-        exit();
-
-    } else {
-
-        echo "<script>
-                alert('Incorrect password.');
-                window.location.href='login.html';
-              </script>";
-        exit();
-    }
-
-} else {
-
+if (empty($username) || empty($password)) {
     echo "<script>
-            alert('Username not found.');
-            window.location.href='login.html';
+            alert('Please fill in both username and password.');
+            window.location.href = 'login.html';
           </script>";
     exit();
 }
 
-mysqli_stmt_close($stmt);
-mysqli_close($conn);
+// Query customer record by username or email
+$query = "SELECT id, username, password FROM customers WHERE username = ? OR email = ?";
+$stmt  = mysqli_prepare($conn, $query);
 
+if ($stmt) {
+    mysqli_stmt_bind_param($stmt, "ss", $username, $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if ($row = mysqli_fetch_assoc($result)) {
+        // Verify hashed password
+        if (password_verify($password, $row['password'])) {
+            // Set user session variables
+            $_SESSION['user_id']  = $row['id'];
+            $_SESSION['username'] = $row['username'];
+
+            // Redirect directly to dashboard
+            header("Location: dashboard.php");
+            exit();
+        }
+    }
+    
+    mysqli_stmt_close($stmt);
+}
+
+// If credentials don't match
+echo "<script>
+        alert('Invalid username or password.');
+        window.location.href = 'login.html';
+      </script>";
+mysqli_close($conn);
+exit();
 ?>

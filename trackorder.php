@@ -1,217 +1,99 @@
 <?php
-
 session_start();
-
 include("dbconnect.php");
 
 if (!isset($_SESSION['user_id'])) {
-
-    echo "<script>
-            alert('Please login first.');
-            window.location.href='login.html';
-          </script>";
-
+    header("Location: login.html");
     exit();
-}
-
-if ($_SERVER["REQUEST_METHOD"] != "POST") {
-
-    header("Location: track_order.html");
-    exit();
-
 }
 
 $user_id = $_SESSION['user_id'];
-$order_id = intval($_POST['order_id']);
 
+// Fetch delivery status for user's orders
+$query = "SELECT d.id AS delivery_id, d.order_id, d.delivery_address, d.delivery_status, d.estimated_delivery, o.total_amount, o.order_date 
+          FROM deliveries d 
+          JOIN orders o ON d.order_id = o.id 
+          WHERE o.user_id = ? 
+          ORDER BY o.order_date DESC";
 
-/* Find the customer's order */
-
-$stmt = mysqli_prepare(
-    $conn,
-    "SELECT order_id,
-            delivery_address,
-            province,
-            delivery_option,
-            payment_method,
-            subtotal,
-            delivery_fee,
-            total,
-            status
-     FROM orders
-     WHERE order_id = ?
-     AND user_id = ?"
-);
-
-mysqli_stmt_bind_param(
-    $stmt,
-    "ii",
-    $order_id,
-    $user_id
-);
-
+$stmt = mysqli_prepare($conn, $query);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
 mysqli_stmt_execute($stmt);
-
-$result = mysqli_stmt_get_result($stmt);
-
-
-if (mysqli_num_rows($result) == 0) {
-
-    echo "<script>
-            alert('Order not found.');
-            window.location.href='track_order.html';
-          </script>";
-
-    exit();
-}
-
-$order = mysqli_fetch_assoc($result);
-
+$deliveries = mysqli_stmt_get_result($stmt);
 ?>
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-
-    <title>Pill Point Delivery - Order Status</title>
-
-    <link rel="stylesheet" href="css/style.css">
-
+    <meta charset="UTF-8">
+    <title>Track Orders - Pill Point Delivery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .track-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
+        .track-table th, .track-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .track-table th { background-color: #007bff; color: white; }
+        .status-pill { background: #e2e3e5; color: #383d41; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+    </style>
 </head>
-
 <body>
 
-<header>
+<div class="header">
+    <span class="menu-btn" onclick="openNav()">&#9776;</span>
+    <h1 class="header-title">Pill Point Delivery</h1>
+</div>
 
-    <h1>Pill Point Delivery</h1>
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="dashboard.php">Dashboard</a>
+    <a href="medicines.php">Shop Medication</a>
+    <a href="prescription.php">Prescription</a>
+    <a href="reminders.php">Reminders</a>
+    <a href="trackorder.php">Track Orders</a>
+    <a href="storelocator.php">Store Locator</a>
+    <a href="cart.php">Cart</a>
+    <a href="myaccount.php">My Account</a>
+    <a href="contact.php">Contact Us</a>
+    <a href="logout.php">Logout</a>
+</div>
 
-    <nav>
-        <a href="home.html">Home</a>
-        <a href="shop.html">Shop</a>
-        <a href="cart.html">Cart</a>
-        <a href="track_order.html">Track Order</a>
-        <a href="my_account.html">My Account</a>
-        <a href="logout.php">Logout</a>
-    </nav>
+<div class="container" style="padding: 20px;">
+    <h2>Track Your Order Deliveries</h2>
 
-</header>
+    <table class="track-table">
+        <thead>
+            <tr>
+                <th>Order #</th>
+                <th>Order Date</th>
+                <th>Delivery Address</th>
+                <th>Status</th>
+                <th>Estimated Delivery</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (mysqli_num_rows($deliveries) > 0): ?>
+                <?php while ($row = mysqli_fetch_assoc($deliveries)): ?>
+                    <tr>
+                        <td>#<?php echo $row['order_id']; ?></td>
+                        <td><?php echo $row['order_date']; ?></td>
+                        <td><?php echo htmlspecialchars($row['delivery_address']); ?></td>
+                        <td><span class="status-pill"><?php echo htmlspecialchars($row['delivery_status']); ?></span></td>
+                        <td><?php echo $row['estimated_delivery'] ? $row['estimated_delivery'] : 'Pending'; ?></td>
+                        <td>R<?php echo number_format($row['total_amount'], 2); ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="6" style="text-align: center;">No active order deliveries found.</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</div>
 
-
-<main>
-
-    <div class="container">
-
-        <h2>Order Tracking</h2>
-
-        <h3>
-            Order #<?php echo $order['order_id']; ?>
-        </h3>
-
-        <p>
-            <strong>Status:</strong>
-
-            <?php echo htmlspecialchars($order['status']); ?>
-
-        </p>
-
-        <hr>
-
-        <h3>Delivery Information</h3>
-
-        <p>
-            <strong>Address:</strong><br>
-
-            <?php
-            echo htmlspecialchars(
-                $order['delivery_address']
-            );
-            ?>
-        </p>
-
-        <p>
-            <strong>Province:</strong>
-
-            <?php
-            echo htmlspecialchars(
-                $order['province']
-            );
-            ?>
-        </p>
-
-        <p>
-            <strong>Delivery:</strong>
-
-            <?php
-            echo htmlspecialchars(
-                $order['delivery_option']
-            );
-            ?>
-        </p>
-
-        <h3>Payment</h3>
-
-        <p>
-            <strong>Payment Method:</strong>
-
-            <?php
-            echo htmlspecialchars(
-                $order['payment_method']
-            );
-            ?>
-        </p>
-
-        <h3>Order Total</h3>
-
-        <p>
-            Subtotal:
-            R<?php echo number_format(
-                $order['subtotal'],
-                2
-            ); ?>
-        </p>
-
-        <p>
-            Delivery:
-            R<?php echo number_format(
-                $order['delivery_fee'],
-                2
-            ); ?>
-        </p>
-
-        <p>
-            <strong>
-                Total:
-                R<?php echo number_format(
-                    $order['total'],
-                    2
-                ); ?>
-            </strong>
-        </p>
-
-        <br>
-
-        <a href="track_order.html">
-            <button type="button">
-                Track Another Order
-            </button>
-        </a>
-
-        <a href="shop.html">
-            <button type="button">
-                Continue Shopping
-            </button>
-        </a>
-
-    </div>
-
-</main>
-
+<script src="script.js"></script>
 </body>
 </html>
-
-<?php
-
+<?php 
 mysqli_stmt_close($stmt);
-mysqli_close($conn);
-
+mysqli_close($conn); 
 ?>
