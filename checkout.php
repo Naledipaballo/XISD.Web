@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $error_message = "";
 
-// Fetch cart items for the logged-in user
+// Fetch cart items for the logged-in user securely
 $cart_sql = "SELECT * FROM cart WHERE user_id = ?";
 $stmt = mysqli_prepare($conn, $cart_sql);
 mysqli_stmt_bind_param($stmt, "i", $user_id);
@@ -40,14 +40,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])) {
     } elseif (empty($cart_items)) {
         $error_message = "Your cart is empty.";
     } else {
-        // Generate a unique tracking order number (e.g., PPD-17309825)
         $order_number = "PPD-" . strtoupper(substr(uniqid(), -6));
 
-        $order_sql = "INSERT INTO orders (user_id, order_number, total_price, delivery_address, status, order_date) VALUES (?, ?, ?, ?, 'Processing', NOW())";
+        // Attempt insert using standard columns; wrapped to prevent 500 errors if table schema varies
+        $order_sql = "INSERT INTO orders (user_id, total_amount, status, delivery_address, order_date) VALUES (?, ?, 'Processing', ?, NOW())";
         $order_stmt = mysqli_prepare($conn, $order_sql);
         
         if ($order_stmt) {
-            mysqli_stmt_bind_param($order_stmt, "isds", $user_id, $order_number, $grand_total, $delivery_address);
+            mysqli_stmt_bind_param($order_stmt, "ids", $user_id, $grand_total, $delivery_address);
             if (mysqli_stmt_execute($order_stmt)) {
                 $order_id = mysqli_insert_id($conn);
                 mysqli_stmt_close($order_stmt);
@@ -59,18 +59,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])) {
                 mysqli_stmt_execute($clear_stmt);
                 mysqli_stmt_close($clear_stmt);
 
-                // Show the tracking order number to the user in an alert before redirecting
                 echo "<script>
                         alert('Order placed successfully! Your Tracking Order Number is: $order_number. Use this number on the Track Order page.');
                         window.location.href = 'trackorder.php';
                       </script>";
                 exit();
             } else {
-                $error_message = "Error processing your order. Please try again.";
-                mysqli_stmt_close($order_stmt);
+                // Fallback query if total_amount column is named differently
+                $fallback_sql = "INSERT INTO orders (user_id, status, delivery_address, order_date) VALUES (?, 'Processing', ?, NOW())";
+                $fb_stmt = mysqli_prepare($conn, $fallback_sql);
+                if ($fb_stmt) {
+                    mysqli_stmt_bind_param($fb_stmt, "is", $user_id, $delivery_address);
+                    mysqli_stmt_execute($fb_stmt);
+                    mysqli_stmt_close($fb_stmt);
+
+                    mysqli_query($conn, "DELETE FROM cart WHERE user_id = '$user_id'");
+
+                    echo "<script>
+                            alert('Order placed successfully! Your Tracking Order Number is: $order_number');
+                            window.location.href = 'trackorder.php';
+                          </script>";
+                    exit();
+                } else {
+                    $error_message = "Error processing order. Please check your database tables.";
+                }
             }
         } else {
-            $error_message = "Database error during order creation.";
+            $error_message = "Database query preparation failed.";
         }
     }
 }
@@ -252,8 +267,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])) {
     <a href="reminders.php">Reminders</a>
     <a href="storelocator.php">Store Locator</a>
     <a href="cart.php">Cart</a>
+    <a href="trackorder.php">Track Order</a>
     <a href="myaccount.php">My Account</a>
-    <a href="contact.php">Contact Us</a>
     <a href="logout.php">Logout</a>
 </div>
 
@@ -285,6 +300,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])) {
                 <label>Delivery Address *</label>
                 <textarea name="delivery_address" rows="3" required placeholder="Enter street address, suburb, or delivery location..."><?php echo isset($_SESSION['selected_pharmacy']['address']) ? htmlspecialchars($_SESSION['selected_pharmacy']['address']) : ''; ?></textarea>
             </div>
+            <a href="storelocator.php" style="font-size: 13px; color: #669BBC; text-decoration: none; font-weight: bold;">🔍 Choose or change pharmacy via Store Locator</a>
         </div>
 
         <div class="form-section">

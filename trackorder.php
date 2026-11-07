@@ -3,10 +3,7 @@ session_start();
 include("dbconnect.php");
 
 if (!isset($_SESSION['user_id'])) {
-    echo "<script>
-            alert('Please login first.');
-            window.location.href = 'login.html';
-          </script>";
+    echo "<script>alert('Please login first.'); window.location.href = 'login.html';</script>";
     exit();
 }
 
@@ -16,34 +13,35 @@ $error_message = "";
 
 // Handle order search
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['track_order'])) {
-    $order_number = trim($_POST['order_number']);
-
-    if (!empty($order_number)) {
-        // Query orders table matching order id or tracking number
-        $sql = "SELECT * FROM orders WHERE (id = ? OR order_number = ?) AND user_id = ?";
-        $stmt = mysqli_prepare($conn, $sql);
+    $order_num = trim($_POST['order_number'] ?? '');
+    if (!empty($order_num)) {
+        $stmt = mysqli_prepare($conn, "SELECT * FROM orders WHERE user_id = ? AND (order_number = ? OR id = ?)");
         if ($stmt) {
-            mysqli_stmt_bind_param($stmt, "isi", $order_number, $order_number, $user_id);
+            mysqli_stmt_bind_param($stmt, "isi", $user_id, $order_num, $order_num);
             mysqli_stmt_execute($stmt);
             $result = mysqli_stmt_get_result($stmt);
             if ($row = mysqli_fetch_assoc($result)) {
                 $search_result = $row;
             } else {
-                $error_message = "No order found with that number.";
+                $error_message = "No order found with number: " . htmlspecialchars($order_num);
             }
             mysqli_stmt_close($stmt);
         }
-    } else {
-        $error_message = "Please enter an order number.";
     }
 }
 
-// Fetch existing orders for the user
-$existing_orders_sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC";
-$eo_stmt = mysqli_prepare($conn, $existing_orders_sql);
-mysqli_stmt_bind_param($eo_stmt, "i", $user_id);
-mysqli_stmt_execute($eo_stmt);
-$existing_orders_result = mysqli_stmt_get_result($eo_stmt);
+// Fetch user's existing orders safely
+$orders_list = [];
+$list_stmt = mysqli_prepare($conn, "SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC");
+if ($list_stmt) {
+    mysqli_stmt_bind_param($list_stmt, "i", $user_id);
+    mysqli_stmt_execute($list_stmt);
+    $list_res = mysqli_stmt_get_result($list_stmt);
+    while ($row = mysqli_fetch_assoc($list_res)) {
+        $orders_list[] = $row;
+    }
+    mysqli_stmt_close($list_stmt);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -74,45 +72,51 @@ $existing_orders_result = mysqli_stmt_get_result($eo_stmt);
         }
 
         .track-container {
-            max-width: 700px;
+            max-width: 650px;
             margin: 110px auto 40px auto;
             background: #fff;
             padding: 35px;
-            border-radius: 10px;
+            border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .track-container h2 {
             color: #003049;
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 8px;
         }
 
-        /* Stacked layout: Input above the button */
-        .track-form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .track-container p.subtitle {
+            text-align: center;
+            color: #64748b;
             margin-bottom: 25px;
+            font-size: 14px;
         }
 
-        .track-form-group label {
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
             font-weight: bold;
             color: #003049;
+            font-size: 14px;
         }
 
-        .track-form-group input {
+        .form-group input {
             width: 100%;
             padding: 12px;
             border: 1px solid #ccc;
             border-radius: 6px;
-            font-size: 15px;
             box-sizing: border-box;
+            font-size: 15px;
             outline: none;
         }
 
         .btn {
-            background: #669BBC; /* Matches website theme button color */
+            background: #669BBC;
             color: white;
             border: none;
             padding: 14px;
@@ -127,33 +131,32 @@ $existing_orders_result = mysqli_stmt_get_result($eo_stmt);
             background: #003049;
         }
 
-        .orders-section {
-            margin-top: 35px;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 25px;
-        }
-
-        .orders-section h3 {
-            color: #003049;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        table {
+        .orders-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 25px;
         }
 
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
+        .orders-table th, .orders-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
             text-align: left;
             font-size: 14px;
+            color: #334155;
         }
 
-        th {
-            background-color: #f8f9fa;
+        .orders-table th {
+            background: #f8f9fa;
             color: #003049;
+            font-weight: bold;
+        }
+
+        .result-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -174,66 +177,71 @@ $existing_orders_result = mysqli_stmt_get_result($eo_stmt);
     <a href="cart.php">Cart</a>
     <a href="trackorder.php">Track Order</a>
     <a href="myaccount.php">My Account</a>
+    <a href="contact.php">Contact Us</a>
     <a href="logout.php">Logout</a>
 </div>
 
 <div class="track-container">
     <h2>Track Your Order</h2>
+    <p class="subtitle">Enter your tracking number to check delivery status</p>
+
+    <?php if (!empty($error_message)): ?>
+        <p style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px;"><?php echo htmlspecialchars($error_message); ?></p>
+    <?php endif; ?>
 
     <form action="trackorder.php" method="POST">
-        <div class="track-form-group">
-            <label>Enter Order Number</label>
-            <input type="text" name="order_number" placeholder="Enter the order number of an existing order to view its delivery status" required>
+        <div class="form-group">
+            <label>Order Number / ID</label>
+            <input type="text" name="order_number" required placeholder="e.g. PPD-173098 or #3">
         </div>
         <button type="submit" name="track_order" class="btn">Track Order</button>
     </form>
 
-    <?php if (!empty($error_message)): ?>
-        <p style="color: #721c24; background: #f8d7da; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-top: 20px;"><?php echo htmlspecialchars($error_message); ?></p>
-    <?php endif; ?>
-
     <?php if ($search_result): ?>
-        <div style="background: #e2e8f0; padding: 15px; border-radius: 6px; margin-top: 20px;">
-            <h4 style="color: #003049; margin-bottom: 8px;">Order Details (#<?php echo htmlspecialchars($search_result['id']); ?>)</h4>
-            <p><strong>Status:</strong> <?php echo htmlspecialchars($search_result['status'] ?? 'Processing'); ?></p>
+        <div class="result-box">
+            <h3 style="margin-top: 0; color: #166534;">Order Status Details</h3>
+            <p><strong>Order ID:</strong> #<?php echo $search_result['id']; ?></p>
+            <p><strong>Status:</strong> <span style="color: #2563eb; font-weight: bold;"><?php echo htmlspecialchars($search_result['status'] ?? 'Processing'); ?></span></p>
+            <p><strong>Total Amount:</strong> R<?php 
+                $amt = $search_result['total_price'] ?? $search_result['total_amount'] ?? $search_result['total'] ?? $search_result['amount'] ?? 0;
+                echo number_format((float)$amt, 2); 
+            ?></p>
             <p><strong>Delivery Address:</strong> <?php echo htmlspecialchars($search_result['delivery_address'] ?? 'N/A'); ?></p>
-            <p><strong>Total:</strong> R<?php echo number_format($search_result['total_price'] ?? 0, 2); ?></p>
+            <p><strong>Order Date:</strong> <?php echo htmlspecialchars($search_result['order_date'] ?? $search_result['created_at'] ?? 'N/A'); ?></p>
         </div>
     <?php endif; ?>
 
-    <div class="orders-section">
-        <h3>Your Existing Orders</h3>
-        <?php if (mysqli_num_rows($existing_orders_result) > 0): ?>
-            <table>
-                <thead>
+    <h3 style="margin-top: 35px; color: #003049; font-size: 18px;">Your Existing Orders</h3>
+    <?php if (empty($orders_list)): ?>
+        <p style="color: #64748b; font-size: 14px;">You have no past orders yet.</p>
+    <?php else: ?>
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($orders_list as $ord): ?>
                     <tr>
-                        <th>Order ID</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Date</th>
+                        <td>#<?php echo $ord['id']; ?></td>
+                        <td>R<?php 
+                            $row_amt = $ord['total_price'] ?? $ord['total_amount'] ?? $ord['total'] ?? $ord['amount'] ?? 0;
+                            echo number_format((float)$row_amt, 2); 
+                        ?></td>
+                        <td><span style="font-weight: bold; color: #1d4ed8;"><?php echo htmlspecialchars($ord['status'] ?? 'Processing'); ?></span></td>
+                        <td><?php echo htmlspecialchars($ord['order_date'] ?? $ord['created_at'] ?? 'N/A'); ?></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php while($order = mysqli_fetch_assoc($existing_orders_result)): ?>
-                    <tr>
-                        <td>#<?php echo $order['id']; ?></td>
-                        <td>R<?php echo number_format($order['total_price'] ?? 0, 2); ?></td>
-                        <td><?php echo htmlspecialchars($order['status'] ?? 'Processing'); ?></td>
-                        <td><?php echo htmlspecialchars($order['order_date'] ?? ''); ?></td>
-                    </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
-        <?php else: ?>
-            <p style="text-align: center; color: #64748b;">You do not have any existing orders yet. <a href="medicines.php" style="color: #669BBC; font-weight: bold; text-decoration: none;">Shop Medication</a></p>
-        <?php endif; ?>
-    </div>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
 </div>
 
 <script src="script.js"></script>
 </body>
 </html>
-<?php 
-mysqli_stmt_close($eo_stmt);
-mysqli_close($conn); 
-?>
+<?php mysqli_close($conn); ?>
