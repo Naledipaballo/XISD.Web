@@ -46,9 +46,9 @@ if ($stmt) {
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
     <a href="dashboard.php">Dashboard</a>
-    <a href="aboutus.html">About Us</a>
     <a href="medicines.php">Shop Medication</a>
     <a href="cart.php">My Cart</a>
+    <a href="checkout.php">Checkout</a>
     <a href="prescription.php">Prescription</a>
     <a href="reminders.php">Reminders</a>
     <a href="storelocator.php">Store Locator</a>

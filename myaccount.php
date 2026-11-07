@@ -78,7 +78,7 @@ mysqli_stmt_close($stmt);
 <!-- Header -->
 <div class="header">
     <span class="menu-btn" onclick="openNav()">&#9776;</span>
-    <h1 class="header-title">Pill Point Delivery</h1>
+    <h1 class="header-title">My Account</h1>
 </div>
 
 <!-- Sidebar -->
@@ -88,16 +88,16 @@ mysqli_stmt_close($stmt);
     <a href="medicines.php">Shop Medication</a>
     <a href="prescription.php">Prescription</a>
     <a href="reminders.php">Reminders</a>
-    <a href="storelocator.html">Store Locator</a>
+    <a href="storelocator.php">Store Locator</a>
     <a href="cart.php">Cart</a>
+    <a href="trackorder.php">Track Orders</a>
     <a href="myaccount.php">My Account</a>
-    <a href="aboutus.html">About Us</a>
     <a href="logout.php">Logout</a>
 </div>
 
 <div class="account-container">
 
-    <h2>My Account</h2>
+   
 
     <?php if (!empty($message)): ?>
         <div class="alert-msg"><?php echo htmlspecialchars($message); ?></div>

@@ -1,4 +1,4 @@
-Dont<?php
+<?php
 session_start();
 include("dbconnect.php");
 
@@ -52,6 +52,67 @@ $result = mysqli_query($conn, $query);
 <head>
     <title>Shop Medication - Pill Point Delivery</title>
     <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* Header layout to push the cart button to the far right */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+        }
+
+        /* Forces the cart button to the right side of the header */
+        .cart-header-btn {
+            margin-left: auto;
+            background-color: #0d6efd; 
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
+
+        .cart-header-btn:hover {
+            background-color: #0b5ed7;
+        }
+
+        /* Shop container top margin to clear the fixed header */
+        .shop-container {
+            margin-top: 110px;
+            width: 90%;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .product-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-card img {
+            height: 140px;
+            object-fit: contain;
+        }
+    </style>
 </head>
 
 <body>
@@ -59,9 +120,12 @@ $result = mysqli_query($conn, $query);
 <!-- Header -->
 <div class="header">
     <span class="menu-btn" onclick="openNav()">&#9776;</span>
-    <h1 class="header-title">Pill Point Delivery</h1>
-    <a href="myaccount.html">
-        <img src="photo.jpeg" class="profile-icon">
+
+    <h1 class="header-title">Shop Medication</h1>
+
+    <!-- Cart button pushed to the right side -->
+    <a href="cart.php" class="cart-header-btn">
+        &#128722; Cart
     </a>
 </div>
 
@@ -73,16 +137,16 @@ $result = mysqli_query($conn, $query);
     <a href="prescription.php">Prescription</a>
     <a href="cart.php">My Cart</a>
     <a href="trackorder.php">Track Order</a>
+    <a href="reminders.php">Reminders</a>
     <a href="storelocator.php">Store Locator</a>
     <a href="myaccount.php">My Account</a>
-    <a href="contact.php">Contact Us</a>
     <a href="login.html">Logout</a>
 </div>
 
 <!-- Shop -->
 <div class="shop-container">
 
-<h2>Shop Medication</h2>
+
 
 <input type="text" id="searchInput" placeholder="Search medication..." onkeyup="searchMedicine()" class="search-box">
 
@@ -91,9 +155,11 @@ $result = mysqli_query($conn, $query);
     <!-- 1. Andolex-C Oral Gel -->
     <div class="product-card">
         <img src="medication/andolex-c-oralgel.jpg" alt="Andolex-C Oral Gel">
-        <h3>andolex-c oral gel</h3>
-        <h4>18g</h4>
-        <p>R126.99</p>
+        <div>
+            <h3>andolex-c oral gel</h3>
+            <h4>18g</h4>
+            <p>R126.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="andolex-c oral gel">
             <input type="hidden" name="price" value="126.99">
@@ -104,8 +170,10 @@ $result = mysqli_query($conn, $query);
     <!-- 2. Vicks Syrup -->
     <div class="product-card">
         <img src="medication/vicks-syrup.jpeg" alt="Vicks Syrup">
-        <h3>Vicks Syrup</h3>
-        <p>R120.00</p>
+        <div>
+            <h3>Vicks Syrup</h3>
+            <p>R120.00</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Vicks Syrup">
             <input type="hidden" name="price" value="120.00">
@@ -116,8 +184,10 @@ $result = mysqli_query($conn, $query);
     <!-- 3. Allergex Syrup -->
     <div class="product-card">
         <img src="medication/allergex-syrup.jpg" alt="Allergex Syrup">
-        <h3>allergex syrup</h3>
-        <p>R18.99</p>
+        <div>
+            <h3>allergex syrup</h3>
+            <p>R18.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="allergex syrup">
             <input type="hidden" name="price" value="18.99">
@@ -128,8 +198,10 @@ $result = mysqli_query($conn, $query);
     <!-- 4. Allergex Tablets -->
     <div class="product-card">
         <img src="medication/allergex-tablets.jpg" alt="Allergex Tablets">
-        <h3>allergex tablets</h3>
-        <p>R25.99</p>
+        <div>
+            <h3>allergex tablets</h3>
+            <p>R25.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="allergex tablets">
             <input type="hidden" name="price" value="25.99">
@@ -140,8 +212,10 @@ $result = mysqli_query($conn, $query);
     <!-- 5. Band Aid Plastic -->
     <div class="product-card">
         <img src="medication/band-aid-plastic.jpg" alt="Band Aid Plastic">
-        <h3>Band Aid Plastic</h3>
-        <p>R39.99</p>
+        <div>
+            <h3>Band Aid Plastic</h3>
+            <p>R39.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Band Aid Plastic">
             <input type="hidden" name="price" value="39.99">
@@ -152,9 +226,11 @@ $result = mysqli_query($conn, $query);
     <!-- 6. Benylin Syrup -->
     <div class="product-card">
         <img src="medication/benelyin-syrup.jpg" alt="Benylin Syrup">
-        <h3>Benelyin Syrup</h3>
-        <h4>100ml</h4>
-        <p>R79.99</p>
+        <div>
+            <h3>Benylin Syrup</h3>
+            <h4>100ml</h4>
+            <p>R79.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Benelyin Syrup">
             <input type="hidden" name="price" value="79.99">
@@ -165,8 +241,10 @@ $result = mysqli_query($conn, $query);
     <!-- 7. Berocca -->
     <div class="product-card">
         <img src="medication/berocca.jpg" alt="Berocca">
-        <h3>Berocca</h3>
-        <p>R120.00</p>
+        <div>
+            <h3>Berocca</h3>
+            <p>R120.00</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Berocca">
             <input type="hidden" name="price" value="120.00">
@@ -177,9 +255,11 @@ $result = mysqli_query($conn, $query);
     <!-- 8. Calpol -->
     <div class="product-card">
         <img src="medication/calpol.jpg" alt="Calpol">
-        <h3>Calpol</h3>
-        <h4>100ml</h4>
-        <p>R67.99</p>
+        <div>
+            <h3>Calpol</h3>
+            <h4>100ml</h4>
+            <p>R67.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Calpol">
             <input type="hidden" name="price" value="67.99">
@@ -190,8 +270,10 @@ $result = mysqli_query($conn, $query);
     <!-- 9. Canvex V -->
     <div class="product-card">
         <img src="medication/canvexv.jpeg" alt="Canvex V">
-        <h3>Canvex V</h3>
-        <p>R89.00</p>
+        <div>
+            <h3>Canvex V</h3>
+            <p>R89.00</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Canvex V">
             <input type="hidden" name="price" value="89.00">
@@ -202,8 +284,10 @@ $result = mysqli_query($conn, $query);
     <!-- 10. Compral -->
     <div class="product-card">
         <img src="medication/compral.jpg" alt="Compral">
-        <h3>Compral</h3>
-        <p>R83.99</p>
+        <div>
+            <h3>Compral</h3>
+            <p>R83.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Compral">
             <input type="hidden" name="price" value="83.99">
@@ -214,8 +298,10 @@ $result = mysqli_query($conn, $query);
     <!-- 11. Coryx Effervescent Tablets -->
     <div class="product-card">
         <img src="medication/coryx.png" alt="Coryx Effervescent Tablets">
-        <h3>Coryx Effervescent Tablets</h3>
-        <p>R72.99</p>
+        <div>
+            <h3>Coryx Effervescent Tablets</h3>
+            <p>R72.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Coryx Effervescent Tablets">
             <input type="hidden" name="price" value="72.99">
@@ -226,9 +312,11 @@ $result = mysqli_query($conn, $query);
     <!-- 12. Deep Heat -->
     <div class="product-card">
         <img src="medication/deepheat.jpg" alt="Deep Heat">
-        <h3>Deep Heat</h3>
-        <h4>35g</h4>
-        <p>R74.99</p>
+        <div>
+            <h3>Deep Heat</h3>
+            <h4>35g</h4>
+            <p>R74.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Deep Heat">
             <input type="hidden" name="price" value="74.99">
@@ -239,8 +327,10 @@ $result = mysqli_query($conn, $query);
     <!-- 13. Linctagon Effervescent Tablet -->
     <div class="product-card">
         <img src="medication/linctagon-tablets.jpg" alt="Linctagon Effervescent Tablet">
-        <h3>Linctagon Effervescent Tablet</h3>
-        <p>R178.00</p>
+        <div>
+            <h3>Linctagon Effervescent Tablet</h3>
+            <p>R178.00</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Linctagon Effervescent Tablet">
             <input type="hidden" name="price" value="178.00">
@@ -251,8 +341,10 @@ $result = mysqli_query($conn, $query);
     <!-- 14. Med-Lemon -->
     <div class="product-card">
         <img src="medication/med-lemon.jpg" alt="Med-Lemon">
-        <h3>Med-Lemon</h3>
-        <p>R89.99</p>
+        <div>
+            <h3>Med-Lemon</h3>
+            <p>R89.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Med-Lemon">
             <input type="hidden" name="price" value="89.99">
@@ -263,8 +355,10 @@ $result = mysqli_query($conn, $query);
     <!-- 15. Panado Effervescent Tablets -->
     <div class="product-card">
         <img src="medication/panado-effervescent.jpg" alt="Panado Effervescent Tablets">
-        <h3>Panado Effervescent Tablets</h3>
-        <p>R62.99</p>
+        <div>
+            <h3>Panado Effervescent Tablets</h3>
+            <p>R62.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Panado Effervescent Tablets">
             <input type="hidden" name="price" value="62.99">
@@ -275,9 +369,11 @@ $result = mysqli_query($conn, $query);
     <!-- 16. Panado Tablets -->
     <div class="product-card">
         <img src="medication/panado-tablets.jpg" alt="Panado Tablets">
-        <h3>Panado Tablets</h3>
-        <h4>500mg</h4>
-        <p>R37.99</p>
+        <div>
+            <h3>Panado Tablets</h3>
+            <h4>500mg</h4>
+            <p>R37.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Panado Tablets">
             <input type="hidden" name="price" value="37.99">
@@ -288,8 +384,10 @@ $result = mysqli_query($conn, $query);
     <!-- 17. Rennie -->
     <div class="product-card">
         <img src="medication/rennie.jpg" alt="Rennie">
-        <h3>Rennie</h3>
-        <p>R143.20</p>
+        <div>
+            <h3>Rennie</h3>
+            <p>R143.20</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Rennie">
             <input type="hidden" name="price" value="143.20">
@@ -300,9 +398,11 @@ $result = mysqli_query($conn, $query);
     <!-- 18. SinuTab Nasal Spray -->
     <div class="product-card">
         <img src="medication/sinutab-nasalspray.jpg" alt="SinuTab Nasal Spray">
-        <h3>SinuTab Nasal Spray</h3>
-        <h4>10ml</h4>
-        <p>R74.99</p>
+        <div>
+            <h3>SinuTab Nasal Spray</h3>
+            <h4>10ml</h4>
+            <p>R74.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="SinuTab Nasal Spray">
             <input type="hidden" name="price" value="74.99">
@@ -313,8 +413,10 @@ $result = mysqli_query($conn, $query);
     <!-- 19. Slow Mag -->
     <div class="product-card">
         <img src="medication/slowmag.png" alt="Slow Mag">
-        <h3>Slow Mag</h3>
-        <p>R83.99</p>
+        <div>
+            <h3>Slow Mag</h3>
+            <p>R83.99</p>
+        </div>
         <form action="medicines.php" method="POST">
             <input type="hidden" name="medicine_name" value="Slow Mag">
             <input type="hidden" name="price" value="83.99">
@@ -336,7 +438,7 @@ function searchMedicine(){
     for(let i=0; i<cards.length; i++){
         let title = cards[i].getElementsByTagName("h3")[0];
         if(title.innerHTML.toUpperCase().indexOf(input) > -1){
-            cards[i].style.display = "block";
+            cards[i].style.display = "flex";
         } else {
             cards[i].style.display = "none";
         }

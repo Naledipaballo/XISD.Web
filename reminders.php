@@ -49,10 +49,78 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Set Reminder - Pill Point Delivery</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .form-container { max-width: 500px; margin: 30px auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+        }
+
+        .form-container { 
+            max-width: 600px; 
+            margin: 110px auto 40px auto; 
+            background: #fff; 
+            padding: 35px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        }
+
+        .form-container h2 {
+            color: #003049;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .form-group { 
+            margin-bottom: 18px; 
+        }
+
+        .form-group label { 
+            display: block; 
+            margin-bottom: 6px; 
+            font-weight: bold; 
+            color: #003049;
+        }
+
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 15px;
+            outline: none;
+        }
+
+        .btn {
+            background: #669BBC;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: #003049;
+        }
     </style>
 </head>
 <body>
@@ -70,15 +138,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <a href="reminders.php">Reminders</a>
     <a href="storelocator.php">Store Locator</a>
     <a href="cart.php">Cart</a>
+    <a href="trackorder.php">Track Orders</a>
     <a href="myaccount.php">My Account</a>
-    <a href="contact.php">Contact Us</a>
     <a href="logout.php">Logout</a>
 </div>
 
 <div class="form-container">
     <h2>Set Medication Reminder</h2>
     <?php if (isset($error)): ?>
-        <p style="color: red;"><?php echo $error; ?></p>
+        <p style="color: #721c24; background: #f8d7da; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold;"><?php echo $error; ?></p>
     <?php endif; ?>
 
     <form action="reminders.php" method="POST">
@@ -128,8 +196,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <button type="submit" class="btn" style="width: 100%;">Save Reminder</button>
     </form>
     
-    <div style="margin-top: 15px; text-align: center;">
-        <a href="viewreminders.php" style="color: #007bff; text-decoration: none;">View Scheduled Reminders</a>
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="viewreminders.php" style="color: #003049; text-decoration: none; font-weight: bold;">View Scheduled Reminders</a>
     </div>
 </div>
 

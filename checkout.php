@@ -2,120 +2,75 @@
 session_start();
 include("dbconnect.php");
 
-// 1. Verify user is authenticated
 if (!isset($_SESSION['user_id'])) {
-    echo "<script>
-            alert('Please login to proceed to checkout.');
-            window.location.href = 'login.html';
-          </script>";
+    echo "<script>alert('Please login first.'); window.location.href = 'login.html';</script>";
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
 $error_message = "";
 
-// 2. Fetch customer default details for pre-filling the address form
-$cust_sql = "SELECT first_name, last_name, email, phone, address FROM customers WHERE id = ?";
-$cust_stmt = mysqli_prepare($conn, $cust_sql);
-mysqli_stmt_bind_param($cust_stmt, "i", $user_id);
-mysqli_stmt_execute($cust_stmt);
-$user_info = mysqli_fetch_assoc(mysqli_stmt_get_result($cust_stmt));
-mysqli_stmt_close($cust_stmt);
+// Fetch cart items for the logged-in user
+$cart_sql = "SELECT * FROM cart WHERE user_id = ?";
+$stmt = mysqli_prepare($conn, $cart_sql);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$cart_result = mysqli_stmt_get_result($stmt);
 
-// 3. Fetch active cart items
-$cart_sql = "SELECT c.id AS cart_id, c.medicine_name, c.price, c.quantity, m.id AS medicine_id 
-            FROM cart c 
-            LEFT JOIN medicines m ON c.medicine_name = m.medicine_name 
-            WHERE c.user_id = ?";
-$cart_stmt = mysqli_prepare($conn, $cart_sql);
-mysqli_stmt_bind_param($cart_stmt, "i", $user_id);
-mysqli_stmt_execute($cart_stmt);
-$cart_result = mysqli_stmt_get_result($cart_stmt);
-
+$subtotal = 0.00;
 $cart_items = [];
-$total_amount = 0.00;
-
-while ($item = mysqli_fetch_assoc($cart_result)) {
-    $item_total = $item['price'] * $item['quantity'];
-    $total_amount += $item_total;
-    $cart_items[] = $item;
+while ($row = mysqli_fetch_assoc($cart_result)) {
+    $subtotal += ($row['price'] * $row['quantity']);
+    $cart_items[] = $row;
 }
-mysqli_stmt_close($cart_stmt);
+mysqli_stmt_close($stmt);
 
-// Redirect to cart if empty
-if (empty($cart_items) && $_SERVER["REQUEST_METHOD"] !== "POST") {
-    echo "<script>
-            alert('Your shopping cart is empty.');
-            window.location.href = 'medicines.php';
-          </script>";
-    exit();
-}
+$shipping_fee = 35.00;
+$grand_total = $subtotal > 0 ? $subtotal + $shipping_fee : 0.00;
 
-// 4. Handle Order Placement (POST Submission)
+// Handle Order Placement
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])) {
-    $delivery_address = trim($_POST['delivery_address']);
-    $payment_method   = trim($_POST['payment_method']);
+    $full_name = trim($_POST['full_name'] ?? '');
+    $delivery_address = trim($_POST['delivery_address'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $payment_method = trim($_POST['payment_method'] ?? 'Cash on Delivery');
 
-    if (empty($delivery_address) || empty($payment_method)) {
-        $error_message = "Please provide a valid delivery address and select a payment method.";
+    if (empty($full_name) || empty($delivery_address) || empty($phone)) {
+        $error_message = "Please fill in all required contact and shipping details.";
+    } elseif (empty($cart_items)) {
+        $error_message = "Your cart is empty.";
     } else {
-        // Start Database Transaction for Data Consistency
-        mysqli_begin_transaction($conn);
+        // Generate a unique tracking order number (e.g., PPD-17309825)
+        $order_number = "PPD-" . strtoupper(substr(uniqid(), -6));
 
-        try {
-            // A. Insert into `orders`
-            $order_sql = "INSERT INTO orders (user_id, total_amount, status, delivery_address) VALUES (?, ?, 'Paid', ?)";
-            $o_stmt = mysqli_prepare($conn, $order_sql);
-            mysqli_stmt_bind_param($o_stmt, "ids", $user_id, $total_amount, $delivery_address);
-            mysqli_stmt_execute($o_stmt);
-            $order_id = mysqli_insert_id($conn);
-            mysqli_stmt_close($o_stmt);
+        $order_sql = "INSERT INTO orders (user_id, order_number, total_price, delivery_address, status, order_date) VALUES (?, ?, ?, ?, 'Processing', NOW())";
+        $order_stmt = mysqli_prepare($conn, $order_sql);
+        
+        if ($order_stmt) {
+            mysqli_stmt_bind_param($order_stmt, "isds", $user_id, $order_number, $grand_total, $delivery_address);
+            if (mysqli_stmt_execute($order_stmt)) {
+                $order_id = mysqli_insert_id($conn);
+                mysqli_stmt_close($order_stmt);
 
-            // B. Insert into `order_items`
-            $item_sql = "INSERT INTO order_items (order_id, medicine_id, quantity, price) VALUES (?, ?, ?, ?)";
-            $i_stmt = mysqli_prepare($conn, $item_sql);
+                // Clear the user's cart after successful order placement
+                $clear_cart = "DELETE FROM cart WHERE user_id = ?";
+                $clear_stmt = mysqli_prepare($conn, $clear_cart);
+                mysqli_stmt_bind_param($clear_stmt, "i", $user_id);
+                mysqli_stmt_execute($clear_stmt);
+                mysqli_stmt_close($clear_stmt);
 
-            foreach ($cart_items as $item) {
-                // Default to medicine_id 0 if unmatched
-                $med_id = $item['medicine_id'] ?? 0;
-                mysqli_stmt_bind_param($i_stmt, "iiid", $order_id, $med_id, $item['quantity'], $item['price']);
-                mysqli_stmt_execute($i_stmt);
+                // Show the tracking order number to the user in an alert before redirecting
+                echo "<script>
+                        alert('Order placed successfully! Your Tracking Order Number is: $order_number. Use this number on the Track Order page.');
+                        window.location.href = 'trackorder.php';
+                      </script>";
+                exit();
+            } else {
+                $error_message = "Error processing your order. Please try again.";
+                mysqli_stmt_close($order_stmt);
             }
-            mysqli_stmt_close($i_stmt);
-
-            // C. Insert into `payments`
-            $pay_sql = "INSERT INTO payments (order_id, payment_method, amount, payment_status) VALUES (?, ?, ?, 'Completed')";
-            $p_stmt = mysqli_prepare($conn, $pay_sql);
-            mysqli_stmt_bind_param($p_stmt, "isd", $order_id, $payment_method, $total_amount);
-            mysqli_stmt_execute($p_stmt);
-            mysqli_stmt_close($p_stmt);
-
-            // D. Insert into `deliveries`
-            $del_sql = "INSERT INTO deliveries (order_id, delivery_address, delivery_status, estimated_delivery) VALUES (?, ?, 'Preparing', DATE_ADD(NOW(), INTERVAL 2 DAY))";
-            $d_stmt = mysqli_prepare($conn, $del_sql);
-            mysqli_stmt_bind_param($d_stmt, "is", $order_id, $delivery_address);
-            mysqli_stmt_execute($d_stmt);
-            mysqli_stmt_close($d_stmt);
-
-            // E. Clear user's active cart
-            $clear_sql = "DELETE FROM cart WHERE user_id = ?";
-            $c_stmt = mysqli_prepare($conn, $clear_sql);
-            mysqli_stmt_bind_param($c_stmt, "i", $user_id);
-            mysqli_stmt_execute($c_stmt);
-            mysqli_stmt_close($c_stmt);
-
-            // Commit all queries
-            mysqli_commit($conn);
-
-            echo "<script>
-                    alert('Order #$order_id placed successfully!');
-                    window.location.href = 'tracking.php';
-                  </script>";
-            exit();
-
-        } catch (Exception $e) {
-            mysqli_rollback($conn);
-            $error_message = "Order processing failed: " . $e->getMessage();
+        } else {
+            $error_message = "Database error during order creation.";
         }
     }
 }
@@ -128,125 +83,304 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])) {
     <title>Checkout - Pill Point Delivery</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .checkout-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        @media (max-width: 768px) {
-            .checkout-grid { grid-template-columns: 1fr; }
-        }
-        .order-summary-table {
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            border-collapse: collapse;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+        }
+
+        .checkout-container {
+            max-width: 650px;
+            margin: 110px auto 40px auto;
+            background: #fff;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .checkout-container h2 {
+            color: #003049;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .checkout-container p.subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section h3 {
+            font-size: 16px;
+            color: #003049;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 6px;
+        }
+
+        .form-group {
             margin-bottom: 15px;
         }
-        .order-summary-table th, .order-summary-table td {
-            border-bottom: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #003049;
+            font-size: 14px;
         }
-        .error-msg {
-            color: #721c24;
-            background-color: #f8d7da;
-            padding: 10px;
-            border-radius: 4px;
+
+        .form-group input, 
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .payment-options {
+            display: flex;
+            gap: 10px;
             margin-bottom: 15px;
+        }
+
+        .payment-btn {
+            flex: 1;
+            padding: 12px;
+            background: #f8f9fa;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #003049;
+            text-align: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .payment-btn.active {
+            background: #669BBC;
+            color: white;
+            border-color: #669BBC;
+        }
+
+        .payment-details-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .order-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .summary-row.total {
+            font-weight: bold;
+            color: #003049;
+            font-size: 17px;
+            border-top: 1px solid #ddd;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        .btn {
+            background: #669BBC;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #003049;
         }
     </style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
     <span class="menu-btn" onclick="openNav()">&#9776;</span>
     <h1 class="header-title">Pill Point Delivery</h1>
 </div>
 
-<!-- Sidebar -->
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
     <a href="dashboard.php">Dashboard</a>
     <a href="medicines.php">Shop Medication</a>
     <a href="prescription.php">Prescription</a>
     <a href="reminders.php">Reminders</a>
-    <a href="storelocator.html">Store Locator</a>
+    <a href="storelocator.php">Store Locator</a>
     <a href="cart.php">Cart</a>
     <a href="myaccount.php">My Account</a>
-    <a href="aboutus.html">About Us</a>
+    <a href="contact.php">Contact Us</a>
     <a href="logout.php">Logout</a>
 </div>
 
-<div class="container" style="padding: 20px;">
-    <h2>Order Checkout</h2>
+<div class="checkout-container">
+    <h2>Checkout</h2>
+    <p class="subtitle">Complete your purchase securely</p>
 
     <?php if (!empty($error_message)): ?>
-        <div class="error-msg"><?php echo htmlspecialchars($error_message); ?></div>
+        <p style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px;"><?php echo htmlspecialchars($error_message); ?></p>
     <?php endif; ?>
 
-    <div class="checkout-grid">
+    <form action="checkout.php" method="POST">
         
-        <!-- Column 1: Order Summary -->
-        <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-            <h3>Order Summary</h3>
-            <table class="order-summary-table">
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Qty</th>
-                        <th>Price</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($cart_items as $item): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($item['medicine_name']); ?></td>
-                            <td><?php echo $item['quantity']; ?></td>
-                            <td>R<?php echo number_format($item['price'], 2); ?></td>
-                            <td>R<?php echo number_format($item['price'] * $item['quantity'], 2); ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-            <h3 style="text-align: right;">Grand Total: <span style="color: #28a745;">R<?php echo number_format($total_amount, 2); ?></span></h3>
+        <div class="form-section">
+            <h3>1. Contact Information</h3>
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" name="full_name" required placeholder="e.g. Naledi Tshelane">
+            </div>
+            <div class="form-group">
+                <label>Phone Number *</label>
+                <input type="text" name="phone" required placeholder="e.g. 082 123 4567">
+            </div>
         </div>
 
-        <!-- Column 2: Payment & Delivery Form -->
-        <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-            <h3>Shipping & Payment Details</h3>
+        <div class="form-section">
+            <h3>2. Shipping Address</h3>
+            <div class="form-group">
+                <label>Delivery Address *</label>
+                <textarea name="delivery_address" rows="3" required placeholder="Enter street address, suburb, or delivery location..."><?php echo isset($_SESSION['selected_pharmacy']['address']) ? htmlspecialchars($_SESSION['selected_pharmacy']['address']) : ''; ?></textarea>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>3. Payment Method</h3>
+            <input type="hidden" name="payment_method" id="payment_method_input" value="Credit / Debit Card">
             
-            <form action="checkout.php" method="POST">
-                <div class="input-box full" style="margin-bottom: 15px;">
-                    <label>Full Name</label>
-                    <input type="text" value="<?php echo htmlspecialchars(($user_info['first_name'] ?? '') . ' ' . ($user_info['last_name'] ?? '')); ?>" readonly style="background-color: #f0f0f0;">
-                </div>
+            <div class="payment-options">
+                <div class="payment-btn active" onclick="selectPayment('card', this)">Credit / Debit Card</div>
+                <div class="payment-btn" onclick="selectPayment('eft', this)">Instant EFT</div>
+                <div class="payment-btn" onclick="selectPayment('cod', this)">Cash on Delivery</div>
+            </div>
 
-                <div class="input-box full" style="margin-bottom: 15px;">
-                    <label>Delivery Address</label>
-                    <textarea name="delivery_address" required rows="3"><?php echo htmlspecialchars($user_info['address'] ?? ''); ?></textarea>
+            <!-- Credit Card Details Box -->
+            <div id="card-details" class="payment-details-box" style="display: block;">
+                <div class="form-group">
+                    <label>Card Number *</label>
+                    <input type="text" placeholder="1234 5678 9012 3456" id="card_num">
                 </div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Expiry Date *</label>
+                        <input type="text" placeholder="MM/YY" id="card_exp">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>CVV *</label>
+                        <input type="password" placeholder="123" maxlength="4" id="card_cvv">
+                    </div>
+                </div>
+            </div>
 
-                <div class="input-box full" style="margin-bottom: 20px;">
-                    <label>Payment Method</label>
-                    <select name="payment_method" required>
-                        <option value="">Select Payment Option</option>
-                        <option value="Credit/Debit Card">Credit / Debit Card</option>
-                        <option value="EFT/Bank Transfer">Instant EFT / Bank Transfer</option>
-                        <option value="Cash on Delivery">Cash on Delivery</option>
+            <!-- Instant EFT Details Box -->
+            <div id="eft-details" class="payment-details-box">
+                <div class="form-group">
+                    <label>Select Your Bank *</label>
+                    <select id="eft_bank">
+                        <option value="Absa">Absa</option>
+                        <option value="FNB">First National Bank (FNB)</option>
+                        <option value="Nedbank">Nedbank</option>
+                        <option value="Standard Bank">Standard Bank</option>
+                        <option value="Capitec">Capitec</option>
+                        <option value="TymeBank">TymeBank</option>
                     </select>
                 </div>
-
-                <button type="submit" name="place_order" class="btn" style="width: 100%; padding: 12px; font-size: 1.1em;">
-                    Confirm & Place Order (R<?php echo number_format($total_amount, 2); ?>)
-                </button>
-            </form>
+            </div>
         </div>
 
-    </div>
+        <div class="form-section">
+            <h3>4. Order Summary</h3>
+            <div class="order-summary">
+                <?php foreach ($cart_items as $item): ?>
+                    <div class="summary-row">
+                        <span><?php echo htmlspecialchars($item['medicine_name']); ?> (x<?php echo $item['quantity']; ?>)</span>
+                        <span>R<?php echo number_format($item['price'] * $item['quantity'], 2); ?></span>
+                    </div>
+                <?php endforeach; ?>
+                <div class="summary-row">
+                    <span>Shipping Fee</span>
+                    <span>R<?php echo number_format($shipping_fee, 2); ?></span>
+                </div>
+                <div class="summary-row total">
+                    <span>Grand Total</span>
+                    <span>R<?php echo number_format($grand_total, 2); ?></span>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" name="place_order" class="btn">Confirm & Place Order (R<?php echo number_format($grand_total, 2); ?>)</button>
+    </form>
 </div>
 
+<script>
+    function selectPayment(type, element) {
+        document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+
+        document.getElementById('card-details').style.display = 'none';
+        document.getElementById('eft-details').style.display = 'none';
+
+        document.getElementById('card_num').required = false;
+        document.getElementById('card_exp').required = false;
+        document.getElementById('card_cvv').required = false;
+
+        if (type === 'card') {
+            document.getElementById('card-details').style.display = 'block';
+            document.getElementById('card_num').required = true;
+            document.getElementById('card_exp').required = true;
+            document.getElementById('card_cvv').required = true;
+            document.getElementById('payment_method_input').value = 'Credit / Debit Card';
+        } else if (type === 'eft') {
+            document.getElementById('eft-details').style.display = 'block';
+            document.getElementById('payment_method_input').value = 'Instant EFT';
+        } else {
+            document.getElementById('payment_method_input').value = 'Cash on Delivery';
+        }
+    }
+</script>
 <script src="script.js"></script>
 </body>
 </html>
