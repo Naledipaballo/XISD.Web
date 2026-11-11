@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Pill Point Delivery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-sizing: border-box;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            color: #003049;
+        }
+
+        .checkout-container {
+            max-width: 650px;
+            margin: 110px auto 40px auto;
+            background: #fff;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .checkout-container h2 {
+            color: #003049;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .checkout-container p.subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #003049;
+            font-size: 14px;
+        }
+
+        .form-group input, 
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .order-summary-box {
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .order-summary-box h3 {
+            margin-top: 0;
+            color: #003049;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+
+        .summary-row.total {
+            font-weight: bold;
+            color: #003049;
+            font-size: 16px;
+            border-top: 1px solid #cbd5e1;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            background: #669BBC;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #003049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
+    <h1 class="header-title">Pill Point Delivery</h1>
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="medicines.html">Shop Medication</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="reminders.html">Reminders</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="cart.html">Cart</a>
+    <a href="trackorder.html">Track Order</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="#" onclick="handleLogout(event)">Logout</a>
+</div>
+
+<div class="checkout-container">
+    <h2>Secure Checkout</h2>
+    <p class="subtitle">Complete your delivery and payment details</p>
+
+    <div id="error-alert" style="display:none; background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px;"></div>
+
+    <!-- Order Summary Preview -->
+    <div class="order-summary-box">
+        <h3>Order Summary</h3>
+        <div id="summary-items-list">
+            <p style="color: #64748b; font-size: 14px;">Loading cart summary...</p>
+        </div>
+        <div class="summary-row">
+            <span>Shipping Fee</span>
+            <span>R35.00</span>
+        </div>
+        <div class="summary-row total">
+            <span>Total Amount</span>
+            <span id="summary-grand-total">R35.00</span>
+        </div>
+    </div>
+
+    <form id="checkout-form">
+        <div class="form-group">
+            <label>Delivery Address *</label>
+            <textarea id="delivery_address" rows="3" required placeholder="Street address, apartment, or selected pharmacy address..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Payment Method *</label>
+            <select id="payment_method" required>
+                <option value="">Select Payment Method</option>
+                <option value="Credit Card">Credit / Debit Card</option>
+                <option value="Instant EFT">Instant EFT</option>
+                <option value="Cash on Delivery">Cash on Delivery</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn" id="place-order-btn">Place Order & Pay</button>
+    </form>
+</div>
+
+<!-- Firebase SDKs & Checkout Logic -->
+<script type="module">
+    import { db, auth } from "./script.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { ref, get, push, set, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    let cartItemsData = {};
+    let calculatedSubtotal = 0;
+    const SHIPPING_FEE = 35.00;
+
+    // 1. Verify Authentication & Load Cart / Selected Pharmacy
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // Check if user selected a pharmacy from storelocator.html
+            const selectedPharmacy = localStorage.getItem('selected_pharmacy');
+            if (selectedPharmacy) {
+                try {
+                    const pharmacy = JSON.parse(selectedPharmacy);
+                    document.getElementById('delivery_address').value = `${pharmacy.name} - ${pharmacy.address}`;
+                } catch (e) {
+                    console.error("Error parsing selected pharmacy", e);
+                }
+            }
+
+            await loadCheckoutCart(user.uid);
+        } else {
+            alert('Please login first.');
+            window.location.href = 'login.html';
+        }
+    });
+
+    // 2. Load Cart Data for Summary
+    async function loadCheckoutCart(userId) {
+        const cartRef = ref(db, `cart/${userId}`);
+        try {
+            const snapshot = await get(cartRef);
+            const itemsContainer = document.getElementById('summary-items-list');
+
+            if (snapshot.exists()) {
+                cartItemsData = snapshot.val();
+                let html = '';
+                calculatedSubtotal = 0;
+
+                for (const [id, item] of Object.entries(cartItemsData)) {
+                    const itemTotal = item.price * item.quantity;
+                    calculatedSubtotal += itemTotal;
+                    html += `
+                        <div class="summary-row">
+                            <span>${item.medicine_name} (x${item.quantity})</span>
+                            <span>R${itemTotal.toFixed(2)}</span>
+                        </div>`;
+                }
+
+                itemsContainer.innerHTML = html;
+                const grandTotal = calculatedSubtotal + SHIPPING_FEE;
+                document.getElementById('summary-grand-total').textContent = `R${grandTotal.toFixed(2)}`;
+            } else {
+                alert('Your cart is empty.');
+                window.location.href = 'cart.html';
+            }
+        } catch (error) {
+            console.error("Error loading cart for checkout:", error);
+        }
+    }
+
+    // 3. Handle Order Placement
+    document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const deliveryAddress = document.getElementById('delivery_address').value.trim();
+        const paymentMethod = document.getElementById('payment_method').value;
+        const errorAlert = document.getElementById('error-alert');
+        errorAlert.style.display = 'none';
+
+        if (!deliveryAddress || !paymentMethod) {
+            errorAlert.textContent = "Please complete all shipping and payment details.";
+            errorAlert.style.display = 'block';
+            return;
+        }
+
+        if (Object.keys(cartItemsData).length === 0) {
+            alert("Your cart is empty.");
+            window.location.href = 'cart.html';
+            return;
+        }
+
+        try {
+            const totalAmount = calculatedSubtotal + SHIPPING_FEE;
+            const orderNumber = 'PPD-' + Math.floor(100000 + Math.random() * 900000);
+
+            // Create Order Record in Firebase
+            const ordersRef = ref(db, `orders/${user.uid}`);
+            const newOrderRef = push(ordersRef);
+            const orderId = newOrderRef.key;
+
+            await set(newOrderRef, {
+                order_number: orderNumber,
+                items: cartItemsData,
+                total_amount: totalAmount,
+                delivery_address: deliveryAddress,
+                payment_method: paymentMethod,
+                status: 'Paid',
+                delivery_status: 'Preparing',
+                order_date: new Date().toISOString()
+            });
+
+            // Clear User Cart
+            await remove(ref(db, `cart/${user.uid}`));
+
+            // Clear stored pharmacy selection
+            localStorage.removeItem('selected_pharmacy');
+
+            // Redirect to Success Page
+            window.location.href = `ordersuccess.html?order_id=${orderNumber}`;
+
+        } catch (error) {
+            console.error("Checkout Error:", error);
+            errorAlert.textContent = "Failed to process order: " + error.message;
+            errorAlert.style.display = 'block';
+        }
+    });
+
+    // Sidebar Helpers
+    window.openNav = function() {
+        document.getElementById("sidebar").style.width = "250px";
+    }
+
+    window.closeNav = function() {
+        document.getElementById("sidebar").style.width = "0";
+    }
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>

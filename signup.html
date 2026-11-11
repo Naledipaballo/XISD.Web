@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>signup</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Pill Point Delivery</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,16 +12,19 @@
     <div class="box">
         <h2>Create Account</h2>
 
-        <form action="signup.php" method="POST">
-            <input type="text" name="first_name" placeholder="First Name" required>
-            <input type="text" name="last_name" placeholder="Last Name" required>
-            <input type="number" name="age" placeholder="Age" required>
-            <input type="tel" name="phone" placeholder="Phone Number" required>
-            <input type="email" name="email" placeholder="Email Address" required>
-            <input type="text" name="address" placeholder="Street Address" required>
-            <input type="number" name="post" placeholder="Postal Code" required>
+        <div id="error-alert" style="display:none; background: #f8d7da; color: #721c24; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 14px;"></div>
+        <div id="success-alert" style="display:none; background: #d4edda; color: #155724; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 14px;"></div>
 
-            <select name="province" required>
+        <form id="signup-form">
+            <input type="text" id="first_name" placeholder="First Name" required>
+            <input type="text" id="last_name" placeholder="Last Name" required>
+            <input type="number" id="age" placeholder="Age" min="1" required>
+            <input type="tel" id="phone" placeholder="Phone Number" required>
+            <input type="email" id="email" placeholder="Email Address" required>
+            <input type="text" id="address" placeholder="Street Address" required>
+            <input type="number" id="post" placeholder="Postal Code" required>
+
+            <select id="province" required>
                 <option value="">Select Province</option>
                 <option value="Eastern Cape">Eastern Cape</option>
                 <option value="Free State">Free State</option>
@@ -33,18 +37,84 @@
                 <option value="Western Cape">Western Cape</option>
             </select>
 
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
 
             <input type="submit" value="Sign Up" class="btn">
         </form>
 
-        <p>
+        <p style="margin-top: 15px; text-align: center;">
             Already have an account?
             <a href="login.html">Login</a>
         </p>
     </div>
 </div>
+
+<!-- Firebase SDKs & Signup Logic -->
+<script type="module">
+    import { db, auth } from "./script.js";
+    import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const firstName = document.getElementById('first_name').value.trim();
+        const lastName = document.getElementById('last_name').value.trim();
+        const age = parseInt(document.getElementById('age').value.trim());
+        const phone = document.getElementById('phone').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const postalCode = document.getElementById('post').value.trim();
+        const province = document.getElementById('province').value;
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        const errorAlert = document.getElementById('error-alert');
+        const successAlert = document.getElementById('success-alert');
+        errorAlert.style.display = 'none';
+        successAlert.style.display = 'none';
+
+        // Age Verification Check (Must be 18 or older)
+        if (isNaN(age) || age < 18) {
+            errorAlert.textContent = "You must be at least 18 years old to register.";
+            errorAlert.style.display = 'block';
+            return;
+        }
+
+        try {
+            // 1. Create user in Firebase Authentication
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // 2. Save extended profile details in Firebase Realtime Database
+            await set(ref(db, 'users/' + user.uid), {
+                first_name: firstName,
+                last_name: lastName,
+                age: age,
+                phone: phone,
+                email: email,
+                address: address,
+                postal_code: postalCode,
+                province: province,
+                username: username,
+                created_at: new Date().toISOString()
+            });
+
+            successAlert.textContent = "Registration successful! Redirecting to login...";
+            successAlert.style.display = 'block';
+
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+
+        } catch (error) {
+            console.error("Signup Error:", error);
+            errorAlert.textContent = error.message.replace("Firebase: ", "");
+            errorAlert.style.display = 'block';
+        }
+    });
+</script>
 
 </body>
 </html>

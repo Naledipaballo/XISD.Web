@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pill Point - Shop</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 40px; background: #f4f6f9; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .medicine-card { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #user-status { margin-bottom: 20px; font-weight: bold; color: #555; }
+        .nav-links { margin-top: 20px; }
+        .nav-links a { color: #007bff; text-decoration: none; margin-right: 15px; }
+        .nav-links a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Pill Point Shop</h2>
+    <div id="user-status">Checking login status...</div>
+
+    <div id="product-list">
+        <div class="medicine-card">
+            <div>
+                <h3>Paracetamol</h3>
+                <p>Price: $5.00</p>
+            </div>
+            <button onclick="addToCart('Paracetamol', 5.00, 1)">Add to Cart</button>
+        </div>
+        <div class="medicine-card">
+            <div>
+                <h3>Ibuprofen</h3>
+                <p>Price: $7.50</p>
+            </div>
+            <button onclick="addToCart('Ibuprofen', 7.50, 1)">Add to Cart</button>
+        </div>
+    </div>
+
+    <div class="nav-links">
+        <a href="cart.html">View Cart</a>
+        <a href="#" id="logout-btn">Log Out</a>
+    </div>
+</div>
+
+<!-- Firebase SDK Scripts & Logic -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, get, set, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Your Firebase Project Configuration for pillpoint-2196e
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY", // Replace with your web API key from Firebase project settings
+        authDomain: "pillpoint-2196e.firebaseapp.com",
+        databaseURL: "https://pillpoint-2196e-default-rtdb.firebaseio.com",
+        projectId: "pillpoint-2196e",
+        storageBucket: "pillpoint-2196e.appspot.com",
+        messagingSenderId: "658611379065",
+        appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // 1. Restrict access: Verify user is logged in via Firebase Auth
+    onAuthStateChanged(auth, (user) => {
+        const statusEl = document.getElementById('user-status');
+        if (user) {
+            statusEl.textContent = `Welcome, ${user.email}`;
+        } else {
+            alert('Please login first.');
+            window.location.href = 'login.html';
+        }
+    });
+
+    // 2. Add to Cart function using Firebase Realtime Database
+    window.addToCart = async function(medicineName, price, quantity = 1) {
+        const user = auth.currentUser;
+        if (!user) {
+            alert("Please login first.");
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const userId = user.uid;
+        const cartRef = ref(db, `cart/${userId}`);
+
+        try {
+            // Check if item already exists in user's cart
+            const snapshot = await get(cartRef);
+            let existingItemKey = null;
+            let existingQuantity = 0;
+
+            if (snapshot.exists()) {
+                snapshot.forEach((childSnapshot) => {
+                    const item = childSnapshot.val();
+                    if (item.medicine_name === medicineName) {
+                        existingItemKey = childSnapshot.key;
+                        existingQuantity = item.quantity;
+                    }
+                });
+            }
+
+            // Update quantity if exists, otherwise create new record
+            if (existingItemKey) {
+                const newQuantity = existingQuantity + parseInt(quantity);
+                const itemRef = ref(db, `cart/${userId}/${existingItemKey}`);
+                await update(itemRef, {
+                    quantity: newQuantity,
+                    price: parseFloat(price)
+                });
+            } else {
+                const newItemRef = push(cartRef);
+                await set(newItemRef, {
+                    medicine_name: medicineName,
+                    price: parseFloat(price),
+                    quantity: parseInt(quantity)
+                });
+            }
+
+            // Redirect to cart page
+            window.location.href = "cart.html";
+
+        } catch (error) {
+            console.error("Database Error: ", error);
+            alert("Failed to update cart. Please try again.");
+        }
+    };
+
+    // 3. Handle Logout
+    document.getElementById('logout-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        signOut(auth).then(() => {
+            window.location.href = 'login.html';
+        }).catch((error) => {
+            console.error('Logout error:', error);
+        });
+    });
+</script>
+
+</body>
+</html>

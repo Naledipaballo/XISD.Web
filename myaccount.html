@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Pill Point Delivery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-sizing: border-box;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            color: #003049;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: #003049;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 60px;
+        }
+
+        .sidebar a {
+            padding: 10px 15px 10px 30px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #669BBC;
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 36px;
+        }
+
+        .account-container {
+            max-width: 650px;
+            margin: 110px auto 40px auto;
+            background: #fff;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .profile-picture {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .profile-picture img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #669BBC;
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-box.full {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .input-box label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #003049;
+            font-size: 14px;
+        }
+
+        .input-box input, 
+        .input-box textarea {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            outline: none;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .save-btn {
+            background: #669BBC;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .save-btn:hover {
+            background: #003049;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            width: 100%;
+            margin-top: 12px;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        .logout-btn:hover {
+            background: #b02a37;
+        }
+
+        .alert-msg {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
+    <h1 class="header-title">My Account</h1>
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="medicines.html">Shop Medication</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="reminders.html">Reminders</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="cart.html">Cart</a>
+    <a href="trackorder.html">Track Orders</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="#" onclick="handleLogout(event)">Logout</a>
+</div>
+
+<div class="account-container">
+    <div id="alert-box" class="alert-msg"></div>
+
+    <div class="profile-picture">
+        <img src="photo.jpeg" alt="Profile">
+    </div>
+
+    <form id="account-form">
+        <div class="row">
+            <div class="input-box">
+                <label>First Name</label>
+                <input type="text" id="first_name" required>
+            </div>
+
+            <div class="input-box">
+                <label>Last Name</label>
+                <input type="text" id="last_name" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input-box">
+                <label>Email</label>
+                <input type="email" id="email" required readonly style="background: #f1f5f9; cursor: not-allowed;">
+            </div>
+
+            <div class="input-box">
+                <label>Phone Number</label>
+                <input type="text" id="phone" required>
+            </div>
+        </div>
+
+        <div class="input-box full">
+            <label>Address</label>
+            <textarea id="address" rows="3" required></textarea>
+        </div>
+
+        <div class="input-box full">
+            <label>New Password (leave blank to keep current)</label>
+            <input type="password" id="password" placeholder="Enter new password">
+        </div>
+
+        <button type="submit" class="save-btn">
+            Save Changes
+        </button>
+
+        <a href="#" onclick="handleLogout(event)" class="logout-btn">
+            Logout
+        </a>
+    </form>
+</div>
+
+<!-- Firebase SDKs & Account Logic -->
+<script type="module">
+    import { db, auth } from "./script.js";
+    import { onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { ref, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    let currentUserId = null;
+
+    // 1. Monitor Authentication & Load Profile Data
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUserId = user.uid;
+            await loadUserProfile(user.uid);
+        } else {
+            alert('Please login first.');
+            window.location.href = 'login.html';
+        }
+    });
+
+    // 2. Fetch User Profile from Firebase Realtime Database
+    async function loadUserProfile(userId) {
+        try {
+            const userRef = ref(db, `users/${userId}`);
+            const snapshot = await get(userRef);
+
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                document.getElementById('first_name').value = data.first_name || '';
+                document.getElementById('last_name').value = data.last_name || '';
+                document.getElementById('email').value = data.email || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('address').value = data.address || '';
+            }
+        } catch (error) {
+            console.error("Error loading profile:", error);
+        }
+    }
+
+    // 3. Handle Form Submission & Profile Updates
+    document.getElementById('account-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const firstName = document.getElementById('first_name').value.trim();
+        const lastName = document.getElementById('last_name').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const newPassword = document.getElementById('password').value;
+
+        const alertBox = document.getElementById('alert-box');
+        alertBox.style.display = 'none';
+
+        try {
+            // Update Realtime Database profile info
+            const userRef = ref(db, `users/${user.uid}`);
+            await update(userRef, {
+                first_name: firstName,
+                last_name: lastName,
+                phone: phone,
+                address: address
+            });
+
+            // Update password if provided
+            if (newPassword) {
+                await updatePassword(user, newPassword);
+                document.getElementById('password').value = '';
+            }
+
+            alertBox.style.backgroundColor = '#d4edda';
+            alertBox.style.color = '#155724';
+            alertBox.textContent = "Account details updated successfully!";
+            alertBox.style.display = 'block';
+
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 3000);
+
+        } catch (error) {
+            console.error("Update error:", error);
+            alertBox.style.backgroundColor = '#f8d7da';
+            alertBox.style.color = '#721c24';
+            alertBox.textContent = "Failed to update account: " + error.message;
+            alertBox.style.display = 'block';
+        }
+    });
+
+    // Sidebar Navigation Helpers
+    window.openNav = function() {
+        document.getElementById("sidebar").style.width = "250px";
+    }
+
+    window.closeNav = function() {
+        document.getElementById("sidebar").style.width = "0";
+    }
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>

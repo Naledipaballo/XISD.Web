@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Prescription - Pill Point Delivery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-sizing: border-box;
+            background: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            color: #003049;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: #003049;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 60px;
+        }
+
+        .sidebar a {
+            padding: 10px 15px 10px 30px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #669BBC;
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 36px;
+        }
+
+        .prescription-container {
+            max-width: 650px;
+            margin: 110px auto 40px auto;
+            background: #fff;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .prescription-container h2 {
+            color: #003049;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .prescription-container p.subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #003049;
+            font-size: 14px;
+        }
+
+        .form-group input, 
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .btn {
+            background: #669BBC;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #003049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
+    <h1 class="header-title">Pill Point Delivery</h1>
+</div>
+
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="medicines.html">Shop Medication</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="reminders.html">Set Reminder</a>
+    <a href="viewreminders.html">My Reminders</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="cart.html">Cart</a>
+    <a href="trackorder.html">Track Order</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="#" onclick="handleLogout(event)">Logout</a>
+</div>
+
+<div class="prescription-container">
+    <h2>Upload Prescription</h2>
+    <p class="subtitle">Submit your doctor's prescription for quick fulfillment</p>
+
+    <div id="error-alert" style="display:none; background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px;"></div>
+    <div id="success-alert" style="display:none; background: #d4edda; color: #155724; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px;"></div>
+
+    <form id="prescription-form">
+        <div class="form-group">
+            <label>Patient Full Name *</label>
+            <input type="text" id="patient_name" required placeholder="e.g. Naledi Tshelane">
+        </div>
+        <div class="form-group">
+            <label>Doctor's Name *</label>
+            <input type="text" id="doctor_name" required placeholder="e.g. Dr. Smith">
+        </div>
+        <div class="form-group">
+            <label>Upload Prescription File (PDF or Image, Max 5MB) *</label>
+            <input type="file" id="prescription_file" accept=".pdf, .jpg, .jpeg, .png" required style="padding: 10px; background: #f8f9fa;">
+        </div>
+        <div class="form-group">
+            <label>Extra Information / Special Instructions (Optional)</label>
+            <textarea id="notes" rows="3" placeholder="Add any extra notes or instructions..."></textarea>
+        </div>
+        <button type="submit" class="btn">Upload Prescription</button>
+    </form>
+</div>
+
+<!-- Firebase SDKs & Prescription Upload Logic -->
+<script type="module">
+    import { db, auth } from "./script.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { ref, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // 1. Verify User Authentication on Load
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            alert('Please login first.');
+            window.location.href = 'login.html';
+        }
+    });
+
+    // 2. Handle Form Submission
+    document.getElementById('prescription-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const user = auth.currentUser;
+        if (!user) {
+            alert('Please login first.');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const patientName = document.getElementById('patient_name').value.trim();
+        const doctorName = document.getElementById('doctor_name').value.trim();
+        const notes = document.getElementById('notes').value.trim();
+        const fileInput = document.getElementById('prescription_file');
+
+        const errorAlert = document.getElementById('error-alert');
+        const successAlert = document.getElementById('success-alert');
+        errorAlert.style.display = 'none';
+        successAlert.style.display = 'none';
+
+        if (!patientName || !doctorName || fileInput.files.length === 0) {
+            errorAlert.textContent = "Please fill in all required fields and select a file.";
+            errorAlert.style.display = 'block';
+            return;
+        }
+
+        const file = fileInput.files[0];
+
+        // Validate file size (Max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            errorAlert.textContent = "File size must be under 5MB.";
+            errorAlert.style.display = 'block';
+            return;
+        }
+
+        // Convert file to base64 for storage in Firebase Realtime Database
+        const reader = new FileReader();
+        reader.onload = async function(event) {
+            const base64File = event.target.result;
+
+            try {
+                const prescriptionsRef = ref(db, `prescriptions/${user.uid}`);
+                const newPrescriptionRef = push(prescriptionsRef);
+
+                await set(newPrescriptionRef, {
+                    patient_name: patientName,
+                    doctor_name: doctorName,
+                    file_name: file.name,
+                    file_data: base64File,
+                    notes: notes,
+                    status: 'Pending',
+                    upload_date: new Date().toISOString()
+                });
+
+                successAlert.textContent = "Prescription uploaded successfully!";
+                successAlert.style.display = 'block';
+                document.getElementById('prescription-form').reset();
+
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error("Error uploading prescription:", error);
+                errorAlert.textContent = "Database error: " + error.message;
+                errorAlert.style.display = 'block';
+            }
+        };
+
+        reader.onerror = function(error) {
+            console.error("File reading error:", error);
+            errorAlert.textContent = "Failed to read the uploaded file.";
+            errorAlert.style.display = 'block';
+        };
+
+        reader.readAsDataURL(file);
+    });
+
+    // Sidebar Navigation Helpers
+    window.openNav = function() {
+        document.getElementById("sidebar").style.width = "250px";
+    }
+
+    window.closeNav = function() {
+        document.getElementById("sidebar").style.width = "0";
+    }
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>

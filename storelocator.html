@@ -1,26 +1,3 @@
-<?php
-session_start();
-include("dbconnect.php");
-
-// Verify user is logged in
-if (!isset($_SESSION['user_id'])) {
-    echo "<script>
-            alert('Please login first.');
-            window.location.href = 'login.html';
-          </script>";
-    exit();
-}
-
-// Handle pharmacy selection via POST (stores in session then redirects to checkout)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pharmacy_name'])) {
-    $_SESSION['selected_pharmacy'] = [
-        'name' => filter_input(INPUT_POST, 'pharmacy_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
-        'address' => filter_input(INPUT_POST, 'pharmacy_address', FILTER_SANITIZE_FULL_SPECIAL_CHARS)
-    ];
-    header("Location: checkout.php");
-    exit();
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pharmacy_name'])) {
             width: 100%;
             z-index: 1000;
             box-sizing: border-box;
+            background: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .header-title {
@@ -51,6 +30,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pharmacy_name'])) {
             left: 50%;
             transform: translateX(-50%);
             margin: 0;
+            color: #003049;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: #003049;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 60px;
+        }
+
+        .sidebar a {
+            padding: 10px 15px 10px 30px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #669BBC;
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 36px;
         }
 
         .locator-container {
@@ -68,7 +81,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pharmacy_name'])) {
             margin-bottom: 10px;
         }
 
-        /* Stacked search layout: input above button */
         .search-wrapper {
             display: flex;
             flex-direction: column;
@@ -161,32 +173,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pharmacy_name'])) {
 
 <!-- HEADER -->
 <div class="header">
-    <span class="menu-btn" onclick="openNav()">&#9776;</span>
+    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
     <h1 class="header-title">Store Locator</h1>
-    <a href="myaccount.php">
-        <img src="photo.jpeg" class="profile-icon" alt="Profile">
+    <a href="myaccount.html">
+        <img src="photo.jpeg" class="profile-icon" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
     </a>
 </div>
 
 <!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <a href="dashboard.php">Dashboard</a>
-    <a href="medicines.php">Shop Medication</a>
-    <a href="prescription.php">Prescription</a>
-    <a href="cart.php">My Cart</a>
-    <a href="trackorder.php">Track Order</a>
-    <a href="reminders.php">Reminders</a>
-    <a href="storelocator.php">Store Locator</a>
-    <a href="myaccount.php">My Account</a>
-    <a href="logout.php">Logout</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="medicines.html">Shop Medication</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="cart.html">My Cart</a>
+    <a href="trackorder.html">Track Order</a>
+    <a href="reminders.html">Reminders</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="#" id="logout-link">Logout</a>
 </div>
 
 <!-- STORE LOCATOR -->
 <div class="locator-container">
+    <h2>Find a Partner Pharmacy</h2>
     <p>Search your town or area to discover partner pharmacies near you. Click any pin on the map or select a pharmacy below to proceed directly to checkout.</p>
 
-    <!-- Search box positioned directly above the Find Pharmacy button -->
+    <!-- Search box -->
     <div class="search-wrapper">
         <input type="text" id="address" placeholder="Enter town or area (e.g. Springs, Brakpan, Benoni)">
         <button onclick="findStore()" class="btn">Find Pharmacy</button>
@@ -202,14 +215,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pharmacy_name'])) {
     </div>
 </div>
 
-<!-- Hidden Form for Checkout Redirect -->
-<form id="pharmacy-form" action="storelocator.php" method="POST" style="display:none;">
-    <input type="hidden" name="pharmacy_name" id="form-pharmacy-name">
-    <input type="hidden" name="pharmacy_address" id="form-pharmacy-address">
-</form>
-
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- Firebase SDKs & Client-Side Store Locator Logic -->
+<script type="module">
+    import { db, auth } from "./script.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // Verify User Authentication
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            alert('Please login first.');
+            window.location.href = 'login.html';
+        }
+    });
+
+    // Handle Logout
+    document.getElementById('logout-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        signOut(auth).then(() => {
+            window.location.href = 'login.html';
+        }).catch((error) => {
+            console.error('Logout error:', error);
+        });
+    });
+</script>
+
 <script>
     var map;
     var markersGroup;
@@ -227,7 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pharmacy_name'])) {
         // Center default view on Springs / East Rand
         map = L.map('map').setView([-26.2585, 28.4398], 13);
 
-        // Standard OpenStreetMap tiles showing full street names
+        // Standard OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; OpenStreetMap contributors'
@@ -238,10 +270,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pharmacy_name'])) {
         renderPharmacies(pharmacies);
     });
 
+    // Store selected pharmacy in localStorage and navigate to checkout
     function selectPharmacy(name, address) {
-        document.getElementById("form-pharmacy-name").value = name;
-        document.getElementById("form-pharmacy-address").value = address;
-        document.getElementById("pharmacy-form").submit();
+        localStorage.setItem('selected_pharmacy', JSON.stringify({
+            name: name,
+            address: address
+        }));
+        window.location.href = 'checkout.html';
     }
 
     function renderPharmacies(list) {
@@ -311,10 +346,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pharmacy_name'])) {
                 alert("Error searching location. Please try again.");
             });
     }
+
+    // Sidebar Navigation Helpers
+    function openNav() {
+        document.getElementById("sidebar").style.width = "250px";
+    }
+
+    function closeNav() {
+        document.getElementById("sidebar").style.width = "0";
+    }
 </script>
 
 <script src="script.js"></script>
 
 </body>
 </html>
-<?php mysqli_close($conn); ?>

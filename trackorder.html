@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order - Pill Point Delivery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-sizing: border-box;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: #003049;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 60px;
+        }
+
+        .sidebar a {
+            padding: 10px 15px 10px 30px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #669BBC;
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 36px;
+        }
+
+        .track-container {
+            max-width: 650px;
+            margin: 110px auto 40px auto;
+            background: #fff;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .track-container h2 {
+            color: #003049;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .track-container p.subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #003049;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .btn {
+            background: #669BBC;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #003049;
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        .orders-table th, .orders-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .orders-table th {
+            background: #f8f9fa;
+            color: #003049;
+            font-weight: bold;
+        }
+
+        .result-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
+    <h1 class="header-title">Pill Point Delivery</h1>
+</div>
+
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="medicines.html">Shop Medication</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="reminders.html">Reminders</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="cart.html">Cart</a>
+    <a href="trackorder.html">Track Order</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="contact.html">Contact Us</a>
+    <a href="#" id="logout-link">Logout</a>
+</div>
+
+<div class="track-container">
+    <h2>Track Your Order</h2>
+    <p class="subtitle">Enter your tracking number to check delivery status</p>
+
+    <div id="error-alert" style="display:none; background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px;"></div>
+
+    <form id="track-form">
+        <div class="form-group">
+            <label>Order Number / ID</label>
+            <input type="text" id="order_number_input" required placeholder="e.g. PPD-ABC123">
+        </div>
+        <button type="submit" class="btn">Track Order</button>
+    </form>
+
+    <!-- Search Result Box -->
+    <div class="result-box" id="search-result-box">
+        <h3 style="margin-top: 0; color: #166534;">Order Status Details</h3>
+        <p><strong>Order Number:</strong> <span id="res-order-num"></span></p>
+        <p><strong>Status:</strong> <span id="res-status" style="color: #2563eb; font-weight: bold;"></span></p>
+        <p><strong>Total Amount:</strong> R<span id="res-total"></span></p>
+        <p><strong>Delivery Address:</strong> <span id="res-address"></span></p>
+        <p><strong>Order Date:</strong> <span id="res-date"></span></p>
+    </div>
+
+    <h3 style="margin-top: 35px; color: #003049; font-size: 18px;">Your Existing Orders</h3>
+    <div id="orders-list-container">
+        <p style="color: #64748b; font-size: 14px;">Loading your orders...</p>
+    </div>
+</div>
+
+<!-- Firebase SDKs and Order Tracking Logic -->
+<script type="module">
+    import { db, auth } from "./script.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    let allUserOrders = {};
+
+    // 1. Monitor Authentication & Load Orders
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            fetchUserOrders(user.uid);
+        } else {
+            alert('Please login first.');
+            window.location.href = 'login.html';
+        }
+    });
+
+    // 2. Fetch User Orders from Firebase
+    async function fetchUserOrders(userId) {
+        const ordersRef = ref(db, `orders/${userId}`);
+        try {
+            const snapshot = await get(ordersRef);
+            const container = document.getElementById('orders-list-container');
+
+            if (snapshot.exists()) {
+                allUserOrders = snapshot.val();
+                let tableHtml = `
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order Number</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                const entries = Object.entries(allUserOrders).reverse();
+
+                for (const [orderKey, ord] of entries) {
+                    const formattedDate = ord.order_date ? new Date(ord.order_date).toLocaleString() : 'N/A';
+                    tableHtml += `
+                        <tr>
+                            <td><strong>${escapeHtml(ord.order_number || orderKey)}</strong></td>
+                            <td>R${Number(ord.total_amount || 0).toFixed(2)}</td>
+                            <td><span style="font-weight: bold; color: #1d4ed8;">${escapeHtml(ord.status || 'Processing')}</span></td>
+                            <td>${formattedDate}</td>
+                        </tr>`;
+                }
+
+                tableHtml += `</tbody></table>`;
+                container.innerHTML = tableHtml;
+            } else {
+                container.innerHTML = `<p style="color: #64748b; font-size: 14px;">You have no past orders yet.</p>`;
+            }
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+        }
+    }
+
+    // 3. Handle Order Search Form Submission
+    document.getElementById('track-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const searchInput = document.getElementById('order_number_input').value.trim().toUpperCase();
+        const errorAlert = document.getElementById('error-alert');
+        const resultBox = document.getElementById('search-result-box');
+        
+        errorAlert.style.display = 'none';
+        resultBox.style.display = 'none';
+
+        let foundOrder = null;
+
+        for (const [key, ord] of Object.entries(allUserOrders)) {
+            if (ord.order_number && ord.order_number.toUpperCase() === searchInput) {
+                foundOrder = ord;
+                break;
+            }
+        }
+
+        if (foundOrder) {
+            document.getElementById('res-order-num').textContent = foundOrder.order_number;
+            document.getElementById('res-status').textContent = foundOrder.status || 'Processing';
+            document.getElementById('res-total').textContent = Number(foundOrder.total_amount || 0).toFixed(2);
+            document.getElementById('res-address').textContent = foundOrder.delivery_address || 'N/A';
+            document.getElementById('res-date').textContent = foundOrder.order_date ? new Date(foundOrder.order_date).toLocaleString() : 'N/A';
+            
+            resultBox.style.display = 'block';
+        } else {
+            errorAlert.textContent = `No order found with number: ${searchInput}`;
+            errorAlert.style.display = 'block';
+        }
+    });
+
+    // Sidebar Navigation Helpers
+    window.openNav = function() {
+        document.getElementById("sidebar").style.width = "250px";
+    }
+
+    window.closeNav = function() {
+        document.getElementById("sidebar").style.width = "0";
+    }
+
+    function escapeHtml(text) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Handle Logout
+    document.getElementById('logout-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        signOut(auth).then(() => {
+            window.location.href = 'login.html';
+        }).catch((error) => {
+            console.error('Logout error:', error);
+        });
+    });
+</script>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Pill Point Pharmacy</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: #003049;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 60px;
+        }
+
+        .sidebar a {
+            padding: 10px 15px 10px 30px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #669BBC;
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 36px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        #main {
+            padding: 100px 20px 40px 20px;
+            max-width: 1100px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="medicines.html">Shop Medication</a>
+    <a href="cart.html">My Cart</a>
+    <a href="checkout.html">Checkout</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="reminders.html">Set Reminder</a>
+    <a href="viewreminders.html">My Reminders</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="trackorder.html">Track Order</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="#" id="logout-link">Logout</a>
+</div>
+
+<!-- Header -->
+<div class="header">
+    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
+    <a href="myaccount.html" class="profile"> 
+        <img src="photo.jpeg" alt="profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+    </a>
+</div>
+
+<!-- Main Content -->
+<div id="main">
+
+    <h1>Dashboard</h1>
+
+    <div class="top-cards">
+        <div class="top-card">
+            <h2 id="metric-cart-count">0</h2>
+            <p>Cart Items</p>
+        </div>
+
+        <div class="top-card">
+            <h2 id="metric-prescription-count">0</h2>
+            <p>Prescriptions</p>
+        </div>
+
+        <div class="top-card">
+            <h2 id="metric-reminder-count">0</h2>
+            <p>Reminders</p>
+        </div>
+
+        <div class="top-card">
+            <h2 id="metric-cart-total">R0.00</h2>
+            <p>Total Cart Value</p>
+        </div>
+    </div>
+
+    <div class="welcome-card" id="welcome-message-box">
+        <h2>Welcome to Pill Point Delivery!</h2>
+        <p>Loading your profile...</p>
+    </div>
+
+    <div class="cards">
+        <div class="card">
+            <h3>Shop Medication</h3>
+            <a href="medicines.html">Open</a>
+        </div>
+
+        <div class="card">
+            <h3>View Shopping Cart</h3>
+            <a href="cart.html">View Cart</a>
+        </div>
+
+        <div class="card">
+            <h3>Upload Prescription</h3>
+            <a href="prescription.html">Upload</a>
+        </div>
+
+        <div class="card">
+            <h3>Store Locator</h3>
+            <a href="storelocator.html">Locate</a>
+        </div>
+    </div>
+
+</div>
+
+<!-- Firebase SDKs and Dashboard Logic -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Your Firebase Configuration for pillpoint-2196e
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "pillpoint-2196e.firebaseapp.com",
+        databaseURL: "https://pillpoint-2196e-default-rtdb.firebaseio.com",
+        projectId: "pillpoint-2196e",
+        storageBucket: "pillpoint-2196e.appspot.com",
+        messagingSenderId: "658611379065",
+        appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // 1. Monitor Authentication State & Load Metrics
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const username = user.displayName || user.email.split('@')[0];
+            await loadDashboardMetrics(user.uid, username);
+        } else {
+            alert('Please login first.');
+            window.location.href = 'login.html';
+        }
+    });
+
+    // 2. Fetch Metrics from Firebase Realtime Database
+    async function loadDashboardMetrics(userId, username) {
+        try {
+            // References for user data nodes
+            const cartRef = ref(db, `cart/${userId}`);
+            const prescriptionsRef = ref(db, `prescriptions/${userId}`);
+            const remindersRef = ref(db, `reminders/${userId}`);
+            const ordersRef = ref(db, `orders/${userId}`);
+
+            const [cartSnap, prescSnap, remSnap, orderSnap] = await Promise.all([
+                get(cartRef),
+                get(prescriptionsRef),
+                get(remindersRef),
+                get(ordersRef)
+            ]);
+
+            // Calculate Cart Metrics
+            let cartCount = 0;
+            let cartTotal = 0.00;
+            if (cartSnap.exists()) {
+                cartSnap.forEach((child) => {
+                    const item = child.val();
+                    const qty = parseInt(item.quantity) || 0;
+                    const price = parseFloat(item.price) || 0.00;
+                    cartCount += qty;
+                    cartTotal += qty * price;
+                });
+            }
+
+            // Calculate Prescriptions Count
+            let prescriptionCount = 0;
+            if (prescSnap.exists()) {
+                prescriptionCount = Object.keys(prescSnap.val()).length;
+            }
+
+            // Calculate Reminders Count
+            let reminderCount = 0;
+            if (remSnap.exists()) {
+                reminderCount = Object.keys(remSnap.val()).length;
+            }
+
+            // Calculate Orders Count for first-time user check
+            let orderCount = 0;
+            if (orderSnap.exists()) {
+                orderCount = Object.keys(orderSnap.val()).length;
+            }
+
+            // Update DOM Elements
+            document.getElementById('metric-cart-count').textContent = cartCount;
+            document.getElementById('metric-prescription-count').textContent = prescriptionCount;
+            document.getElementById('metric-reminder-count').textContent = reminderCount;
+            document.getElementById('metric-cart-total').textContent = `R${cartTotal.toFixed(2)}`;
+
+            // Welcome Message Logic (First-time vs Returning user)
+            const welcomeBox = document.getElementById('welcome-message-box');
+            const isFirstTime = (orderCount === 0 && prescriptionCount === 0 && reminderCount === 0);
+
+            if (isFirstTime) {
+                welcomeBox.innerHTML = `
+                    <h2>Welcome to Pill Point Delivery, ${escapeHtml(username)}!</h2>
+                    <p>We are excited to have you on board. Start by exploring our shop or setting your dosage reminders!</p>`;
+            } else {
+                welcomeBox.innerHTML = `
+                    <h2>Welcome back, ${escapeHtml(username)}!</h2>
+                    <p>Your trusted online pharmacy — Pill Point Delivery.</p>`;
+            }
+
+        } catch (error) {
+            console.error("Error loading dashboard metrics:", error);
+        }
+    }
+
+    // Sidebar Navigation Helpers
+    window.openNav = function() {
+        document.getElementById("sidebar").style.width = "250px";
+    }
+
+    window.closeNav = function() {
+        document.getElementById("sidebar").style.width = "0";
+    }
+
+    function escapeHtml(text) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Handle Logout
+    document.getElementById('logout-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        signOut(auth).then(() => {
+            window.location.href = 'login.html';
+        }).catch((error) => {
+            console.error('Logout error:', error);
+        });
+    });
+</script>
+<script src="script.js"></script>
+</body>
+</html>

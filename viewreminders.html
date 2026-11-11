@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Reminders - Pill Point Delivery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-sizing: border-box;
+            background: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            color: #003049;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: #1d4ed8;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 60px;
+        }
+
+        .sidebar a {
+            padding: 10px 15px 10px 30px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #669BBC;
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        body {
+            background: #f8f9fa;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 110px auto 40px auto;
+            background: #fff;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .container h2 {
+            color: #003049;
+            margin-bottom: 5px;
+        }
+
+        .reminder-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+            background: #fff; 
+        }
+
+        .reminder-table th, .reminder-table td { 
+            border: 1px solid #e2e8f0; 
+            padding: 12px; 
+            text-align: left; 
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .reminder-table th { 
+            background-color: #669BBC; 
+            color: white; 
+            font-weight: bold;
+        }
+
+        .btn-delete { 
+            color: #fff; 
+            background-color: #dc3545; 
+            padding: 6px 12px; 
+            border: none;
+            cursor: pointer;
+            border-radius: 4px; 
+            font-size: 13px; 
+            font-weight: bold;
+        }
+
+        .btn-delete:hover {
+            background-color: #b02a37;
+        }
+
+        .btn {
+            background: #669BBC;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #003049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
+    <h1 class="header-title">Pill Point Delivery</h1>
+</div>
+
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="medicines.html">Shop Medication</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="reminders.html">Set Reminder</a>
+    <a href="viewreminders.html">My Reminders</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="cart.html">Cart</a>
+    <a href="trackorder.html">Track Order</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="#" id="logout-link">Logout</a>
+</div>
+
+<div class="container">
+    <h2>Scheduled Medication Reminders</h2>
+    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Manage and view all your active medical dosage schedules</p>
+    
+    <a href="reminders.html" class="btn" style="margin-bottom:15px;">+ Add New Reminder</a>
+
+    <table class="reminder-table">
+        <thead>
+            <tr>
+                <th>Medication</th>
+                <th>Dosage</th>
+                <th>Time</th>
+                <th>Date</th>
+                <th>Repeat</th>
+                <th>Notification</th>
+                <th>Notes</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="reminders-table-body">
+            <tr>
+                <td colspan="8" style="text-align: center; color: #64748b; padding: 20px;">Loading reminders...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Firebase SDKs and Reminders Display/Delete Logic -->
+<script type="module">
+    import { db, auth } from "./script.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { ref, get, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // 1. Monitor Authentication State & Fetch Reminders
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            fetchUserReminders(user.uid);
+        } else {
+            alert('Please login first.');
+            window.location.href = 'login.html';
+        }
+    });
+
+    // 2. Fetch Reminders from Firebase Realtime Database
+    async function fetchUserReminders(userId) {
+        const remindersRef = ref(db, `reminders/${userId}`);
+        try {
+            const snapshot = await get(remindersRef);
+            const tbody = document.getElementById('reminders-table-body');
+
+            if (snapshot.exists()) {
+                let rowsHtml = '';
+                const reminders = snapshot.val();
+
+                // Loop through each reminder node (newest first by sorting keys or object entries)
+                const entries = Object.entries(reminders).reverse();
+
+                for (const [reminderKey, item] of entries) {
+                    rowsHtml += `
+                        <tr>
+                            <td><strong>${escapeHtml(item.medication_name || '')}</strong></td>
+                            <td>${escapeHtml(item.dosage || 'N/A')}</td>
+                            <td>${escapeHtml(item.reminder_time || 'N/A')}</td>
+                            <td>${escapeHtml(item.reminder_date || 'N/A')}</td>
+                            <td>${escapeHtml(item.repeat_frequency || 'N/A')}</td>
+                            <td>${escapeHtml(item.notification_type || 'Push Notification')}</td>
+                            <td>${escapeHtml(item.notes || '-')}</td>
+                            <td>
+                                <button type="button" class="btn-delete" onclick="deleteReminder('${reminderKey}')">Delete</button>
+                            </td>
+                        </tr>`;
+                }
+                tbody.innerHTML = rowsHtml;
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: #64748b; padding: 20px;">No reminders configured yet.</td>
+                    </tr>`;
+            }
+        } catch (error) {
+            console.error("Error fetching reminders:", error);
+        }
+    }
+
+    // 3. Delete Reminder Function
+    window.deleteReminder = async function(reminderKey) {
+        const user = auth.currentUser;
+        if (!user) {
+            alert('Please login first.');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        if (!confirm('Are you sure you want to delete this reminder?')) {
+            return;
+        }
+
+        try {
+            const reminderRef = ref(db, `reminders/${user.uid}/${reminderKey}`);
+            await remove(reminderRef);
+
+            alert('Reminder deleted successfully.');
+            fetchUserReminders(user.uid); // Refresh table
+        } catch (error) {
+            console.error("Deletion Error: ", error);
+            alert('Unable to delete reminder. Please try again.');
+        }
+    };
+
+    // Sidebar Navigation Helpers
+    window.openNav = function() {
+        document.getElementById("sidebar").style.width = "250px";
+    }
+
+    window.closeNav = function() {
+        document.getElementById("sidebar").style.width = "0";
+    }
+
+    function escapeHtml(text) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Handle Logout
+    document.getElementById('logout-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        signOut(auth).then(() => {
+            window.location.href = 'login.html';
+        }).catch((error) => {
+            console.error('Logout error:', error);
+        });
+    });
+</script>
+<script src="script.js"></script>
+</body>
+</html>

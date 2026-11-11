@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Success - Pill Point Delivery</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-sizing: border-box;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .header-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            color: #003049;
+        }
+
+        .success-container {
+            max-width: 600px;
+            margin: 130px auto 40px auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .success-container h2 {
+            color: #166534;
+            margin-bottom: 10px;
+            font-size: 26px;
+        }
+
+        .success-container p {
+            color: #475569;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+
+        .order-id-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #166534;
+            margin-bottom: 25px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn {
+            background: #669BBC;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #003049;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #003049;
+            border: 2px solid #003049;
+        }
+
+        .btn-outline:hover {
+            background: #003049;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
+    <h1 class="header-title">Pill Point Delivery</h1>
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="medicines.html">Shop Medication</a>
+    <a href="prescription.html">Prescription</a>
+    <a href="reminders.html">Reminders</a>
+    <a href="storelocator.html">Store Locator</a>
+    <a href="cart.html">Cart</a>
+    <a href="trackorder.html">Track Order</a>
+    <a href="myaccount.html">My Account</a>
+    <a href="#" onclick="handleLogout(event)">Logout</a>
+</div>
+
+<div class="success-container">
+    <h2>Order Placed Successfully!</h2>
+    <p>Thank you for shopping with Pill Point Delivery. Your order has been successfully placed and payment confirmed.</p>
+    
+    <div class="order-id-box" id="order-display-box">
+        Order Number: Loading...
+    </div>
+
+    <div class="btn-group">
+        <a href="trackorder.html" class="btn">Track Your Order</a>
+        <a href="dashboard.html" class="btn btn-outline">Back to Dashboard</a>
+    </div>
+</div>
+
+<script type="module">
+    import { auth } from "./script.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+        }
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('order_id');
+    if (orderId) {
+        document.getElementById('order-display-box').textContent = `Order Number: #${orderId}`;
+    }
+
+    window.openNav = function() {
+        document.getElementById("sidebar").style.width = "250px";
+    }
+
+    window.closeNav = function() {
+        document.getElementById("sidebar").style.width = "0";
+    }
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>
