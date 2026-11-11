@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - Pill Point Delivery</title>
+    <title>Signup - Pill Point Delivery</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
+<div class="container" style="max-width: 500px; margin: 40px auto; padding: 20px;">
     <div class="box">
         <h2>Create Account</h2>
 
@@ -16,37 +16,20 @@
         <div id="success-alert" style="display:none; background: #d4edda; color: #155724; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 14px;"></div>
 
         <form id="signup-form">
-            <input type="text" id="first_name" placeholder="First Name" required>
-            <input type="text" id="last_name" placeholder="Last Name" required>
-            <input type="number" id="age" placeholder="Age" min="1" required>
-            <input type="tel" id="phone" placeholder="Phone Number" required>
-            <input type="email" id="email" placeholder="Email Address" required>
-            <input type="text" id="address" placeholder="Street Address" required>
-            <input type="number" id="post" placeholder="Postal Code" required>
-
-            <select id="province" required>
-                <option value="">Select Province</option>
-                <option value="Eastern Cape">Eastern Cape</option>
-                <option value="Free State">Free State</option>
-                <option value="Gauteng">Gauteng</option>
-                <option value="KwaZulu-Natal">KwaZulu-Natal</option>
-                <option value="Limpopo">Limpopo</option>
-                <option value="Mpumalanga">Mpumalanga</option>
-                <option value="North West">North West</option>
-                <option value="Northern Cape">Northern Cape</option>
-                <option value="Western Cape">Western Cape</option>
-            </select>
-
-            <input type="text" id="username" placeholder="Username" required>
-            <input type="password" id="password" placeholder="Password" required>
-
-            <input type="submit" value="Sign Up" class="btn">
+            <input type="text" id="first_name" placeholder="First Name" required style="width:100%; padding:10px; margin-bottom:12px; box-sizing:border-box;">
+            <input type="text" id="last_name" placeholder="Last Name" required style="width:100%; padding:10px; margin-bottom:12px; box-sizing:border-box;">
+            <input type="number" id="age" placeholder="Age (Must be 18+)" required style="width:100%; padding:10px; margin-bottom:12px; box-sizing:border-box;">
+            <input type="text" id="phone" placeholder="Phone Number" required style="width:100%; padding:10px; margin-bottom:12px; box-sizing:border-box;">
+            <input type="email" id="email" placeholder="Email Address" required style="width:100%; padding:10px; margin-bottom:12px; box-sizing:border-box;">
+            <input type="text" id="address" placeholder="Street Address" required style="width:100%; padding:10px; margin-bottom:12px; box-sizing:border-box;">
+            <input type="text" id="username" placeholder="Username" required style="width:100%; padding:10px; margin-bottom:12px; box-sizing:border-box;">
+            <input type="password" id="password" placeholder="Password (Min 6 characters)" required style="width:100%; padding:10px; margin-bottom:15px; box-sizing:border-box;">
+            
+            <button type="submit" class="btn" style="width:100%; padding:12px;">Sign Up</button>
         </form>
 
-        <p style="margin-top: 15px; text-align: center;">
-            Already have an account?
-            <a href="login.html">Login</a>
-        </p>
+        <br>
+        <p style="text-align: center;">Already have an account? <a href="login.html">Login</a></p>
     </div>
 </div>
 
@@ -61,12 +44,10 @@
 
         const firstName = document.getElementById('first_name').value.trim();
         const lastName = document.getElementById('last_name').value.trim();
-        const age = parseInt(document.getElementById('age').value.trim());
+        const age = parseInt(document.getElementById('age').value);
         const phone = document.getElementById('phone').value.trim();
         const email = document.getElementById('email').value.trim();
         const address = document.getElementById('address').value.trim();
-        const postalCode = document.getElementById('post').value.trim();
-        const province = document.getElementById('province').value;
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
 
@@ -75,46 +56,47 @@
         errorAlert.style.display = 'none';
         successAlert.style.display = 'none';
 
-        // Age Verification Check (Must be 18 or older)
-        if (isNaN(age) || age < 18) {
+        // Enforce 18+ Age Restriction
+        if (age < 18) {
             errorAlert.textContent = "You must be at least 18 years old to register.";
             errorAlert.style.display = 'block';
             return;
         }
 
         try {
-            // 1. Create user in Firebase Authentication
+            // Create User in Firebase Authentication
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // 2. Save extended profile details in Firebase Realtime Database
+            // Save User Profile Data including 'age' in Database
             await set(ref(db, 'users/' + user.uid), {
-                first_name: firstName,
-                last_name: lastName,
+                userId: user.uid,
+                firstName: firstName,
+                lastName: lastName,
                 age: age,
                 phone: phone,
                 email: email,
                 address: address,
-                postal_code: postalCode,
-                province: province,
                 username: username,
-                created_at: new Date().toISOString()
+                createdAt: new Date().toISOString()
             });
 
-            successAlert.textContent = "Registration successful! Redirecting to login...";
+            successAlert.textContent = "Account created successfully! Redirecting to login...";
             successAlert.style.display = 'block';
 
+            // Redirect to login page after 1.5 seconds
             setTimeout(() => {
                 window.location.href = 'login.html';
             }, 1500);
 
         } catch (error) {
             console.error("Signup Error:", error);
-            errorAlert.textContent = error.message.replace("Firebase: ", "");
+            errorAlert.textContent = error.message;
             errorAlert.style.display = 'block';
         }
     });
 </script>
 
+<script src="script.js"></script>
 </body>
 </html>

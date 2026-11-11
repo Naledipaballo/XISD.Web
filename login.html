@@ -8,37 +8,38 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container" style="max-width: 450px; margin: 60px auto; padding: 20px;">
     <div class="box">
-        <h2>Login</h2>
+        <h2 style="text-align: center; color: #003049; margin-bottom: 20px;">Login</h2>
 
         <div id="error-alert" style="display:none; background: #f8d7da; color: #721c24; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 14px;"></div>
         <div id="success-alert" style="display:none; background: #d4edda; color: #155724; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 14px;"></div>
 
         <form id="login-form">
-            <input type="text" id="login_input" placeholder="Email Address or Username" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <input type="submit" value="Login" class="btn">
+            <div style="margin-bottom: 15px;">
+                <input type="email" id="email" placeholder="Email Address" required style="width:100%; padding:12px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; font-size:15px;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <input type="password" id="password" placeholder="Password" required style="width:100%; padding:12px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; font-size:15px;">
+            </div>
+            
+            <button type="submit" class="btn" style="width:100%; padding:12px; background:#669BBC; color:white; border:none; border-radius:6px; font-weight:bold; font-size:16px; cursor:pointer;">Login</button>
         </form>
 
         <br>
-
-        <p style="text-align: center;">Don't have an account?
-            <a href="signup.html">Sign Up</a>
-        </p>
+        <p style="text-align: center; font-size: 14px; color: #64748b;">Don't have an account? <a href="signup.html" style="color: #003049; font-weight: bold;">Sign Up</a></p>
     </div>
 </div>
 
 <!-- Firebase SDKs & Login Logic -->
 <script type="module">
-    import { db, auth } from "./script.js";
+    import { auth } from "./script.js";
     import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const loginInput = document.getElementById('login_input').value.trim();
+        const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
 
         const errorAlert = document.getElementById('error-alert');
@@ -47,39 +48,25 @@
         successAlert.style.display = 'none';
 
         try {
-            let emailToUse = loginInput;
-
-            // If the input does not look like an email, assume it's a username and lookup the email in Firebase Realtime Database
-            if (!loginInput.includes('@')) {
-                const usersRef = ref(db, 'users');
-                const usernameQuery = query(usersRef, orderByChild('username'), equalTo(loginInput));
-                const snapshot = await get(usernameQuery);
-
-                if (snapshot.exists()) {
-                    const userData = Object.values(snapshot.val())[0];
-                    emailToUse = userData.email;
-                } else {
-                    throw new Error("Invalid username or password.");
-                }
-            }
-
-            // Authenticate with Firebase Auth
-            await signInWithEmailAndPassword(auth, emailToUse, password);
+            // Sign in using Firebase Authentication
+            await signInWithEmailAndPassword(auth, email, password);
 
             successAlert.textContent = "Login successful! Redirecting to dashboard...";
             successAlert.style.display = 'block';
 
+            // Successfully redirect to dashboard.html after 1 second
             setTimeout(() => {
                 window.location.href = 'dashboard.html';
             }, 1000);
 
         } catch (error) {
             console.error("Login Error:", error);
-            errorAlert.textContent = "Invalid username/email or password.";
+            errorAlert.textContent = "Invalid email or password. Please try again.";
             errorAlert.style.display = 'block';
         }
     });
 </script>
 
+<script src="script.js"></script>
 </body>
 </html>
