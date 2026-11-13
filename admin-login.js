@@ -1,30 +1,43 @@
+
 import { auth, db } from "./firebase.js";
 
 import {
     signInWithEmailAndPassword,
     signOut
-} from "firebase/auth";
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 import {
     doc,
     getDoc
-} from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
+// Get HTML elements
 const loginForm = document.getElementById("adminLoginForm");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
 const loginButton = document.getElementById("loginButton");
 const errorMessage = document.getElementById("errorMessage");
 
-loginForm.addEventListener("submit", async function(e) {
-    e.preventDefault();
+// Display error messages
+function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.style.color = "#C1121F";
+}
 
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
+// Admin login
+loginForm.addEventListener("submit", async (event) => {
+
+    event.preventDefault();
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
 
     errorMessage.textContent = "";
     loginButton.disabled = true;
-    loginButton.textContent = "Checking...";
+    loginButton.textContent = "Logging in...";
 
     try {
+
         // Sign in using Firebase Authentication
         const userCredential = await signInWithEmailAndPassword(
             auth,
@@ -34,36 +47,63 @@ loginForm.addEventListener("submit", async function(e) {
 
         const user = userCredential.user;
 
-        // Find the user's document in Firestore
+        // Find the user's Firestore document
         const userRef = doc(db, "users", user.uid);
         const userSnapshot = await getDoc(userRef);
 
         // Check whether the user document exists
         if (!userSnapshot.exists()) {
+
             await signOut(auth);
-            throw new Error("Admin profile was not found.");
+
+            showError(
+                "Access denied. Administrator account was not found."
+            );
+
+            return;
         }
 
+        // Check administrator role
         const userData = userSnapshot.data();
+        const role = String(userData.role || "").trim().toLowerCase();
 
-        // Verify administrator role
-        if (
-            String(userData.role || "").trim().toLowerCase() !== "admin"
-        ) {
+        if (role !== "admin") {
+
             await signOut(auth);
-            throw new Error("Access denied. Admin accounts only.");
+
+            showError(
+                "Access denied. You do not have administrator permissions."
+            );
+
+            return;
         }
 
         // Administrator verified
         window.location.href = "admin-dashboard.html";
 
     } catch (error) {
-        console.error("Admin Login Error:", error);
 
-        errorMessage.textContent =
-            error.message || "Login failed. Please try again.";
+        console.error("Admin login error:", error);
+
+        if (
+            error.code === "auth/invalid-credential" ||
+            error.code === "auth/wrong-password" ||
+            error.code === "auth/user-not-found"
+        ) {
+            showError("Incorrect email address or password.");
+
+        } else if (error.code === "auth/invalid-email") {
+            showError("Please enter a valid email address.");
+
+        } else if (error.code === "auth/too-many-requests") {
+            showError("Too many attempts. Please try again later.");
+
+        } else {
+            showError("Login failed: " + error.message);
+        }
 
     } finally {
+
         loginButton.disabled = false;
         loginButton.textContent = "Login";
     }

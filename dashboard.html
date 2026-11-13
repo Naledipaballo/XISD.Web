@@ -143,26 +143,11 @@
 
 </div>
 
-<!-- Firebase SDKs and Dashboard Logic -->
+<!-- Firebase SDKs and Firestore Dashboard Logic -->
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    // Your Firebase Configuration for pillpoint-2196e
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "pillpoint-2196e.firebaseapp.com",
-        databaseURL: "https://pillpoint-2196e-default-rtdb.firebaseio.com",
-        projectId: "pillpoint-2196e",
-        storageBucket: "pillpoint-2196e.appspot.com",
-        messagingSenderId: "658611379065",
-        appId: "YOUR_APP_ID"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+    import { db, auth } from "./script.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // 1. Monitor Authentication State & Load Metrics
     onAuthStateChanged(auth, async (user) => {
@@ -175,52 +160,37 @@
         }
     });
 
-    // 2. Fetch Metrics from Firebase Realtime Database
+    // 2. Fetch Metrics from Cloud Firestore
     async function loadDashboardMetrics(userId, username) {
         try {
-            // References for user data nodes
-            const cartRef = ref(db, `cart/${userId}`);
-            const prescriptionsRef = ref(db, `prescriptions/${userId}`);
-            const remindersRef = ref(db, `reminders/${userId}`);
-            const ordersRef = ref(db, `orders/${userId}`);
+            // Firestore queries filtered by userId
+            const cartQuery = query(collection(db, "cart"), where("userId", "==", userId));
+            const prescQuery = query(collection(db, "prescriptions"), where("userId", "==", userId));
+            const remQuery = query(collection(db, "reminders"), where("userId", "==", userId));
+            const orderQuery = query(collection(db, "orders"), where("userId", "==", userId));
 
             const [cartSnap, prescSnap, remSnap, orderSnap] = await Promise.all([
-                get(cartRef),
-                get(prescriptionsRef),
-                get(remindersRef),
-                get(ordersRef)
+                getDocs(cartQuery),
+                getDocs(prescQuery),
+                getDocs(remQuery),
+                getDocs(orderQuery)
             ]);
 
             // Calculate Cart Metrics
             let cartCount = 0;
             let cartTotal = 0.00;
-            if (cartSnap.exists()) {
-                cartSnap.forEach((child) => {
-                    const item = child.val();
-                    const qty = parseInt(item.quantity) || 0;
-                    const price = parseFloat(item.price) || 0.00;
-                    cartCount += qty;
-                    cartTotal += qty * price;
-                });
-            }
+            cartSnap.forEach((doc) => {
+                const item = doc.data();
+                const qty = parseInt(item.quantity) || 0;
+                const price = parseFloat(item.price) || 0.00;
+                cartCount += qty;
+                cartTotal += qty * price;
+            });
 
-            // Calculate Prescriptions Count
-            let prescriptionCount = 0;
-            if (prescSnap.exists()) {
-                prescriptionCount = Object.keys(prescSnap.val()).length;
-            }
-
-            // Calculate Reminders Count
-            let reminderCount = 0;
-            if (remSnap.exists()) {
-                reminderCount = Object.keys(remSnap.val()).length;
-            }
-
-            // Calculate Orders Count for first-time user check
-            let orderCount = 0;
-            if (orderSnap.exists()) {
-                orderCount = Object.keys(orderSnap.val()).length;
-            }
+            // Calculate Counts from query snapshots
+            const prescriptionCount = prescSnap.size;
+            const reminderCount = remSnap.size;
+            const orderCount = orderSnap.size;
 
             // Update DOM Elements
             document.getElementById('metric-cart-count').textContent = cartCount;
@@ -257,8 +227,9 @@
     }
 
     function escapeHtml(text) {
+        if (!text) return '';
         const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
     }
 
     // Handle Logout

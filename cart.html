@@ -238,14 +238,14 @@
     </div>
 </div>
 
-<!-- Firebase SDKs and Logic (Using centralized script.js) -->
+<!-- Firebase SDKs and Firestore Cart Logic -->
 <script type="module">
     import { db, auth } from "./script.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { ref, get, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const SHIPPING_FEE = 35.00;
-    let currentUserCartItems = {};
+    let currentUserCartDocs = [];
 
     // 1. Monitor Authentication State
     onAuthStateChanged(auth, (user) => {
@@ -257,21 +257,24 @@
         }
     });
 
-    // 2. Fetch Cart Items from Firebase Realtime Database
+    // 2. Fetch Cart Items from Cloud Firestore
     async function fetchUserCart(userId) {
-        const cartRef = ref(db, `cart/${userId}`);
         try {
-            const snapshot = await get(cartRef);
+            const cartRef = collection(db, "cart");
+            const q = query(cartRef, where("userId", "==", userId));
+            const querySnapshot = await getDocs(q);
             const container = document.getElementById('cart-content-area');
 
-            if (snapshot.exists()) {
-                currentUserCartItems = snapshot.val();
+            if (!querySnapshot.empty) {
+                currentUserCartDocs = querySnapshot.docs;
                 let htmlContent = '';
                 let subtotal = 0;
 
                 htmlContent += `<div class="cart-items-list" id="items-list-wrapper">`;
 
-                for (const [cartId, item] of Object.entries(currentUserCartItems)) {
+                currentUserCartDocs.forEach((docSnap) => {
+                    const item = docSnap.data();
+                    const cartId = docSnap.id;
                     const itemTotal = item.price * item.quantity;
                     subtotal += itemTotal;
 
@@ -289,7 +292,7 @@
                                 </div>
                             </div>
                         </div>`;
-                }
+                });
 
                 htmlContent += `</div>`;
 
@@ -338,18 +341,19 @@
         if (!user) return;
 
         try {
-            const updates = {};
-            for (const cartId of Object.keys(currentUserCartItems)) {
+            const updatePromises = currentUserCartDocs.map(async (docSnap) => {
+                const cartId = docSnap.id;
                 const qtyInput = document.getElementById(`qty_${cartId}`);
                 if (qtyInput) {
                     const newQty = parseInt(qtyInput.value);
                     if (newQty > 0) {
-                        updates[`cart/${user.uid}/${cartId}/quantity`] = newQty;
+                        const itemRef = doc(db, "cart", cartId);
+                        await updateDoc(itemRef, { quantity: newQty });
                     }
                 }
-            }
+            });
 
-            await update(ref(db), updates);
+            await Promise.all(updatePromises);
             alert("Cart quantities updated successfully!");
             fetchUserCart(user.uid);
         } catch (error) {
@@ -365,8 +369,8 @@
 
         if (confirm("Are you sure you want to remove this item from your cart?")) {
             try {
-                const itemRef = ref(db, `cart/${user.uid}/${cartId}`);
-                await remove(itemRef);
+                const itemRef = doc(db, "cart", cartId);
+                await deleteDoc(itemRef);
                 fetchUserCart(user.uid);
             } catch (error) {
                 console.error("Error removing item:", error);
@@ -386,8 +390,9 @@
 
     // Helper function to prevent XSS
     function escapeHtml(text) {
+        if (!text) return '';
         const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
     }
 
     // Handle Logout
@@ -400,7 +405,6 @@
         });
     });
 </script>
-
 
 </body>
 </html>

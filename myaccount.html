@@ -171,13 +171,13 @@
 
 <!-- Header -->
 <div class="header">
-    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
+    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">☰</span>
     <h1 class="header-title">My Account</h1>
 </div>
 
 <!-- Sidebar -->
 <div id="sidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
     <a href="dashboard.html">Dashboard</a>
     <a href="medicines.html">Shop Medication</a>
     <a href="prescription.html">Prescription</a>
@@ -241,18 +241,19 @@
     </form>
 </div>
 
-<!-- Firebase SDKs & Account Logic -->
+<!-- Firebase SDKs & Firestore Account Logic -->
 <script type="module">
     import { db, auth } from "./script.js";
-    import { onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { ref, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     let currentUserId = null;
 
-    // 1. Monitor Authentication & Load Profile Data
+    // 1. Monitor Authentication & Load Profile Data from Firestore
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUserId = user.uid;
+            document.getElementById('email').value = user.email || '';
             await loadUserProfile(user.uid);
         } else {
             alert('Please login first.');
@@ -260,17 +261,16 @@
         }
     });
 
-    // 2. Fetch User Profile from Firebase Realtime Database
+    // 2. Fetch User Profile from Cloud Firestore
     async function loadUserProfile(userId) {
         try {
-            const userRef = ref(db, `users/${userId}`);
-            const snapshot = await get(userRef);
+            const userDocRef = doc(db, "users", userId);
+            const userSnap = await getDoc(userDocRef);
 
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                document.getElementById('first_name').value = data.first_name || '';
-                document.getElementById('last_name').value = data.last_name || '';
-                document.getElementById('email').value = data.email || '';
+            if (userSnap.exists()) {
+                const data = userSnap.data();
+                document.getElementById('first_name').value = data.firstName || data.first_name || '';
+                document.getElementById('last_name').value = data.lastName || data.last_name || '';
                 document.getElementById('phone').value = data.phone || '';
                 document.getElementById('address').value = data.address || '';
             }
@@ -295,11 +295,11 @@
         alertBox.style.display = 'none';
 
         try {
-            // Update Realtime Database profile info
-            const userRef = ref(db, `users/${user.uid}`);
-            await update(userRef, {
-                first_name: firstName,
-                last_name: lastName,
+            // Update Cloud Firestore profile info
+            const userDocRef = doc(db, "users", user.uid);
+            await updateDoc(userDocRef, {
+                firstName: firstName,
+                lastName: lastName,
                 phone: phone,
                 address: address
             });
@@ -337,7 +337,6 @@
         document.getElementById("sidebar").style.width = "0";
     }
 </script>
-
 
 </body>
 </html>

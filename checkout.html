@@ -29,6 +29,39 @@
             color: #003049;
         }
 
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: #003049;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 60px;
+        }
+
+        .sidebar a {
+            padding: 10px 15px 10px 30px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #669BBC;
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 36px;
+        }
+
         .checkout-container {
             max-width: 650px;
             margin: 110px auto 40px auto;
@@ -187,20 +220,19 @@
     </form>
 </div>
 
-<!-- Firebase SDKs & Checkout Logic -->
+<!-- Firebase SDKs & Firestore Checkout Logic -->
 <script type="module">
     import { db, auth } from "./script.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { ref, get, push, set, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { collection, query, where, getDocs, addDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    let cartItemsData = {};
+    let cartDocuments = [];
     let calculatedSubtotal = 0;
     const SHIPPING_FEE = 35.00;
 
     // 1. Verify Authentication & Load Cart / Selected Pharmacy
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // Check if user selected a pharmacy from storelocator.html
             const selectedPharmacy = localStorage.getItem('selected_pharmacy');
             if (selectedPharmacy) {
                 try {
@@ -218,19 +250,21 @@
         }
     });
 
-    // 2. Load Cart Data for Summary
+    // 2. Load Cart Data from Firestore for Summary
     async function loadCheckoutCart(userId) {
-        const cartRef = ref(db, `cart/${userId}`);
         try {
-            const snapshot = await get(cartRef);
+            const cartRef = collection(db, "cart");
+            const q = query(cartRef, where("userId", "==", userId));
+            const querySnapshot = await getDocs(q);
             const itemsContainer = document.getElementById('summary-items-list');
 
-            if (snapshot.exists()) {
-                cartItemsData = snapshot.val();
+            if (!querySnapshot.empty) {
+                cartDocuments = querySnapshot.docs;
                 let html = '';
                 calculatedSubtotal = 0;
 
-                for (const [id, item] of Object.entries(cartItemsData)) {
+                cartDocuments.forEach((docSnap) => {
+                    const item = docSnap.data();
                     const itemTotal = item.price * item.quantity;
                     calculatedSubtotal += itemTotal;
                     html += `
@@ -238,7 +272,7 @@
                             <span>${item.medicine_name} (x${item.quantity})</span>
                             <span>R${itemTotal.toFixed(2)}</span>
                         </div>`;
-                }
+                });
 
                 itemsContainer.innerHTML = html;
                 const grandTotal = calculatedSubtotal + SHIPPING_FEE;
@@ -269,7 +303,7 @@
             return;
         }
 
-        if (Object.keys(cartItemsData).length === 0) {
+        if (cartDocuments.length === 0) {
             alert("Your cart is empty.");
             window.location.href = 'cart.html';
             return;
@@ -279,26 +313,28 @@
             const totalAmount = calculatedSubtotal + SHIPPING_FEE;
             const orderNumber = 'PPD-' + Math.floor(100000 + Math.random() * 900000);
 
-            // Create Order Record in Firebase
-            const ordersRef = ref(db, `orders/${user.uid}`);
-            const newOrderRef = push(ordersRef);
-            const orderId = newOrderRef.key;
+            const itemsMap = {};
+            cartDocuments.forEach((docSnap) => {
+                itemsMap[docSnap.id] = docSnap.data();
+            });
 
-            await set(newOrderRef, {
+            // Create Order Record in Cloud Firestore
+            await addDoc(collection(db, "orders"), {
+                userId: user.uid,
                 order_number: orderNumber,
-                items: cartItemsData,
+                items: itemsMap,
                 total_amount: totalAmount,
                 delivery_address: deliveryAddress,
                 payment_method: paymentMethod,
                 status: 'Paid',
                 delivery_status: 'Preparing',
-                order_date: new Date().toISOString()
+                order_date: serverTimestamp()
             });
 
-            // Clear User Cart
-            await remove(ref(db, `cart/${user.uid}`));
+            // Clear User Cart from Firestore
+            const deletePromises = cartDocuments.map((docSnap) => deleteDoc(doc(db, "cart", docSnap.id)));
+            await Promise.all(deletePromises);
 
-            // Clear stored pharmacy selection
             localStorage.removeItem('selected_pharmacy');
 
             // Redirect to Success Page
@@ -311,7 +347,6 @@
         }
     });
 
-    // Sidebar Helpers
     window.openNav = function() {
         document.getElementById("sidebar").style.width = "250px";
     }

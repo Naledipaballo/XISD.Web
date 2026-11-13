@@ -127,12 +127,12 @@
 <body>
 
 <div class="header">
-    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
+    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">☰</span>
     <h1 class="header-title">Pill Point Delivery</h1>
 </div>
 
 <div id="sidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
     <a href="dashboard.html">Dashboard</a>
     <a href="medicines.html">Shop Medication</a>
     <a href="prescription.html">Prescription</a>
@@ -173,11 +173,11 @@
     </form>
 </div>
 
-<!-- Firebase SDKs & Prescription Upload Logic -->
+<!-- Firebase SDKs & Firestore Prescription Upload Logic -->
 <script type="module">
     import { db, auth } from "./script.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { ref, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // 1. Verify User Authentication on Load
     onAuthStateChanged(auth, (user) => {
@@ -216,29 +216,28 @@
         const file = fileInput.files[0];
 
         // Validate file size (Max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
+        const maxFileSize = 5 * 1024 * 1024;
+        if (file.size > maxFileSize) {
             errorAlert.textContent = "File size must be under 5MB.";
             errorAlert.style.display = 'block';
             return;
         }
 
-        // Convert file to base64 for storage in Firebase Realtime Database
+        // Convert file to base64 for storage in Cloud Firestore
         const reader = new FileReader();
         reader.onload = async function(event) {
             const base64File = event.target.result;
 
             try {
-                const prescriptionsRef = ref(db, `prescriptions/${user.uid}`);
-                const newPrescriptionRef = push(prescriptionsRef);
-
-                await set(newPrescriptionRef, {
+                await addDoc(collection(db, "prescriptions"), {
+                    userId: user.uid,
                     patient_name: patientName,
                     doctor_name: doctorName,
                     file_name: file.name,
                     file_data: base64File,
                     notes: notes,
                     status: 'Pending',
-                    upload_date: new Date().toISOString()
+                    upload_date: serverTimestamp()
                 });
 
                 successAlert.textContent = "Prescription uploaded successfully!";
@@ -274,7 +273,6 @@
         document.getElementById("sidebar").style.width = "0";
     }
 </script>
-
 
 </body>
 </html>

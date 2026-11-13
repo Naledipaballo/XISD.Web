@@ -803,4 +803,18 @@ body {
 .cart-header-icon {
     font-size: 19px;
 }
+
+.admin-login-button {
+    display: inline-block;
+    background-color: #C1121F;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.admin-login-button:hover {
+    background-color: #780000;
+}
 }

@@ -29,6 +29,40 @@
             color: #003049;
         }
 
+        /* Sidebar Styles */
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: #003049;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 60px;
+        }
+
+        .sidebar a {
+            padding: 10px 15px 10px 30px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #669BBC;
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 36px;
+        }
+
         .success-container {
             max-width: 600px;
             margin: 130px auto 40px auto;
@@ -99,13 +133,13 @@
 <body>
 
 <div class="header">
-    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
+    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">☰</span>
     <h1 class="header-title">Pill Point Delivery</h1>
 </div>
 
 <!-- Sidebar -->
 <div id="sidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
     <a href="dashboard.html">Dashboard</a>
     <a href="medicines.html">Shop Medication</a>
     <a href="prescription.html">Prescription</a>
@@ -133,7 +167,7 @@
 
 <script type="module">
     import { auth } from "./script.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     onAuthStateChanged(auth, (user) => {
         if (!user) {
@@ -155,7 +189,6 @@
         document.getElementById("sidebar").style.width = "0";
     }
 </script>
-
 
 </body>
 </html>

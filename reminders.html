@@ -129,12 +129,12 @@
 <body>
 
 <div class="header">
-    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
+    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">☰</span>
     <h1 class="header-title">Pill Point Delivery</h1>
 </div>
 
 <div id="sidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
     <a href="dashboard.html">Dashboard</a>
     <a href="medicines.html">Shop Medication</a>
     <a href="prescription.html">Prescription</a>
@@ -144,7 +144,6 @@
     <a href="cart.html">Cart</a>
     <a href="trackorder.html">Track Order</a>
     <a href="myaccount.html">My Account</a>
-    <a href="viewreminders.html">View Reminders</a>
     <a href="#" id="logout-link">Logout</a>
 </div>
 
@@ -205,11 +204,11 @@
     </form>
 </div>
 
-<!-- Firebase SDKs and Reminder Logic -->
+<!-- Firebase SDKs and Firestore Reminder Logic -->
 <script type="module">
     import { db, auth } from "./script.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { ref, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // 1. Verify User Authentication on Load
     onAuthStateChanged(auth, (user) => {
@@ -249,10 +248,9 @@
         }
 
         try {
-            const remindersRef = ref(db, `reminders/${user.uid}`);
-            const newReminderRef = push(remindersRef);
-
-            await set(newReminderRef, {
+            // Save reminder inside Firestore 'reminders' collection linked to user ID
+            await addDoc(collection(db, "reminders"), {
+                userId: user.uid,
                 medication_name: medicationName,
                 dosage: dosage,
                 reminder_time: reminderTime,
@@ -260,7 +258,7 @@
                 repeat_frequency: repeatFrequency,
                 notification_type: notificationType,
                 notes: notes,
-                created_at: new Date().toISOString()
+                created_at: serverTimestamp()
             });
 
             successAlert.textContent = "Reminder saved successfully!";
@@ -268,7 +266,7 @@
             document.getElementById('reminder-form').reset();
 
             setTimeout(() => {
-                window.location.href = 'view_reminders.html';
+                window.location.href = 'viewreminders.html';
             }, 1500);
 
         } catch (error) {

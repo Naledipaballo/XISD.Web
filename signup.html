@@ -33,44 +33,87 @@
     </div>
 </div>
 
-<!-- Firebase SDKs & Signup Logic -->
+<!-- Firebase SDKs & Firestore Signup Logic -->
+
 <script type="module">
-    import { db, auth } from "./script.js";
-    import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    // Import the shared Firebase configuration
+    import { auth, db } from "./firebase.js";
 
-    document.getElementById('signup-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // Firebase Authentication SDK version 12.0.0
+    import {
+        createUserWithEmailAndPassword,
+        signOut
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-        const firstName = document.getElementById('first_name').value.trim();
-        const lastName = document.getElementById('last_name').value.trim();
-        const age = parseInt(document.getElementById('age').value);
-        const phone = document.getElementById('phone').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const address = document.getElementById('address').value.trim();
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
+    // Cloud Firestore SDK version 12.0.0
+    import {
+        doc,
+        setDoc,
+        serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-        const errorAlert = document.getElementById('error-alert');
-        const successAlert = document.getElementById('success-alert');
-        errorAlert.style.display = 'none';
-        successAlert.style.display = 'none';
+    const signupForm = document.getElementById("signup-form");
+    const errorAlert = document.getElementById("error-alert");
+    const successAlert = document.getElementById("success-alert");
 
-        // Enforce 18+ Age Restriction
-        if (age < 18) {
-            errorAlert.textContent = "You must be at least 18 years old to register.";
-            errorAlert.style.display = 'block';
+    function showError(message) {
+        errorAlert.textContent = message;
+        errorAlert.style.display = "block";
+        successAlert.style.display = "none";
+    }
+
+    signupForm.addEventListener("submit", async (event) => {
+
+        event.preventDefault();
+
+        errorAlert.style.display = "none";
+        successAlert.style.display = "none";
+
+        const firstName = document.getElementById("first_name").value.trim();
+        const lastName = document.getElementById("last_name").value.trim();
+        const age = Number(document.getElementById("age").value);
+        const phone = document.getElementById("phone").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const address = document.getElementById("address").value.trim();
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+
+        // Validate age
+        if (!Number.isInteger(age) || age < 18) {
+            showError("You must be at least 18 years old to register.");
             return;
         }
 
-        try {
-            // Create User in Firebase Authentication
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+        // Validate password
+        if (password.length < 6) {
+            showError("Your password must contain at least 6 characters.");
+            return;
+        }
 
-            // Save User Profile Data including 'age' in Database
-            await set(ref(db, 'users/' + user.uid), {
-                userId: user.uid,
+        const submitButton = signupForm.querySelector(
+            'button[type="submit"]'
+        );
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Creating account...";
+
+        let createdUser = null;
+
+        try {
+
+            // Create customer account in Firebase Authentication
+            const userCredential = await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+            createdUser = userCredential.user;
+
+            // Save customer information in Cloud Firestore
+            await setDoc(doc(db, "users", createdUser.uid), {
+
+                userId: createdUser.uid,
                 firstName: firstName,
                 lastName: lastName,
                 age: age,
@@ -78,24 +121,68 @@
                 email: email,
                 address: address,
                 username: username,
-                createdAt: new Date().toISOString()
+
+                // Identify this account as a customer
+                role: "customer",
+
+                createdAt: serverTimestamp()
+
             });
 
-            successAlert.textContent = "Account created successfully! Redirecting to login...";
-            successAlert.style.display = 'block';
+            // Sign out after registration
+            await signOut(auth);
 
-            // Redirect to login page after 1.5 seconds
+            successAlert.textContent =
+                "Account created successfully! Redirecting to login...";
+
+            successAlert.style.display = "block";
+
+            signupForm.reset();
+
             setTimeout(() => {
-                window.location.href = 'login.html';
+                window.location.href = "login.html";
             }, 1500);
 
         } catch (error) {
-            console.error("Signup Error:", error);
-            errorAlert.textContent = error.message;
-            errorAlert.style.display = 'block';
+
+            console.error("Customer signup error:", error);
+
+            // If Firestore saving failed after account creation,
+            // sign out but do not attempt to create the account again.
+            if (createdUser && auth.currentUser) {
+                try {
+                    await signOut(auth);
+                } catch (signOutError) {
+                    console.error("Sign out error:", signOutError);
+                }
+            }
+
+            if (error.code === "auth/email-already-in-use") {
+                showError("This email address is already registered.");
+
+            } else if (error.code === "auth/invalid-email") {
+                showError("Please enter a valid email address.");
+
+            } else if (error.code === "auth/weak-password") {
+                showError("Please choose a stronger password.");
+
+            } else if (error.code === "permission-denied") {
+                showError(
+                    "Account authentication succeeded, but Firestore denied saving your profile. Please check your security rules."
+                );
+
+            } else {
+                showError("Registration failed: " + error.message);
+            }
+
+        } finally {
+
+            submitButton.disabled = false;
+            submitButton.textContent = "Sign Up";
         }
     });
 </script>
-
 </body>
 </html>
+
+

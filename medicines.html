@@ -372,11 +372,11 @@
 
 </div>
 
-<!-- Firebase SDKs & Add to Cart Logic -->
+<!-- Firebase SDKs & Firestore Add to Cart Logic -->
 <script type="module">
     import { db, auth } from "./script.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { ref, get, push, set, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { collection, addDoc, query, where, getDocs, updateDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // 1. Verify Authentication on Load
     onAuthStateChanged(auth, (user) => {
@@ -386,7 +386,7 @@
         }
     });
 
-    // 2. Add to Cart Function
+    // 2. Add to Cart Function (Cloud Firestore)
     window.addToCart = async function(medicineName, price) {
         const user = auth.currentUser;
         if (!user) {
@@ -395,36 +395,29 @@
             return;
         }
 
-        const cartRef = ref(db, `cart/${user.uid}`);
-
         try {
-            const snapshot = await get(cartRef);
-            let existingKey = null;
-            let currentQty = 0;
+            const cartRef = collection(db, "cart");
+            // Query to see if this user already has this item in their cart
+            const q = query(cartRef, where("userId", "==", user.uid), where("medicine_name", "==", medicineName));
+            const querySnapshot = await getDocs(q);
 
-            if (snapshot.exists()) {
-                const items = snapshot.val();
-                for (const [key, item] of Object.entries(items)) {
-                    if (item.medicine_name.toLowerCase() === medicineName.toLowerCase()) {
-                        existingKey = key;
-                        currentQty = item.quantity;
-                        break;
-                    }
-                }
-            }
-
-            if (existingKey) {
-                // Increment quantity if item already exists
-                await update(ref(db, `cart/${user.uid}/${existingKey}`), {
+            if (!querySnapshot.empty) {
+                // Item exists, increment quantity
+                const docSnap = querySnapshot.docs[0];
+                const currentQty = docSnap.data().quantity || 1;
+                const itemRef = doc(db, "cart", docSnap.id);
+                
+                await updateDoc(itemRef, {
                     quantity: currentQty + 1
                 });
             } else {
                 // Add new item to cart
-                const newItemRef = push(cartRef);
-                await set(newItemRef, {
+                await addDoc(cartRef, {
+                    userId: user.uid,
                     medicine_name: medicineName,
                     price: price,
-                    quantity: 1
+                    quantity: 1,
+                    created_at: serverTimestamp()
                 });
             }
 
@@ -461,7 +454,6 @@ function searchMedicine(){
     }
 }
 </script>
-
 
 </body>
 </html>
