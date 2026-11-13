@@ -1,254 +1,891 @@
 import { auth, db } from "./firebase.js";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import {
-  collection, doc, getDoc, onSnapshot, query, orderBy,
-  updateDoc, addDoc, serverTimestamp
-} from "firebase/firestore";
 
-const tableBody = document.getElementById("prescriptionsTableBody");
-const loadingMessage = document.getElementById("loadingMessage");
-const errorMessage = document.getElementById("errorMessage");
-const modal = document.getElementById("prescriptionModal");
-const details = document.getElementById("prescriptionDetails");
-const fileSection = document.getElementById("fileSection");
-const reviewMessage = document.getElementById("reviewMessage");
-const rejectionReason = document.getElementById("rejectionReason");
-const approveButton = document.getElementById("approveButton");
-const rejectButton = document.getElementById("rejectButton");
+import {
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+import {
+    collection,
+    doc,
+    getDoc,
+    onSnapshot,
+    query,
+    orderBy,
+    updateDoc,
+    addDoc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+
+/* ==========================================
+   HTML ELEMENTS
+========================================== */
+
+const totalPrescriptions =
+    document.getElementById("totalPrescriptions");
+
+const pendingPrescriptions =
+    document.getElementById("pendingPrescriptions");
+
+const approvedPrescriptions =
+    document.getElementById("approvedPrescriptions");
+
+const rejectedPrescriptions =
+    document.getElementById("rejectedPrescriptions");
+
+const prescriptionsTableBody =
+    document.getElementById("prescriptionsTableBody");
+
+const loadingMessage =
+    document.getElementById("loadingMessage");
+
+const errorMessage =
+    document.getElementById("errorMessage");
+
+const searchPrescription =
+    document.getElementById("searchPrescription");
+
+const prescriptionModal =
+    document.getElementById("prescriptionModal");
+
+const prescriptionDetails =
+    document.getElementById("prescriptionDetails");
+
+const fileSection =
+    document.getElementById("fileSection");
+
+const closeModal =
+    document.getElementById("closeModal");
+
+const approveButton =
+    document.getElementById("approveButton");
+
+const rejectButton =
+    document.getElementById("rejectButton");
+
+const rejectionReason =
+    document.getElementById("rejectionReason");
+
+const reviewMessage =
+    document.getElementById("reviewMessage");
+
+const logoutLink =
+    document.getElementById("logoutLink");
+
+
+/* ==========================================
+   GLOBAL VARIABLES
+========================================== */
 
 let allPrescriptions = [];
 let selectedPrescription = null;
 let currentAdmin = null;
 let unsubscribePrescriptions = null;
 
+
+/* ==========================================
+   HELPER FUNCTIONS
+========================================== */
+
+// Safely display text in the HTML.
 function safeText(value) {
-  return value === null || value === undefined || value === "" ? "Not provided" : String(value);
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
+
+// Format Firestore dates.
 function formatDate(value) {
-  if (!value) return "Not provided";
-  const date = typeof value.toDate === "function" ? value.toDate() : new Date(value);
-  return Number.isNaN(date.getTime()) ? "Not provided" : date.toLocaleString();
+
+    if (!value) {
+        return "Not available";
+    }
+
+    let date;
+
+    if (value.toDate) {
+        date = value.toDate();
+    } else {
+        date = new Date(value);
+    }
+
+    if (Number.isNaN(date.getTime())) {
+        return "Not available";
+    }
+
+    return date.toLocaleString("en-ZA", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
 }
 
-function getStatus(data) {
-  return String(data.status || "Pending").trim();
+
+// Get prescription status.
+function getStatus(prescription) {
+
+    const status = String(
+        prescription.status || "Pending"
+    ).toLowerCase();
+
+    if (status === "approved") {
+        return "Approved";
+    }
+
+    if (status === "rejected") {
+        return "Rejected";
+    }
+
+    return "Pending";
 }
+
+
+// Get customer name.
+function getCustomerName(prescription) {
+
+    return (
+        prescription.customerName ||
+        prescription.fullName ||
+        prescription.name ||
+        prescription.userName ||
+        prescription.email ||
+        "Unknown customer"
+    );
+}
+
+
+// Get prescription number.
+function getPrescriptionNumber(prescription, id) {
+
+    return (
+        prescription.prescriptionNumber ||
+        prescription.prescriptionNo ||
+        prescription.referenceNumber ||
+        id
+    );
+}
+
+
+// Get prescription file URL.
+function getFileUrl(prescription) {
+
+    return (
+        prescription.fileUrl ||
+        prescription.downloadURL ||
+        prescription.downloadUrl ||
+        prescription.imageUrl ||
+        prescription.imageURL ||
+        ""
+    );
+}
+
+
+// Display errors.
+function showError(message) {
+
+    if (errorMessage) {
+        errorMessage.textContent = message;
+    }
+
+    console.error(message);
+}
+
+
+/* ==========================================
+   ADMIN AUTHENTICATION
+========================================== */
+
+onAuthStateChanged(auth, async (user) => {
+
+    try {
+
+        if (!user) {
+
+            window.location.href = "admin-login.html";
+            return;
+        }
+
+        currentAdmin = user;
+
+        // Get admin profile from Firestore.
+        const adminRef = doc(db, "users", user.uid);
+
+        const adminSnapshot = await getDoc(adminRef);
+
+        if (!adminSnapshot.exists()) {
+
+            await signOut(auth);
+
+            alert("Access denied. Admin profile not found.");
+
+            window.location.href = "admin-login.html";
+            return;
+        }
+
+        const adminData = adminSnapshot.data();
+
+        // Check admin role.
+        if (String(adminData.role || "").toLowerCase() !== "admin") {
+
+            await signOut(auth);
+
+            alert("Access denied. Administrator privileges required.");
+
+            window.location.href = "admin-login.html";
+            return;
+        }
+
+        // Admin verified. Load prescriptions.
+        loadPrescriptions();
+
+    } catch (error) {
+
+        console.error("Admin authentication error:", error);
+
+        showError(
+            "Unable to verify administrator access: " +
+            (error.message || error.code || "Unknown error")
+        );
+    }
+});
+
+
+/* ==========================================
+   LOAD PRESCRIPTIONS FROM FIRESTORE
+========================================== */
+
+function loadPrescriptions() {
+
+    loadingMessage.textContent = "Loading prescriptions...";
+
+    errorMessage.textContent = "";
+
+    const prescriptionsRef = collection(db, "prescriptions");
+
+    const prescriptionsQuery = query(
+        prescriptionsRef,
+        orderBy("createdAt", "desc")
+    );
+
+    unsubscribePrescriptions = onSnapshot(
+        prescriptionsQuery,
+
+        (snapshot) => {
+
+            allPrescriptions = [];
+
+            snapshot.forEach((documentSnapshot) => {
+
+                allPrescriptions.push({
+                    id: documentSnapshot.id,
+                    ...documentSnapshot.data()
+                });
+
+            });
+
+            loadingMessage.textContent = "";
+
+            updateSummary();
+
+            displayPrescriptions();
+
+            // Refresh the open modal if its prescription changes.
+            if (selectedPrescription) {
+
+                const updatedPrescription = allPrescriptions.find(
+                    item => item.id === selectedPrescription.id
+                );
+
+                if (updatedPrescription) {
+                    selectedPrescription = updatedPrescription;
+                    openPrescriptionDetails(updatedPrescription);
+                }
+            }
+
+        },
+
+        (error) => {
+
+            console.error("Prescription loading error:", error);
+
+            loadingMessage.textContent = "";
+
+            showError(
+                "Could not load prescriptions. " +
+                (error.message || error.code || "Unknown error")
+            );
+
+        }
+    );
+}
+
+
+/* ==========================================
+   UPDATE SUMMARY CARDS
+========================================== */
 
 function updateSummary() {
-  document.getElementById("totalPrescriptions").textContent = allPrescriptions.length;
-  document.getElementById("pendingPrescriptions").textContent = allPrescriptions.filter(p => getStatus(p) === "Pending").length;
-  document.getElementById("approvedPrescriptions").textContent = allPrescriptions.filter(p => getStatus(p) === "Approved").length;
-  document.getElementById("rejectedPrescriptions").textContent = allPrescriptions.filter(p => getStatus(p) === "Rejected").length;
+
+    const total = allPrescriptions.length;
+
+    const pending = allPrescriptions.filter(
+        item => getStatus(item) === "Pending"
+    ).length;
+
+    const approved = allPrescriptions.filter(
+        item => getStatus(item) === "Approved"
+    ).length;
+
+    const rejected = allPrescriptions.filter(
+        item => getStatus(item) === "Rejected"
+    ).length;
+
+    totalPrescriptions.textContent = total;
+
+    pendingPrescriptions.textContent = pending;
+
+    approvedPrescriptions.textContent = approved;
+
+    rejectedPrescriptions.textContent = rejected;
 }
 
-function renderPrescriptions(searchTerm = "") {
-  tableBody.replaceChildren();
-  const term = searchTerm.trim().toLowerCase();
-  const filtered = allPrescriptions.filter(p => {
-    const customer = String(p.patientName || p.customerName || "").toLowerCase();
-    const number = String(p.prescriptionNumber || "").toLowerCase();
-    return customer.includes(term) || number.includes(term);
-  });
 
-  if (filtered.length === 0) {
-    const row = document.createElement("tr");
-    const cell = document.createElement("td");
-    cell.colSpan = 6;
-    cell.textContent = "No prescriptions found.";
-    row.appendChild(cell);
-    tableBody.appendChild(row);
-    return;
-  }
+/* ==========================================
+   DISPLAY PRESCRIPTIONS TABLE
+========================================== */
 
-  filtered.forEach(p => {
-    const row = document.createElement("tr");
-    const values = [
-      p.patientName || p.customerName || "Not provided",
-      p.prescriptionNumber || "Not provided",
-      formatDate(p.createdAt || p.prescriptionDate),
-      p.fileName || (p.fileUpload ? "Uploaded" : "No file recorded"),
-      getStatus(p)
-    ];
-    values.forEach(value => {
-      const cell = document.createElement("td");
-      cell.textContent = String(value);
-      row.appendChild(cell);
-    });
-    const actionCell = document.createElement("td");
-    const viewButton = document.createElement("button");
-    viewButton.type = "button";
-    viewButton.className = "view-button";
-    viewButton.textContent = "Review";
-    viewButton.addEventListener("click", () => openPrescription(p));
-    actionCell.appendChild(viewButton);
-    row.appendChild(actionCell);
-    tableBody.appendChild(row);
-  });
-}
+function displayPrescriptions() {
 
-function addDetail(label, value) {
-  const p = document.createElement("p");
-  const strong = document.createElement("strong");
-  strong.textContent = label + ": ";
-  p.append(strong, document.createTextNode(safeText(value)));
-  details.appendChild(p);
-}
+    const searchTerm = (
+        searchPrescription.value || ""
+    ).toLowerCase().trim();
 
-function openPrescription(prescription) {
-  selectedPrescription = prescription;
-  details.replaceChildren();
-  fileSection.replaceChildren();
-  reviewMessage.textContent = "";
-  rejectionReason.value = prescription.rejectionReason || "";
+    const filteredPrescriptions = allPrescriptions.filter(
+        prescription => {
 
-  addDetail("Customer", prescription.patientName || prescription.customerName);
-  addDetail("Prescription number", prescription.prescriptionNumber);
-  addDetail("Doctor", prescription.doctorName);
-  addDetail("Prescription date", formatDate(prescription.prescriptionDate));
-  addDetail("Submitted", formatDate(prescription.createdAt));
-  addDetail("Delivery method", prescription.deliveryMethod);
-  addDetail("Additional notes", prescription.additionalNotes || prescription.additionalNo);
-  addDetail("Status", getStatus(prescription));
+            const customer = getCustomerName(
+                prescription
+            ).toLowerCase();
 
-  const fileName = prescription.fileName;
-  const fileUrl = prescription.fileUrl || prescription.downloadURL || prescription.downloadUrl;
-  const fileText = document.createElement("p");
-  fileText.textContent = "File: " + safeText(fileName);
-  fileSection.appendChild(fileText);
-  if (fileUrl) {
-    try {
-      const parsedUrl = new URL(fileUrl);
-      if (parsedUrl.protocol === "https:") {
-        const link = document.createElement("a");
-        link.href = parsedUrl.href;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.textContent = "Open uploaded prescription";
-        fileSection.appendChild(link);
-      } else {
-        const note = document.createElement("p");
-        note.textContent = "The saved file link is not a secure HTTPS link.";
-        fileSection.appendChild(note);
-      }
-    } catch {
-      const note = document.createElement("p");
-      note.textContent = "No valid uploaded file link was found.";
-      fileSection.appendChild(note);
+            const number = getPrescriptionNumber(
+                prescription,
+                prescription.id
+            ).toLowerCase();
+
+            const email = String(
+                prescription.email || ""
+            ).toLowerCase();
+
+            return (
+                customer.includes(searchTerm) ||
+                number.includes(searchTerm) ||
+                email.includes(searchTerm)
+            );
+
+        }
+    );
+
+    prescriptionsTableBody.innerHTML = "";
+
+    if (filteredPrescriptions.length === 0) {
+
+        prescriptionsTableBody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    No prescriptions found.
+                </td>
+            </tr>
+        `;
+
+        return;
     }
-  } else {
-    const note = document.createElement("p");
-    note.textContent = "No downloadable file URL is saved. Only prescription details are available.";
-    fileSection.appendChild(note);
-  }
 
-  const alreadyReviewed = ["Approved", "Rejected"].includes(getStatus(prescription));
-  approveButton.disabled = alreadyReviewed;
-  rejectButton.disabled = alreadyReviewed;
-  approveButton.style.opacity = alreadyReviewed ? "0.5" : "1";
-  rejectButton.style.opacity = alreadyReviewed ? "0.5" : "1";
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+    filteredPrescriptions.forEach((prescription) => {
+
+        const status = getStatus(prescription);
+
+        const fileUrl = getFileUrl(prescription);
+
+        const fileDisplay = fileUrl
+            ? `<a href="${safeText(fileUrl)}"
+                 target="_blank"
+                 rel="noopener noreferrer">View file</a>`
+            : "No file";
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${safeText(getCustomerName(prescription))}</td>
+
+            <td>
+                ${safeText(
+                    getPrescriptionNumber(
+                        prescription,
+                        prescription.id
+                    )
+                )}
+            </td>
+
+            <td>
+                ${safeText(formatDate(prescription.createdAt))}
+            </td>
+
+            <td>${fileDisplay}</td>
+
+            <td>
+                <span class="status ${status.toLowerCase()}">
+                    ${status}
+                </span>
+            </td>
+
+            <td>
+                <button
+                    type="button"
+                    class="view-button"
+                    data-prescription-id="${safeText(prescription.id)}">
+                    View
+                </button>
+            </td>
+        `;
+
+        prescriptionsTableBody.appendChild(row);
+
+    });
+
 }
 
-function closeModal() {
-  modal.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  selectedPrescription = null;
-}
 
-async function reviewPrescription(newStatus) {
-  if (!selectedPrescription || !currentAdmin) return;
-  const reason = rejectionReason.value.trim();
-  if (newStatus === "Rejected" && !reason) {
-    reviewMessage.textContent = "Please enter a reason for rejecting this prescription.";
-    return;
-  }
-  if (["Approved", "Rejected"].includes(getStatus(selectedPrescription))) {
-    reviewMessage.textContent = "This prescription has already been reviewed.";
-    return;
-  }
+/* ==========================================
+   OPEN PRESCRIPTION DETAILS
+========================================== */
 
-  approveButton.disabled = true;
-  rejectButton.disabled = true;
-  reviewMessage.textContent = "Saving review...";
-  try {
-    const prescriptionRef = doc(db, "prescriptions", selectedPrescription.id);
-    const updateData = {
-      status: newStatus,
-      reviewedAt: serverTimestamp(),
-      reviewedBy: currentAdmin.uid,
-      reviewedByEmail: currentAdmin.email || ""
-    };
-    if (newStatus === "Rejected") {
-      updateData.rejectionReason = reason;
+function openPrescriptionDetails(prescription) {
+
+    selectedPrescription = prescription;
+
+    const status = getStatus(prescription);
+
+    prescriptionDetails.innerHTML = `
+
+        <p>
+            <strong>Customer:</strong>
+            ${safeText(getCustomerName(prescription))}
+        </p>
+
+        <p>
+            <strong>Email:</strong>
+            ${safeText(prescription.email || "Not provided")}
+        </p>
+
+        <p>
+            <strong>Phone:</strong>
+            ${safeText(
+                prescription.phone ||
+                prescription.phoneNumber ||
+                "Not provided"
+            )}
+        </p>
+
+        <p>
+            <strong>Prescription number:</strong>
+            ${safeText(
+                getPrescriptionNumber(
+                    prescription,
+                    prescription.id
+                )
+            )}
+        </p>
+
+        <p>
+            <strong>Medication:</strong>
+            ${safeText(
+                prescription.medicationName ||
+                prescription.medication ||
+                "Not specified"
+            )}
+        </p>
+
+        <p>
+            <strong>Date submitted:</strong>
+            ${safeText(formatDate(prescription.createdAt))}
+        </p>
+
+        <p>
+            <strong>Status:</strong>
+            ${safeText(status)}
+        </p>
+
+        <p>
+            <strong>Customer notes:</strong>
+            ${safeText(
+                prescription.notes ||
+                prescription.description ||
+                "No additional notes"
+            )}
+        </p>
+
+        ${
+            prescription.rejectionReason
+                ? `<p>
+                    <strong>Rejection reason:</strong>
+                    ${safeText(prescription.rejectionReason)}
+                  </p>`
+                : ""
+        }
+
+    `;
+
+    const fileUrl = getFileUrl(prescription);
+
+    if (fileUrl) {
+
+        fileSection.innerHTML = `
+            <strong>Prescription document:</strong>
+            <p>
+                <a href="${safeText(fileUrl)}"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    Open uploaded prescription
+                </a>
+            </p>
+        `;
+
     } else {
-      updateData.rejectionReason = "";
+
+        fileSection.textContent =
+            "No prescription file was attached.";
+
     }
-    await updateDoc(prescriptionRef, updateData);
-    await addDoc(collection(db, "prescriptions", selectedPrescription.id, "reviewHistory"), {
-      fromStatus: getStatus(selectedPrescription),
-      toStatus: newStatus,
-      reason: newStatus === "Rejected" ? reason : "",
-      reviewedAt: serverTimestamp(),
-      reviewedBy: currentAdmin.uid,
-      reviewedByEmail: currentAdmin.email || ""
-    });
-    reviewMessage.textContent = "Prescription " + newStatus.toLowerCase() + " successfully.";
-  } catch (error) {
-    console.error("Prescription review error:", error);
-    reviewMessage.textContent = "Unable to save the review: " + (error.message || "Please try again.");
-    approveButton.disabled = false;
-    rejectButton.disabled = false;
-  }
+
+    // Prevent reviewing an already reviewed prescription.
+    const canReview = status === "Pending";
+
+    approveButton.disabled = !canReview;
+
+    rejectButton.disabled = !canReview;
+
+    approveButton.style.opacity =
+        canReview ? "1" : "0.5";
+
+    rejectButton.style.opacity =
+        canReview ? "1" : "0.5";
+
+    rejectionReason.value = "";
+
+    reviewMessage.textContent = "";
+
+    prescriptionModal.classList.add("open");
+
+    prescriptionModal.setAttribute("aria-hidden", "false");
 }
 
-document.getElementById("searchPrescription").addEventListener("input", event => {
-  renderPrescriptions(event.target.value);
-});
-document.getElementById("closeModal").addEventListener("click", closeModal);
-modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
-approveButton.addEventListener("click", () => reviewPrescription("Approved"));
-rejectButton.addEventListener("click", () => reviewPrescription("Rejected"));
 
-document.getElementById("logoutLink").addEventListener("click", async event => {
-  event.preventDefault();
-  if (unsubscribePrescriptions) unsubscribePrescriptions();
-  await signOut(auth);
-  window.location.href = "login.html";
-});
+/* ==========================================
+   VIEW BUTTON
+========================================== */
 
-onAuthStateChanged(auth, async user => {
-  if (!user) {
-    window.location.href = "admin-login.html";
-    return;
-  }
-  try {
-    const adminSnapshot = await getDoc(doc(db, "users", user.uid));
-    if (!adminSnapshot.exists() || String(adminSnapshot.data().role || "").toLowerCase() !== "admin") {
-      await signOut(auth);
-      window.location.href = "admin-login.html";
-      return;
+prescriptionsTableBody.addEventListener("click", (event) => {
+
+    const button = event.target.closest(
+        "[data-prescription-id]"
+    );
+
+    if (!button) {
+        return;
     }
-    currentAdmin = user;
-    const prescriptionsQuery = query(collection(db, "prescriptions"), orderBy("createdAt", "desc"));
-    unsubscribePrescriptions = onSnapshot(prescriptionsQuery, snapshot => {
-      allPrescriptions = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-      loadingMessage.textContent = "";
-      errorMessage.textContent = "";
-      updateSummary();
-      renderPrescriptions(document.getElementById("searchPrescription").value);
-      if (selectedPrescription) {
-        const latest = allPrescriptions.find(p => p.id === selectedPrescription.id);
-        if (latest) selectedPrescription = latest;
-      }
-    }, error => {
-      console.error("Prescription listener error:", error);
-      loadingMessage.textContent = "";
-      errorMessage.textContent = "Could not load prescriptions: " + error.message;
-    });
-  } catch (error) {
-    console.error("Admin verification error:", error);
-    errorMessage.textContent = "Unable to verify administrator access.";
-  }
+
+    const prescriptionId =
+        button.dataset.prescriptionId;
+
+    const prescription = allPrescriptions.find(
+        item => item.id === prescriptionId
+    );
+
+    if (prescription) {
+        openPrescriptionDetails(prescription);
+    }
+
+});
+
+
+/* ==========================================
+   CLOSE MODAL
+========================================== */
+
+function closePrescriptionModal() {
+
+    prescriptionModal.classList.remove("open");
+
+    prescriptionModal.setAttribute("aria-hidden", "true");
+
+    selectedPrescription = null;
+
+    reviewMessage.textContent = "";
+}
+
+
+closeModal.addEventListener(
+    "click",
+    closePrescriptionModal
+);
+
+
+// Close modal when clicking outside the content.
+prescriptionModal.addEventListener("click", (event) => {
+
+    if (event.target === prescriptionModal) {
+        closePrescriptionModal();
+    }
+
+});
+
+
+/* ==========================================
+   APPROVE PRESCRIPTION
+========================================== */
+
+approveButton.addEventListener("click", async () => {
+
+    if (!selectedPrescription || !currentAdmin) {
+        return;
+    }
+
+    if (getStatus(selectedPrescription) !== "Pending") {
+        reviewMessage.textContent =
+            "This prescription has already been reviewed.";
+        return;
+    }
+
+    try {
+
+        approveButton.disabled = true;
+        rejectButton.disabled = true;
+
+        reviewMessage.textContent =
+            "Approving prescription...";
+
+        const prescriptionId =
+            selectedPrescription.id;
+
+        const prescriptionRef = doc(
+            db,
+            "prescriptions",
+            prescriptionId
+        );
+
+        // Update prescription status.
+        await updateDoc(prescriptionRef, {
+
+            status: "Approved",
+
+            reviewedAt: serverTimestamp(),
+
+            reviewedBy: currentAdmin.uid,
+
+            reviewedByEmail: currentAdmin.email || ""
+
+        });
+
+
+        // Save review history.
+        await addDoc(
+            collection(
+                db,
+                "prescriptions",
+                prescriptionId,
+                "reviewHistory"
+            ),
+            {
+
+                action: "Approved",
+
+                reviewedBy: currentAdmin.uid,
+
+                reviewedByEmail: currentAdmin.email || "",
+
+                reviewedAt: serverTimestamp()
+
+            }
+        );
+
+
+        reviewMessage.textContent =
+            "Prescription approved successfully.";
+
+    } catch (error) {
+
+        console.error("Approval error:", error);
+
+        reviewMessage.textContent =
+            "Approval failed: " +
+            (error.message || error.code || "Unknown error");
+
+        approveButton.disabled = false;
+        rejectButton.disabled = false;
+
+    }
+
+});
+
+
+/* ==========================================
+   REJECT PRESCRIPTION
+========================================== */
+
+rejectButton.addEventListener("click", async () => {
+
+    if (!selectedPrescription || !currentAdmin) {
+        return;
+    }
+
+    if (getStatus(selectedPrescription) !== "Pending") {
+        reviewMessage.textContent =
+            "This prescription has already been reviewed.";
+        return;
+    }
+
+    const reason = rejectionReason.value.trim();
+
+    if (!reason) {
+
+        reviewMessage.textContent =
+            "Please enter a rejection reason.";
+
+        rejectionReason.focus();
+
+        return;
+    }
+
+    try {
+
+        approveButton.disabled = true;
+        rejectButton.disabled = true;
+
+        reviewMessage.textContent =
+            "Rejecting prescription...";
+
+        const prescriptionId =
+            selectedPrescription.id;
+
+        const prescriptionRef = doc(
+            db,
+            "prescriptions",
+            prescriptionId
+        );
+
+        // Update prescription status.
+        await updateDoc(prescriptionRef, {
+
+            status: "Rejected",
+
+            rejectionReason: reason,
+
+            reviewedAt: serverTimestamp(),
+
+            reviewedBy: currentAdmin.uid,
+
+            reviewedByEmail: currentAdmin.email || ""
+
+        });
+
+
+        // Save review history.
+        await addDoc(
+            collection(
+                db,
+                "prescriptions",
+                prescriptionId,
+                "reviewHistory"
+            ),
+            {
+
+                action: "Rejected",
+
+                rejectionReason: reason,
+
+                reviewedBy: currentAdmin.uid,
+
+                reviewedByEmail: currentAdmin.email || "",
+
+                reviewedAt: serverTimestamp()
+
+            }
+        );
+
+
+        reviewMessage.textContent =
+            "Prescription rejected successfully.";
+
+    } catch (error) {
+
+        console.error("Rejection error:", error);
+
+        reviewMessage.textContent =
+            "Rejection failed: " +
+            (error.message || error.code || "Unknown error");
+
+        approveButton.disabled = false;
+        rejectButton.disabled = false;
+
+    }
+
+});
+
+
+/* ==========================================
+   SEARCH PRESCRIPTIONS
+========================================== */
+
+searchPrescription.addEventListener(
+    "input",
+    displayPrescriptions
+);
+
+
+/* ==========================================
+   ADMIN LOGOUT
+========================================== */
+
+logoutLink.addEventListener("click", async (event) => {
+
+    event.preventDefault();
+
+    try {
+
+        if (unsubscribePrescriptions) {
+            unsubscribePrescriptions();
+        }
+
+        await signOut(auth);
+
+        window.location.href = "admin-login.html";
+
+    } catch (error) {
+
+        console.error("Logout error:", error);
+
+        showError(
+            "Could not log out. " +
+            (error.message || error.code || "Unknown error")
+        );
+
+    }
+
+});
+
+
+
+window.addEventListener("beforeunload", () => {
+
+    if (unsubscribePrescriptions) {
+        unsubscribePrescriptions();
+    }
+
 });
