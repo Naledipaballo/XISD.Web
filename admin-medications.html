@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Medications | Pill Point Delivery</title>
+  <link rel="stylesheet" href="admin-medications.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>Pill Point</h2>
+      <p>Admin Panel</p>
+      <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-orders.html">Manage Orders</a>
+        <a href="admin-prescriptions.html">Prescriptions</a>
+        <a class="active" href="admin-medications.html">Medications</a>
+        <a href="admin-customers.html">Customers</a>
+        <a href="#" id="logoutLink">Logout</a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <h1>Manage Medications</h1>
+          <p>Add, update and manage medicines available to customers.</p>
+        </div>
+        <button id="addMedicationButton" class="primary-button">+ Add Medication</button>
+      </header>
+
+      <section class="summary-grid">
+        <article class="summary-card"><span>Total medications</span><strong id="totalMedications">0</strong></article>
+        <article class="summary-card"><span>Available</span><strong id="availableMedications">0</strong></article>
+        <article class="summary-card"><span>Out of stock</span><strong id="outOfStockMedications">0</strong></article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Medication Inventory</h2>
+          <input type="search" id="searchMedication" placeholder="Search medication name or category">
+        </div>
+        <p id="loadingMessage">Loading medications...</p>
+        <p id="errorMessage" class="error" role="alert"></p>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Medication</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Availability</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="medicationsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="medicationModal" aria-hidden="true">
+    <div class="modal-content">
+      <button type="button" id="closeModal" class="close-button" aria-label="Close">&times;</button>
+      <h2 id="modalTitle">Add Medication</h2>
+      <form id="medicationForm">
+        <label for="medicationName">Medication name</label>
+        <input id="medicationName" type="text" required maxlength="100">
+
+        <label for="medicationCategory">Category</label>
+        <input id="medicationCategory" type="text" required maxlength="80" placeholder="e.g. Pain Relief">
+
+        <label for="medicationDescription">Description</label>
+        <textarea id="medicationDescription" rows="3" maxlength="1000"></textarea>
+
+        <div class="form-grid">
+          <div>
+            <label for="medicationPrice">Price (R)</label>
+            <input id="medicationPrice" type="number" min="0" step="0.01" required>
+          </div>
+          <div>
+            <label for="medicationStock">Stock quantity</label>
+            <input id="medicationStock" type="number" min="0" step="1" required>
+          </div>
+        </div>
+
+        <label for="medicationImage">Image URL (optional)</label>
+        <input id="medicationImage" type="url" placeholder="https://example.com/image.jpg">
+
+        <label class="checkbox-label"><input id="medicationAvailable" type="checkbox" checked> Available for customers</label>
+        <button type="submit" id="saveMedicationButton" class="primary-button">Save Medication</button>
+        <p id="formMessage" role="status"></p>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="admin-medications.js"></script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Pill Point Delivery</title>
+    <link rel="stylesheet" href="admin-dashboard.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>Pill Point</h2>
+    <p class="admin-label">ADMIN PANEL</p>
+
+    <a href="admin-dashboard.html" class="active">Dashboard</a>
+    <a href="admin-orders.html">Manage Orders</a>
+    <a href="admin-prescriptions.html">Prescriptions</a>
+    <a href="admin-medications.html">Medications</a>
+    <a href="admin-customers.html">Customers</a>
+
+    <button id="logoutButton">Logout</button>
+</div>
+
+<main class="main-content">
+
+    <header class="topbar">
+        <div>
+            <h1>Admin Dashboard</h1>
+            <p>Welcome to Pill Point Delivery Management</p>
+        </div>
+        <div class="admin-info">
+            <span>Administrator</span>
+        </div>
+    </header>
+
+    <section class="summary-cards">
+
+        <div class="card">
+            <div class="card-icon">📦</div>
+            <h3>Total Orders</h3>
+            <p id="totalOrders">0</p>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">👥</div>
+            <h3>Total Customers</h3>
+            <p id="totalCustomers">0</p>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">📋</div>
+            <h3>Prescriptions</h3>
+            <p id="totalPrescriptions">0</p>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">💊</div>
+            <h3>Medications</h3>
+            <p id="totalMedications">0</p>
+        </div>
+
+    </section>
+
+    <section class="dashboard-section">
+
+        <h2>Order Overview</h2>
+
+        <div class="status-cards">
+
+            <div class="status-card">
+                <h3>Pending</h3>
+                <p id="pendingOrders">0</p>
+            </div>
+
+            <div class="status-card">
+                <h3>Processing</h3>
+                <p id="processingOrders">0</p>
+            </div>
+
+            <div class="status-card">
+                <h3>Out for Delivery</h3>
+                <p id="deliveryOrders">0</p>
+            </div>
+
+            <div class="status-card">
+                <h3>Delivered</h3>
+                <p id="deliveredOrders">0</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+            <h2>Recent Orders</h2>
+            <a href="admin-orders.html">View All Orders</a>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="recentOrders">
+                    <tr>
+                        <td colspan="4">Loading orders...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+    <p id="dashboardError" class="error-message"></p>
+
+</main>
+
+<script type="module" src="admin-dashboard.js"></script>
+
+</body>
+</html>

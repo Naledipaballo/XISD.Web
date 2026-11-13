@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Prescriptions | Pill Point Delivery</title>
+  <link rel="stylesheet" href="admin-prescriptions.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>Pill Point</h2>
+      <p class="sidebar-subtitle">Admin Panel</p>
+      <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-orders.html">Manage Orders</a>
+        <a class="active" href="admin-prescriptions.html">Prescriptions</a>
+        <a href="admin-medications.html">Medications</a>
+        <a href="admin-customers.html">Customers</a>
+        <a href="#" id="logoutLink">Logout</a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <h1>Manage Prescriptions</h1>
+          <p>Review and manage customer prescription submissions.</p>
+        </div>
+      </header>
+
+      <section class="summary-grid">
+        <article class="summary-card"><span>Total prescriptions</span><strong id="totalPrescriptions">0</strong></article>
+        <article class="summary-card"><span>Pending review</span><strong id="pendingPrescriptions">0</strong></article>
+        <article class="summary-card"><span>Approved</span><strong id="approvedPrescriptions">0</strong></article>
+        <article class="summary-card"><span>Rejected</span><strong id="rejectedPrescriptions">0</strong></article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Customer Prescriptions</h2>
+          <input type="search" id="searchPrescription" placeholder="Search customer or prescription number">
+        </div>
+        <p id="loadingMessage">Loading prescriptions...</p>
+        <p id="errorMessage" class="error" role="alert"></p>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Prescription No.</th>
+                <th>Date submitted</th>
+                <th>File</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="prescriptionsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="prescriptionModal" aria-hidden="true">
+    <div class="modal-content">
+      <button type="button" class="close-button" id="closeModal" aria-label="Close">&times;</button>
+      <h2>Prescription Details</h2>
+      <div id="prescriptionDetails"></div>
+
+      <div id="fileSection" class="file-section"></div>
+
+      <label for="rejectionReason">Rejection reason (required when rejecting)</label>
+      <textarea id="rejectionReason" rows="3" placeholder="Explain why this prescription is being rejected"></textarea>
+
+      <div class="actions">
+        <button type="button" id="approveButton" class="approve-button">Approve</button>
+        <button type="button" id="rejectButton" class="reject-button">Reject</button>
+      </div>
+      <p id="reviewMessage" role="status"></p>
+    </div>
+  </div>
+
+  <script type="module" src="admin-prescriptions.js"></script>
+</body>
+</html>

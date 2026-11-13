@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Customers | Pill Point Delivery</title>
+  <link rel="stylesheet" href="admin-customers.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>Pill Point</h2>
+      <p class="sidebar-subtitle">Admin Panel</p>
+      <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-orders.html">Manage Orders</a>
+        <a href="admin-prescriptions.html">Prescriptions</a>
+        <a href="admin-medications.html">Medications</a>
+        <a class="active" href="admin-customers.html">Customers</a>
+        <a href="#" id="logoutLink">Logout</a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <h1>Customer Management</h1>
+          <p>View registered Pill Point Delivery customers.</p>
+        </div>
+      </header>
+
+      <section class="summary-grid">
+        <article class="summary-card">
+          <span>Total customers</span>
+          <strong id="totalCustomers">0</strong>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Registered Customers</h2>
+          <input
+            type="search"
+            id="searchCustomer"
+            placeholder="Search name, email or phone"
+          >
+        </div>
+
+        <p id="loadingMessage">Loading customers...</p>
+        <p id="errorMessage" class="error" role="alert"></p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Province</th>
+                <th>Date registered</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="customersTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="customerModal" aria-hidden="true">
+    <div class="modal-content">
+      <button
+        type="button"
+        id="closeModal"
+        class="close-button"
+        aria-label="Close"
+      >&times;</button>
+
+      <h2>Customer Details</h2>
+      <div id="customerDetails"></div>
+    </div>
+  </div>
+
+  <script type="module" src="admin-customers.js"></script>
+</body>
+</html>

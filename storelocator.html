@@ -3,360 +3,729 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Store Locator - Pill Point Delivery</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Store Locator | Pill Point Delivery</title>
 
-    <!-- Leaflet CSS for Interactive Map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
     <style>
-        .header {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #DFEEF3;
+            color: #003049;
+        }
+
+        header {
+            background: #003049;
+            color: white;
+            padding: 18px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            box-sizing: border-box;
-            background: #ffffff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
-        .header-title {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            margin: 0;
-            color: #003049;
+        header h2 {
+            font-size: 22px;
+        }
+
+        .menu-button {
+            background: #C1121F;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
         }
 
         .sidebar {
             height: 100%;
             width: 0;
             position: fixed;
-            z-index: 2000;
+            z-index: 1000;
             top: 0;
             left: 0;
-            background-color: #003049;
+            background: #003049;
             overflow-x: hidden;
             transition: 0.3s;
             padding-top: 60px;
         }
 
         .sidebar a {
-            padding: 10px 15px 10px 30px;
+            padding: 14px 25px;
             text-decoration: none;
-            font-size: 18px;
-            color: #fff;
+            font-size: 17px;
+            color: white;
             display: block;
-            transition: 0.3s;
         }
 
         .sidebar a:hover {
-            background-color: #669BBC;
+            background: #669BBC;
         }
 
-        .sidebar .closebtn {
+        .sidebar .close-button {
             position: absolute;
             top: 10px;
             right: 20px;
-            font-size: 36px;
+            font-size: 30px;
         }
 
-        .locator-container {
-            width: 90%;
-            max-width: 1000px;
-            margin: 110px auto 40px;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.10);
+        .container {
+            max-width: 1200px;
+            margin: 25px auto;
+            padding: 20px;
         }
 
-        .locator-container h2 {
-            color: #003049;
+        .page-title {
             margin-bottom: 10px;
         }
 
-        .search-wrapper {
+        .description {
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .search-section {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin: 20px 0;
-            width: 100%;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
-        .search-wrapper input {
-            width: 100%;
-            padding: 12px;
+        .search-section input {
+            flex: 1;
+            padding: 13px;
             border: 1px solid #ccc;
-            border-radius: 7px;
-            font-size: 16px;
-            outline: none;
-            box-sizing: border-box;
+            border-radius: 5px;
+            font-size: 15px;
         }
 
-        .btn {
-            background: #669BBC;
+        .search-section button {
+            background: #C1121F;
             color: white;
             border: none;
-            padding: 12px 22px;
-            border-radius: 7px;
+            padding: 13px 20px;
+            border-radius: 5px;
             cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            font-size: 16px;
-        }
-
-        .btn:hover {
-            background: #003049;
         }
 
         #map {
             width: 100%;
             height: 450px;
             border-radius: 10px;
-            border: 1px solid #cbd5e1;
-            margin-top: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #669BBC;
         }
 
-        .pharmacy-list {
-            margin-top: 25px;
+        .section-title {
+            margin-bottom: 15px;
+        }
+
+        #pharmacy-list-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
         }
 
         .pharmacy-card {
-            background: #DFEEF3;
-            border: 1px solid #bde0fe;
+            background: white;
+            padding: 18px;
             border-radius: 8px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            box-shadow: 0 2px 7px rgba(0,0,0,0.1);
         }
 
-        .pharmacy-card h4 {
+        .pharmacy-card h3 {
+            margin-bottom: 10px;
             color: #003049;
-            margin-bottom: 5px;
-            font-size: 16px;
         }
 
         .pharmacy-card p {
-            font-size: 13px;
-            color: #475569;
-            margin-bottom: 12px;
+            margin: 7px 0;
+            font-size: 14px;
+            overflow-wrap: anywhere;
         }
 
-        .select-btn {
-            background: #669BBC;
+        .pharmacy-card button {
+            margin-top: 12px;
+            background: #003049;
             color: white;
             border: none;
-            padding: 8px 14px;
+            padding: 10px 15px;
             border-radius: 5px;
             cursor: pointer;
-            font-weight: bold;
-            text-align: center;
         }
 
-        .select-btn:hover {
+        .pharmacy-card button:hover {
+            background: #669BBC;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .open {
+            color: green;
+        }
+
+        .closed {
+            color: #C1121F;
+        }
+
+        #message {
+            margin: 12px 0;
+            color: #003049;
+        }
+
+        footer {
+            margin-top: 30px;
+            padding: 20px;
+            text-align: center;
             background: #003049;
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .search-section {
+                flex-direction: column;
+            }
+
+            #map {
+                height: 350px;
+            }
         }
     </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
-<div class="header">
-    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
-    <h1 class="header-title">Store Locator</h1>
-    <a href="myaccount.html">
-        <img src="photo.jpeg" class="profile-icon" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-    </a>
-</div>
+    <!-- Navigation Sidebar -->
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-button"
+           onclick="closeNav()">&times;</a>
 
-<!-- SIDEBAR -->
-<div id="sidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="medicines.html">Shop Medication</a>
-    <a href="prescription.html">Prescription</a>
-    <a href="cart.html">My Cart</a>
-    <a href="trackorder.html">Track Order</a>
-    <a href="reminders.html">Reminders</a>
-    <a href="storelocator.html">Store Locator</a>
-    <a href="myaccount.html">My Account</a>
-    <a href="#" id="logout-link">Logout</a>
-</div>
-
-<!-- STORE LOCATOR -->
-<div class="locator-container">
-    <h2>Find a Partner Pharmacy</h2>
-    <p>Search your town or area to discover partner pharmacies near you. Click any pin on the map or select a pharmacy below to proceed directly to checkout.</p>
-
-    <!-- Search box -->
-    <div class="search-wrapper">
-        <input type="text" id="address" placeholder="Enter town or area (e.g. Springs, Brakpan, Benoni)">
-        <button onclick="findStore()" class="btn">Find Pharmacy</button>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="shop.html">Shop Medication</a>
+        <a href="cart.html">My Cart</a>
+        <a href="prescription.html">Upload Prescription</a>
+        <a href="reminders.html">Medication Reminders</a>
+        <a href="trackorder.html">Track Order</a>
+        <a href="storelocator.html">Store Locator</a>
+        <a href="myaccount.html">My Account</a>
+        <a href="#" id="logoutLink">Logout</a>
     </div>
 
-    <!-- Map Element -->
-    <div id="map"></div>
+    <!-- Header -->
+    <header>
+        <h2>Pill Point Delivery</h2>
+        <button class="menu-button" onclick="openNav()">☰ Menu</button>
+    </header>
 
-    <!-- Available Pharmacies Selection List -->
-    <h3 style="margin-top: 30px; color: #003049;">Partner Pharmacies</h3>
-    <div class="pharmacy-list" id="pharmacy-list-container">
-        <!-- Rendered via JavaScript -->
-    </div>
-</div>
+    <!-- Main Content -->
+    <main class="container">
 
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <h1 class="page-title">Pharmacy Store Locator</h1>
 
-<!-- Firebase SDKs & Client-Side Store Locator Logic -->
-<script type="module">
-    import { db, auth } from "./script.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        <p class="description">
+            Find pharmacies available through Pill Point Delivery.
+            Search for a location and view registered pharmacies on the map.
+        </p>
 
-    // Verify User Authentication
-    onAuthStateChanged(auth, (user) => {
-        if (!user) {
-            alert('Please login first.');
-            window.location.href = 'login.html';
-        }
-    });
+        <!-- Search -->
+        <div class="search-section">
+            <input
+                type="text"
+                id="address"
+                placeholder="Enter your location, suburb or city">
 
-    // Handle Logout
-    document.getElementById('logout-link').addEventListener('click', (e) => {
-        e.preventDefault();
-        signOut(auth).then(() => {
-            window.location.href = 'login.html';
-        }).catch((error) => {
-            console.error('Logout error:', error);
-        });
-    });
-</script>
+            <button onclick="findStore()">Search Location</button>
+        </div>
 
-<script>
-    var map;
-    var markersGroup;
+        <p id="message">Loading pharmacies...</p>
 
-    // Sample Partner Pharmacies Dataset
-    var pharmacies = [
-        { name: "Pill Point Central Pharmacy", address: "14 4th Street, Springs CBD, Springs", lat: -26.2550, lng: 28.4380 },
-        { name: "Dis-Chem Pharmacy Springs Mall", address: "Springs Mall, Jan Smuts Rd, Casseldale, Springs", lat: -26.2731, lng: 28.4485 },
-        { name: "Clicks Pharmacy Selection Park", address: "Selection Park Shopping Centre, Springs", lat: -26.2652, lng: 28.4290 },
-        { name: "Pill Point Brakpan Branch", address: "623 Voortrekker Rd, Brakpan", lat: -26.2361, lng: 28.3698 },
-        { name: "Clicks Pharmacy Mall@Range", address: "Mall at Range, Brakpan", lat: -26.2290, lng: 28.3580 }
-    ];
+        <!-- Map -->
+        <div id="map"></div>
 
-    document.addEventListener("DOMContentLoaded", function() {
-        // Center default view on Springs / East Rand
-        map = L.map('map').setView([-26.2585, 28.4398], 13);
+        <!-- Pharmacy List -->
+        <h2 class="section-title">Available Pharmacies</h2>
 
-        // Standard OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+        <div id="pharmacy-list-container">
+            <p>Loading pharmacy information...</p>
+        </div>
 
-        markersGroup = L.layerGroup().addTo(map);
+    </main>
 
-        renderPharmacies(pharmacies);
-    });
+    <footer>
+        <p>&copy; 2026 Pill Point Delivery. All rights reserved.</p>
+    </footer>
 
-    // Store selected pharmacy in localStorage and navigate to checkout
-    function selectPharmacy(name, address) {
-        localStorage.setItem('selected_pharmacy', JSON.stringify({
-            name: name,
-            address: address
-        }));
-        window.location.href = 'checkout.html';
-    }
+    <!-- Leaflet Map JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    function renderPharmacies(list) {
-        markersGroup.clearLayers();
-        var container = document.getElementById("pharmacy-list-container");
-        container.innerHTML = "";
+    <!-- Firebase and Store Locator JavaScript -->
+    <script type="module">
 
-        if (list.length === 0) {
-            container.innerHTML = "<p>No pharmacies found in this area. Showing all available branches.</p>";
-            return;
-        }
+        import { auth, db } from "./script.js";
 
-        list.forEach(function(pharm) {
-            // Add Map Marker
-            var marker = L.marker([pharm.lat, pharm.lng]).addTo(markersGroup);
-            
-            var popupContent = `
-                <div style="text-align:center; padding: 5px;">
-                    <b style="color:#003049;">${pharm.name}</b><br>
-                    <small>${pharm.address}</small><br><br>
-                    <button onclick="selectPharmacy('${pharm.name.replace(/'/g, "\\'")}', '${pharm.address.replace(/'/g, "\\'")}')" 
-                            style="background:#669BBC; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">
-                        Select & Proceed to Checkout
-                    </button>
-                </div>
-            `;
-            marker.bindPopup(popupContent);
+        import {
+            collection,
+            onSnapshot
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-            // Add Card Below Map
-            var card = document.createElement("div");
-            card.className = "pharmacy-card";
-            card.innerHTML = `
-                <div>
-                    <h4>${pharm.name}</h4>
-                    <p>${pharm.address}</p>
-                </div>
-                <button class="select-btn" onclick="selectPharmacy('${pharm.name.replace(/'/g, "\\'")}', '${pharm.address.replace(/'/g, "\\'")}')">
-                    Select Pharmacy
-                </button>
-            `;
-            container.appendChild(card);
-        });
-    }
+        import {
+            onAuthStateChanged,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    function findStore() {
-        var query = document.getElementById("address").value.trim();
-        if (query === "") {
-            alert("Please enter a town or address.");
-            return;
-        }
 
-        // Search OpenStreetMap Nominatim Geocoding API
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ", South Africa")}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data && data.length > 0) {
-                    var lat = parseFloat(data[0].lat);
-                    var lon = parseFloat(data[0].lon);
-                    
-                    map.setView([lat, lon], 13);
-                } else {
-                    alert("Location not found. Showing nearby default partner stores.");
+        // HTML elements
+        const pharmacyContainer =
+            document.getElementById("pharmacy-list-container");
+
+        const message =
+            document.getElementById("message");
+
+        const addressInput =
+            document.getElementById("address");
+
+
+        // Store pharmacy information
+        let pharmacies = [];
+
+        let map = null;
+
+        let markersGroup = null;
+
+
+        // Open sidebar
+        window.openNav = function () {
+            document.getElementById("mySidebar").style.width = "250px";
+        };
+
+
+        // Close sidebar
+        window.closeNav = function () {
+            document.getElementById("mySidebar").style.width = "0";
+        };
+
+
+        // Initialize Leaflet map
+        function initializeMap() {
+
+            if (map) return;
+
+            map = L.map("map").setView(
+                [-26.2585, 28.4398],
+                10
+            );
+
+            L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+                    attribution: "&copy; OpenStreetMap contributors",
+                    maxZoom: 19
                 }
-            })
-            .catch(err => {
-                console.error(err);
-                alert("Error searching location. Please try again.");
+            ).addTo(map);
+
+            markersGroup = L.layerGroup().addTo(map);
+        }
+
+
+        // Safely convert Firestore coordinates
+        function getCoordinates(pharmacy) {
+
+            const latitude = Number(
+                pharmacy.latitude ?? pharmacy.lat
+            );
+
+            const longitude = Number(
+                pharmacy.longitude ?? pharmacy.lng
+            );
+
+            if (
+                !Number.isFinite(latitude) ||
+                !Number.isFinite(longitude) ||
+                latitude < -90 ||
+                latitude > 90 ||
+                longitude < -180 ||
+                longitude > 180
+            ) {
+                return null;
+            }
+
+            return {
+                latitude,
+                longitude
+            };
+        }
+
+
+        // Load pharmacies from Firestore
+        function loadPharmacies() {
+
+            const pharmaciesRef = collection(db, "pharmacies");
+
+            onSnapshot(
+                pharmaciesRef,
+
+                (snapshot) => {
+
+                    pharmacies = [];
+
+                    snapshot.forEach((documentSnapshot) => {
+
+                        const data = documentSnapshot.data();
+
+                        // Ignore inactive pharmacies
+                        if (data.isActive === false) {
+                            return;
+                        }
+
+                        pharmacies.push({
+
+                            id: documentSnapshot.id,
+
+                            name: data.name || data.pharmacyName || "Unnamed Pharmacy",
+
+                            address: data.address || "Address not available",
+
+                            phone: data.phone || "Not provided",
+
+                            email: data.email || "Not provided",
+
+                            province: data.province || "",
+
+                            city: data.city || "",
+
+                            operatingHours:
+                                data.operatingHours ||
+                                data.openingHours ||
+                                "Not provided",
+
+                            latitude: data.latitude ?? data.lat,
+
+                            longitude: data.longitude ?? data.lng,
+
+                            isOpen: data.isOpen
+
+                        });
+
+                    });
+
+                    displayPharmacies();
+
+                    message.textContent =
+                        pharmacies.length +
+                        " pharmacy/pharmacies found.";
+
+                },
+
+                (error) => {
+
+                    console.error("Firestore error:", error);
+
+                    message.textContent =
+                        "Unable to load pharmacies. Please check your connection and permissions.";
+
+                    pharmacyContainer.textContent =
+                        "Could not retrieve pharmacy information.";
+
+                }
+            );
+        }
+
+
+        // Display pharmacy cards and map markers
+        function displayPharmacies() {
+
+            pharmacyContainer.replaceChildren();
+
+            markersGroup.clearLayers();
+
+            if (pharmacies.length === 0) {
+
+                pharmacyContainer.textContent =
+                    "No pharmacies have been registered yet.";
+
+                return;
+            }
+
+            pharmacies.forEach((pharmacy) => {
+
+                // Create pharmacy card
+                const card = document.createElement("div");
+
+                card.className = "pharmacy-card";
+
+
+                const name = document.createElement("h3");
+
+                name.textContent = pharmacy.name;
+
+
+                const address = document.createElement("p");
+
+                address.textContent =
+                    "Address: " + pharmacy.address;
+
+
+                const city = document.createElement("p");
+
+                city.textContent =
+                    "City: " + (pharmacy.city || "Not provided");
+
+
+                const province = document.createElement("p");
+
+                province.textContent =
+                    "Province: " + (pharmacy.province || "Not provided");
+
+
+                const phone = document.createElement("p");
+
+                phone.textContent =
+                    "Phone: " + pharmacy.phone;
+
+
+                const email = document.createElement("p");
+
+                email.textContent =
+                    "Email: " + pharmacy.email;
+
+
+                const hours = document.createElement("p");
+
+                hours.textContent =
+                    "Operating Hours: " + pharmacy.operatingHours;
+
+
+                card.append(
+                    name,
+                    address,
+                    city,
+                    province,
+                    phone,
+                    email,
+                    hours
+                );
+
+
+                if (typeof pharmacy.isOpen === "boolean") {
+
+                    const status = document.createElement("span");
+
+                    status.className = pharmacy.isOpen
+                        ? "status open"
+                        : "status closed";
+
+                    status.textContent = pharmacy.isOpen
+                        ? "Open"
+                        : "Closed";
+
+                    card.appendChild(status);
+                }
+
+
+                const button = document.createElement("button");
+
+                button.textContent = "View on Map";
+
+                button.addEventListener("click", () => {
+
+                    const coordinates = getCoordinates(pharmacy);
+
+                    if (!coordinates) {
+
+                        message.textContent =
+                            "This pharmacy does not have map coordinates.";
+
+                        return;
+                    }
+
+                    map.setView(
+                        [
+                            coordinates.latitude,
+                            coordinates.longitude
+                        ],
+                        16
+                    );
+
+                });
+
+                card.appendChild(button);
+
+                pharmacyContainer.appendChild(card);
+
+
+                // Add map marker if coordinates exist
+                const coordinates = getCoordinates(pharmacy);
+
+                if (coordinates) {
+
+                    const marker = L.marker([
+                        coordinates.latitude,
+                        coordinates.longitude
+                    ]);
+
+                    const popup = document.createElement("div");
+
+                    const popupName = document.createElement("strong");
+
+                    popupName.textContent = pharmacy.name;
+
+                    const popupAddress = document.createElement("p");
+
+                    popupAddress.textContent = pharmacy.address;
+
+                    const popupPhone = document.createElement("p");
+
+                    popupPhone.textContent =
+                        "Phone: " + pharmacy.phone;
+
+                    popup.append(
+                        popupName,
+                        popupAddress,
+                        popupPhone
+                    );
+
+                    marker.bindPopup(popup);
+
+                    markersGroup.addLayer(marker);
+                }
+
             });
-    }
 
-    // Sidebar Navigation Helpers
-    function openNav() {
-        document.getElementById("sidebar").style.width = "250px";
-    }
+        }
 
-    function closeNav() {
-        document.getElementById("sidebar").style.width = "0";
-    }
-</script>
 
+        // Search for a location using OpenStreetMap Nominatim
+        window.findStore = async function () {
+
+            const location = addressInput.value.trim();
+
+            if (!location) {
+
+                message.textContent =
+                    "Please enter a location to search.";
+
+                return;
+            }
+
+            message.textContent = "Searching for location...";
+
+            try {
+
+                const url =
+                    "https://nominatim.openstreetmap.org/search?format=json&countrycodes=za&q=" +
+                    encodeURIComponent(location);
+
+                const response = await fetch(url, {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Location search failed.");
+                }
+
+                const results = await response.json();
+
+                if (results.length === 0) {
+
+                    message.textContent =
+                        "Location not found. Please try another search.";
+
+                    return;
+                }
+
+                const latitude = Number(results[0].lat);
+
+                const longitude = Number(results[0].lon);
+
+                map.setView(
+                    [latitude, longitude],
+                    13
+                );
+
+                L.marker([latitude, longitude])
+                    .addTo(map)
+                    .bindPopup("Your searched location")
+                    .openPopup();
+
+                message.textContent =
+                    "Location found. Nearby pharmacy markers are shown on the map.";
+
+            } catch (error) {
+
+                console.error(error);
+
+                message.textContent =
+                    "Could not search for this location. Please try again.";
+
+            }
+
+        };
+
+
+        // Search when Enter is pressed
+        addressInput.addEventListener("keydown", (event) => {
+
+            if (event.key === "Enter") {
+                window.findStore();
+            }
+
+        });
+
+
+        // Logout
+        document.getElementById("logoutLink")
+            .addEventListener("click", async (event) => {
+
+                event.preventDefault();
+
+                try {
+
+                    await signOut(auth);
+
+                    window.location.href = "login.html";
+
+                } catch (error) {
+
+                    console.error("Logout error:", error);
+
+                    message.textContent =
+                        "Unable to log out. Please try again.";
+
+                }
+
+            });
+
+
+        // Check whether user is signed in
+        onAuthStateChanged(auth, (user) => {
+
+            if (!user) {
+
+                window.location.href = "login.html";
+
+                return;
+            }
+
+            initializeMap();
+
+            loadPharmacies();
+
+        });
+
+    </script>
 
 </body>
 </html>

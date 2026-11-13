@@ -1,0 +1,255 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #DFEEF3;
+    color: #003049;
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    background: #003049;
+    color: white;
+    padding: 25px 15px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.admin-label {
+    text-align: center;
+    color: #bbb;
+    font-size: 12px;
+    margin-bottom: 30px;
+}
+
+.sidebar a {
+    color: white;
+    text-decoration: none;
+    padding: 14px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+    background: #669BBC;
+}
+
+#logoutButton {
+    margin-top: auto;
+    background: #C1121F;
+    color: white;
+    padding: 13px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Main content */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    min-width: 0;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.topbar h1 {
+    margin-bottom: 8px;
+}
+
+.topbar p {
+    color: #666;
+}
+
+.admin-info {
+    background: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+}
+
+/* Summary cards */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+    margin-bottom: 35px;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+}
+
+.card-icon {
+    font-size: 30px;
+    margin-bottom: 15px;
+}
+
+.card h3 {
+    font-size: 15px;
+    color: #666;
+}
+
+.card p {
+    font-size: 30px;
+    font-weight: bold;
+    margin-top: 12px;
+}
+
+/* Order status */
+.dashboard-section {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+.dashboard-section h2 {
+    margin-bottom: 20px;
+}
+
+.status-cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.status-card {
+    background: #DFEEF3;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.status-card h3 {
+    font-size: 14px;
+    color: #555;
+}
+
+.status-card p {
+    font-size: 25px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* Recent orders table */
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.section-heading h2 {
+    margin-bottom: 0;
+}
+
+.section-heading a {
+    color: #C1121F;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 500px;
+}
+
+th, td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background: #003049;
+    color: white;
+}
+
+.error-message {
+    color: #C1121F;
+    margin-top: 15px;
+}
+
+/* Mobile layout */
+@media (max-width: 900px) {
+    .summary-cards,
+    .status-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sidebar {
+        width: 190px;
+    }
+
+    .main-content {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+        display: block;
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .sidebar a {
+        padding: 10px;
+    }
+
+    #logoutButton {
+        margin-top: 15px;
+    }
+
+    .main-content {
+        padding: 15px;
+    }
+
+    .summary-cards,
+    .status-cards {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .card,
+    .status-card {
+        padding: 15px;
+    }
+
+    .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

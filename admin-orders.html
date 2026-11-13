@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Orders | Pill Point Delivery</title>
+    <link rel="stylesheet" href="admin-orders.css">
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h2>Pill Point</h2>
+        <p class="admin-label">ADMIN PANEL</p>
+
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-orders.html" class="active">Manage Orders</a>
+        <a href="admin-prescriptions.html">Prescriptions</a>
+        <a href="admin-medications.html">Medications</a>
+        <a href="admin-customers.html">Customers</a>
+
+        <button id="logoutButton">Logout</button>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <h1>Manage Orders</h1>
+                <p>View customer orders and update delivery statuses.</p>
+            </div>
+            <a href="admin-dashboard.html" class="back-link">
+                Back to Dashboard
+            </a>
+        </header>
+
+        <section class="order-summary">
+            <div class="summary-card">
+                <h3>Total Orders</h3>
+                <p id="totalOrders">0</p>
+            </div>
+
+            <div class="summary-card">
+                <h3>Pending</h3>
+                <p id="pendingOrders">0</p>
+            </div>
+
+            <div class="summary-card">
+                <h3>Processing</h3>
+                <p id="processingOrders">0</p>
+            </div>
+
+            <div class="summary-card">
+                <h3>Delivered</h3>
+                <p id="deliveredOrders">0</p>
+            </div>
+        </section>
+
+        <section class="orders-section">
+
+            <div class="section-heading">
+                <h2>Customer Orders</h2>
+
+                <input
+                    type="search"
+                    id="searchOrder"
+                    placeholder="Search order ID or customer...">
+            </div>
+
+            <p id="loadingMessage">Loading orders...</p>
+            <p id="errorMessage" class="error-message"></p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="ordersTableBody"></tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Order details popup -->
+    <div id="orderModal" class="modal">
+
+        <div class="modal-content">
+
+            <button id="closeModal" class="close-button">×</button>
+
+            <h2>Order Details</h2>
+
+            <div id="orderDetails">
+                Select an order to view its details.
+            </div>
+
+            <div class="status-section">
+                <label for="orderStatus">Update Order Status</label>
+
+                <select id="orderStatus">
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Ready for Delivery">Ready for Delivery</option>
+                    <option value="Out for Delivery">Out for Delivery</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+
+                <button id="updateStatusButton">
+                    Update Status
+                </button>
+
+                <p id="statusMessage"></p>
+            </div>
+
+            <div class="history-section">
+                <h3>Order Status History</h3>
+                <div id="statusHistory">
+                    Loading history...
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module" src="admin-orders.js"></script>
+
+</body>
+</html>
