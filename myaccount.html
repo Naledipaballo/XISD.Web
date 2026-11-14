@@ -1,82 +1,140 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Pill Point Pharmacy</title>
+
+    <title>My Account | Pill Point Delivery</title>
+
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* SIDEBAR */
-        .sidebar {
-            height: 100%;
-            width: 0;
-            position: fixed;
-            z-index: 2000;
-            top: 0;
-            left: 0;
-            background-color: #003049;
-            overflow-x: hidden;
-            transition: width 0.3s ease;
-            padding-top: 60px;
-            box-sizing: border-box;
-            white-space: nowrap;
+        body {
+            background: #E7F0F5;
         }
 
-        .sidebar a {
-            padding: 10px 15px 10px 30px;
-            text-decoration: none;
-            font-size: 18px;
-            color: #fff;
+        .account-container {
+            width: 90%;
+            max-width: 800px;
+            margin: 110px auto 40px;
+            background: #FFFFFF;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(6, 57, 112, 0.15);
+        }
+
+        .account-container h2 {
+            color: #063970;
+            text-align: center;
+            font-size: 34px;
+            margin-bottom: 10px;
+        }
+
+        .account-description {
+            text-align: center;
+            color: #666666;
+            margin-bottom: 25px;
+        }
+
+        .account-email {
+            background: #E7F0F5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow-wrap: anywhere;
+        }
+
+        .account-email strong {
+            color: #063970;
+        }
+
+        .account-email p {
+            font-size: 13px;
+            margin-top: 8px;
+            color: #666666;
+        }
+
+        .account-container label {
             display: block;
-            transition: 0.3s;
+            font-weight: bold;
+            color: #063970;
+            margin-bottom: 7px;
         }
 
-        .sidebar a:hover {
-            background-color: #669BBC;
-        }
-
-        .sidebar .closebtn {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 36px;
-        }
-
-        /* HEADER */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            position: fixed;
-            top: 0;
-            left: 0;
+        .account-container input {
             width: 100%;
-            box-sizing: border-box;
-            z-index: 1000;
+            padding: 13px;
+            border: 1px solid #A0B0C0;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 18px;
         }
 
-        .menu-btn {
-            cursor: pointer;
-            font-size: 25px;
-            color: #003049;
-            background: none;
+        .account-container input:focus {
+            outline: none;
+            border: 2px solid #063970;
+        }
+
+        .account-save-btn {
+            width: 100%;
+            padding: 15px;
             border: none;
+            border-radius: 30px;
+            background: #063970;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
         }
 
-        #main {
-            padding: 100px 20px 40px 20px;
-            max-width: 1100px;
-            margin: auto;
+        .account-save-btn:hover {
+            background: #0d47c9;
         }
 
-        @media (max-width: 600px) {
+        .account-save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #account-message {
+            text-align: center;
+            margin-top: 18px;
+            font-weight: bold;
+        }
+
+        .account-loading {
+            text-align: center;
+            color: #063970;
+            padding: 20px;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 1500;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .account-container {
+                width: 95%;
+                padding: 20px;
+                margin-top: 95px;
+            }
+
+            .account-container h2 {
+                font-size: 28px;
+            }
+
             .sidebar {
-                max-width: 85%;
+                z-index: 2000;
             }
         }
     </style>
@@ -84,115 +142,174 @@
 
 <body>
 
-    <!-- CUSTOMER SIDEBAR -->
-    <div id="sidebar" class="sidebar">
+    <!-- ======================================
+         HEADER
+    ======================================= -->
+
+    <header class="header">
+
+        <button
+            class="menu-btn"
+            id="menuButton"
+            type="button"
+            aria-label="Open navigation">
+            ☰
+        </button>
+
+        <h1 class="header-title">Pill Point Delivery</h1>
+
+        <a href="myaccount.html" class="profile-icon">
+            <img src="photo.jpeg" alt="Profile">
+        </a>
+
+    </header>
+
+
+    <!-- ======================================
+         SIDEBAR
+    ======================================= -->
+
+    <nav class="sidebar" id="sidebar">
 
         <a href="javascript:void(0)"
            class="closebtn"
-           onclick="closeNav()"
-           aria-label="Close menu">
+           id="closeButton"
+           aria-label="Close navigation">
             &times;
         </a>
 
         <a href="dashboard.html">Dashboard</a>
-        <a href="medicines.html">Shop Medication</a>
+        <a href="shop.html">Shop Medication</a>
         <a href="cart.html">My Cart</a>
         <a href="checkout.html">Checkout</a>
         <a href="prescription.html">Prescription</a>
         <a href="reminders.html">Set Reminder</a>
-        <a href="viewreminders.html">My Reminders</a>
-        <a href="storelocator.html">Store Locator</a>
-        <a href="trackorder.html">Track Order</a>
+        <a href="my-reminders.html">My Reminders</a>
+        <a href="store-locator.html">Store Locator</a>
+        <a href="track-order.html">Track Order</a>
         <a href="myaccount.html">My Account</a>
-        <a href="#" id="logout-link">Logout</a>
+        <a href="contact.html">Contact Us</a>
+        <a href="#" id="logoutButton">Logout</a>
 
-    </div>
+    </nav>
 
-    <!-- HEADER -->
-    <div class="header">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <button type="button"
-                class="menu-btn"
-                onclick="openNav()"
-                aria-label="Open navigation menu">
-            &#9776;
-        </button>
 
-        <a href="myaccount.html" class="profile">
-            <img src="photo.jpeg"
-                 alt="Profile"
-                 style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
-        </a>
+    <!-- ======================================
+         MY ACCOUNT CONTENT
+    ======================================= -->
 
-    </div>
+    <main class="account-container">
 
-    <!-- MAIN CONTENT -->
-    <div id="main">
+        <h2>My Account</h2>
 
-        <h1>Dashboard</h1>
+        <p class="account-description">
+            View and update your personal information.
+        </p>
 
-        <div class="top-cards">
-
-            <div class="top-card">
-                <h2 id="metric-cart-count">0</h2>
-                <p>Cart Items</p>
-            </div>
-
-            <div class="top-card">
-                <h2 id="metric-prescription-count">0</h2>
-                <p>Prescriptions</p>
-            </div>
-
-            <div class="top-card">
-                <h2 id="metric-reminder-count">0</h2>
-                <p>Reminders</p>
-            </div>
-
-            <div class="top-card">
-                <h2 id="metric-cart-total">R0.00</h2>
-                <p>Total Cart Value</p>
-            </div>
-
+        <div id="loadingMessage" class="account-loading">
+            Loading your account information...
         </div>
 
-        <div class="welcome-card" id="welcome-message-box">
-            <h2>Welcome to Pill Point Delivery!</h2>
-            <p>Loading your profile...</p>
-        </div>
+        <form id="accountForm" style="display: none;">
 
-        <div class="cards">
+            <!-- CUSTOMER EMAIL -->
 
-            <div class="card">
-                <h3>Shop Medication</h3>
-                <a href="medicines.html">Open</a>
+            <div class="account-email">
+
+                <strong>Email Address:</strong>
+
+                <span id="accountEmail">Loading...</span>
+
+                <p>
+                    Your email address is managed by Firebase Authentication.
+                </p>
+
             </div>
 
-            <div class="card">
-                <h3>View Shopping Cart</h3>
-                <a href="cart.html">View Cart</a>
-            </div>
 
-            <div class="card">
-                <h3>Upload Prescription</h3>
-                <a href="prescription.html">Upload</a>
-            </div>
+            <!-- FIRST NAME -->
 
-            <div class="card">
-                <h3>Store Locator</h3>
-                <a href="storelocator.html">Locate</a>
-            </div>
+            <label for="firstName">First Name</label>
 
-        </div>
+            <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                placeholder="Enter your first name"
+                autocomplete="given-name"
+                required
+            >
 
-    </div>
 
-    <!-- LOAD SHARED SCRIPT -->
-    <script type="module" src="script.js"></script>
+            <!-- LAST NAME -->
 
-    <!-- FIREBASE DASHBOARD LOGIC -->
+            <label for="lastName">Last Name</label>
+
+            <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                placeholder="Enter your last name"
+                autocomplete="family-name"
+                required
+            >
+
+
+            <!-- PHONE NUMBER -->
+
+            <label for="phone">Phone Number</label>
+
+            <input
+                type="tel"
+                id="phone"
+                name="phone"
+                placeholder="Enter your phone number"
+                autocomplete="tel"
+                required
+            >
+
+
+            <!-- DELIVERY ADDRESS -->
+
+            <label for="address">Delivery Address</label>
+
+            <input
+                type="text"
+                id="address"
+                name="address"
+                placeholder="Enter your delivery address"
+                autocomplete="street-address"
+                required
+            >
+
+
+            <!-- SAVE BUTTON -->
+
+            <button
+                type="submit"
+                class="account-save-btn"
+                id="saveButton">
+
+                Save Changes
+
+            </button>
+
+            <p id="account-message" role="status"></p>
+
+        </form>
+
+    </main>
+
+
+    <!-- ======================================
+         FIREBASE JAVASCRIPT
+    ======================================= -->
+
     <script type="module">
 
-        import { db, auth } from "./script.js";
+        import { auth, db } from "./firebase.js";
 
         import {
             onAuthStateChanged,
@@ -200,167 +317,285 @@
         } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
         import {
-            collection,
-            query,
-            where,
-            getDocs
+            doc,
+            getDoc,
+            setDoc,
+            serverTimestamp
         } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 
-        // Monitor authentication.
-        onAuthStateChanged(auth, async (user) => {
+        // ======================================
+        // SIDEBAR FUNCTIONALITY
+        // ======================================
 
-            if (user) {
+        const sidebar = document.getElementById("sidebar");
 
-                const username =
-                    user.displayName || user.email.split('@')[0];
+        const menuButton = document.getElementById("menuButton");
 
-                await loadDashboardMetrics(user.uid, username);
+        const closeButton = document.getElementById("closeButton");
 
-            } else {
+        const overlay = document.getElementById("sidebarOverlay");
 
-                alert("Please login first.");
-                window.location.href = "login.html";
+
+        function openSidebar() {
+
+            sidebar.classList.add("sidebar-open");
+
+            overlay.classList.add("active");
+
+        }
+
+
+        function closeSidebar() {
+
+            sidebar.classList.remove("sidebar-open");
+
+            overlay.classList.remove("active");
+
+        }
+
+
+        menuButton.addEventListener("click", openSidebar);
+
+        closeButton.addEventListener("click", closeSidebar);
+
+        overlay.addEventListener("click", closeSidebar);
+
+
+        document.addEventListener("keydown", function(event) {
+
+            if (event.key === "Escape") {
+
+                closeSidebar();
 
             }
 
         });
 
 
-        // Load customer dashboard metrics.
-        async function loadDashboardMetrics(userId, username) {
+        // ======================================
+        // ACCOUNT ELEMENTS
+        // ======================================
 
-            try {
+        const accountForm =
+            document.getElementById("accountForm");
 
-                const cartQuery = query(
-                    collection(db, "cart"),
-                    where("userId", "==", userId)
-                );
+        const loadingMessage =
+            document.getElementById("loadingMessage");
 
-                const prescQuery = query(
-                    collection(db, "prescriptions"),
-                    where("userId", "==", userId)
-                );
+        const accountEmail =
+            document.getElementById("accountEmail");
 
-                const remQuery = query(
-                    collection(db, "reminders"),
-                    where("userId", "==", userId)
-                );
+        const firstNameInput =
+            document.getElementById("firstName");
 
-                const orderQuery = query(
-                    collection(db, "orders"),
-                    where("userId", "==", userId)
-                );
+        const lastNameInput =
+            document.getElementById("lastName");
 
+        const phoneInput =
+            document.getElementById("phone");
 
-                const [cartSnap, prescSnap, remSnap, orderSnap] =
-                    await Promise.all([
-                        getDocs(cartQuery),
-                        getDocs(prescQuery),
-                        getDocs(remQuery),
-                        getDocs(orderQuery)
-                    ]);
+        const addressInput =
+            document.getElementById("address");
+
+        const saveButton =
+            document.getElementById("saveButton");
+
+        const accountMessage =
+            document.getElementById("account-message");
 
 
-                // Calculate cart totals.
-                let cartCount = 0;
-                let cartTotal = 0;
-
-                cartSnap.forEach((document) => {
-
-                    const item = document.data();
-
-                    const qty = parseInt(item.quantity) || 0;
-                    const price = parseFloat(item.price) || 0;
-
-                    cartCount += qty;
-                    cartTotal += qty * price;
-
-                });
+        let currentUser = null;
 
 
-                const prescriptionCount = prescSnap.size;
-                const reminderCount = remSnap.size;
-                const orderCount = orderSnap.size;
+        // ======================================
+        // LOAD CUSTOMER ACCOUNT
+        // ======================================
 
+        onAuthStateChanged(auth, async (user) => {
 
-                // Update dashboard cards.
-                document.getElementById("metric-cart-count").textContent =
-                    cartCount;
+            if (!user) {
 
-                document.getElementById("metric-prescription-count").textContent =
-                    prescriptionCount;
+                window.location.href = "login.html";
 
-                document.getElementById("metric-reminder-count").textContent =
-                    reminderCount;
-
-                document.getElementById("metric-cart-total").textContent =
-                    `R${cartTotal.toFixed(2)}`;
-
-
-                // Update welcome message.
-                const welcomeBox =
-                    document.getElementById("welcome-message-box");
-
-                const isFirstTime =
-                    orderCount === 0 &&
-                    prescriptionCount === 0 &&
-                    reminderCount === 0;
-
-                if (isFirstTime) {
-
-                    welcomeBox.innerHTML = `
-                        <h2>Welcome to Pill Point Delivery, ${escapeHtml(username)}!</h2>
-                        <p>We are excited to have you on board. Start by exploring our shop or setting your dosage reminders!</p>
-                    `;
-
-                } else {
-
-                    welcomeBox.innerHTML = `
-                        <h2>Welcome back, ${escapeHtml(username)}!</h2>
-                        <p>Your trusted online pharmacy — Pill Point Delivery.</p>
-                    `;
-
-                }
-
-            } catch (error) {
-
-                console.error("Error loading dashboard metrics:", error);
+                return;
 
             }
 
-        }
+            currentUser = user;
+
+            accountEmail.textContent =
+                user.email || "Not available";
 
 
-        // Escape HTML.
-        function escapeHtml(text) {
+            try {
 
-            if (!text) return "";
+                const userRef = doc(db, "users", user.uid);
 
-            const map = {
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-                "'": "&#039;"
-            };
+                const userSnapshot = await getDoc(userRef);
 
-            return text.toString().replace(
-                /[&<>"']/g,
-                function (character) {
-                    return map[character];
+
+                if (userSnapshot.exists()) {
+
+                    const userData = userSnapshot.data();
+
+
+                    firstNameInput.value =
+                        userData.firstName ||
+                        userData.first_name ||
+                        "";
+
+
+                    lastNameInput.value =
+                        userData.lastName ||
+                        userData.last_name ||
+                        "";
+
+
+                    phoneInput.value =
+                        userData.phone || "";
+
+
+                    addressInput.value =
+                        userData.address || "";
+
                 }
-            );
-
-        }
 
 
-        // Customer logout.
-        document.getElementById("logout-link").addEventListener(
-            "click",
-            async (event) => {
+                loadingMessage.style.display = "none";
+
+                accountForm.style.display = "block";
+
+
+            } catch (error) {
+
+                console.error("Account loading error:", error);
+
+                loadingMessage.textContent =
+                    "Unable to load your account. Please refresh the page.";
+
+            }
+
+        });
+
+
+        // ======================================
+        // SAVE ACCOUNT INFORMATION
+        // ======================================
+
+        accountForm.addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+
+            if (!currentUser) {
+
+                accountMessage.style.color = "#d9534f";
+
+                accountMessage.textContent =
+                    "Please sign in before updating your account.";
+
+                return;
+
+            }
+
+
+            const firstName = firstNameInput.value.trim();
+
+            const lastName = lastNameInput.value.trim();
+
+            const phone = phoneInput.value.trim();
+
+            const address = addressInput.value.trim();
+
+
+            if (!firstName || !lastName || !phone || !address) {
+
+                accountMessage.style.color = "#d9534f";
+
+                accountMessage.textContent =
+                    "Please complete all fields.";
+
+                return;
+
+            }
+
+
+            saveButton.disabled = true;
+
+            saveButton.textContent = "Saving...";
+
+            accountMessage.textContent = "";
+
+
+            try {
+
+                const userRef = doc(db, "users", currentUser.uid);
+
+
+                await setDoc(userRef, {
+
+                    firstName: firstName,
+
+                    lastName: lastName,
+
+                    phone: phone,
+
+                    address: address,
+
+                    email: currentUser.email || "",
+
+                    updatedAt: serverTimestamp()
+
+                }, { merge: true });
+
+
+                accountMessage.style.color = "#063970";
+
+                accountMessage.textContent =
+                    "Your account information was updated successfully!";
+
+
+            } catch (error) {
+
+                console.error("Account update error:", error);
+
+                accountMessage.style.color = "#d9534f";
+
+
+                if (error.code === "permission-denied") {
+
+                    accountMessage.textContent =
+                        "Permission denied. Please check your Firestore security rules.";
+
+                } else {
+
+                    accountMessage.textContent =
+                        "Unable to update your account. Please try again.";
+
+                }
+
+
+            } finally {
+
+                saveButton.disabled = false;
+
+                saveButton.textContent = "Save Changes";
+
+            }
+
+        });
+
+
+        // ======================================
+        // LOGOUT FUNCTIONALITY
+        // ======================================
+
+        document.getElementById("logoutButton")
+            .addEventListener("click", async function(event) {
 
                 event.preventDefault();
+
 
                 try {
 
@@ -368,16 +603,19 @@
 
                     window.location.href = "login.html";
 
+
                 } catch (error) {
 
                     console.error("Logout error:", error);
 
+                    alert("Unable to log out. Please try again.");
+
                 }
 
-            }
-        );
+            });
 
     </script>
 
 </body>
 </html>
+
