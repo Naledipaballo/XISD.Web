@@ -12,6 +12,8 @@
     --text-dark: #0A2540;
     --text-muted: #666666;
     --border-color: #A0B0C0;
+    --danger: #d9534f;
+    --danger-hover: #c9302c;
 }
 
 * {
@@ -97,6 +99,7 @@ body {
 
 .btn:hover {
     background: var(--navy-light);
+    color: #ffffff;
     opacity: 0.95;
 }
 
@@ -107,13 +110,10 @@ body {
     border: 2px solid var(--navy-dark);
 }
 
-.login:hover {
-    background: var(--navy-light);
-}
-
+.login:hover,
 .signup:hover {
-    background: #ffffff;
-    color: var(--navy-dark);
+    background: var(--navy-light);
+    color: #ffffff;
 }
 
 .box {
@@ -162,6 +162,7 @@ body {
 }
 
 .box a:hover {
+    color: var(--navy-light);
     text-decoration: underline;
 }
 
@@ -256,7 +257,6 @@ body {
     box-sizing: border-box;
 }
 
-/* Sidebar opens when JavaScript adds this class */
 .sidebar.sidebar-open {
     width: 250px;
 }
@@ -402,6 +402,7 @@ body {
 
 .card a:hover {
     background: var(--navy-light);
+    color: #ffffff;
     transform: translateY(-2px);
 }
 
@@ -495,7 +496,8 @@ body {
 }
 
 .details-btn:hover {
-    background: rgba(6, 57, 112, 0.05);
+    background: var(--navy-dark);
+    color: #ffffff;
 }
 
 .cart-btn {
@@ -507,6 +509,7 @@ body {
 
 .cart-btn:hover {
     background: var(--navy-light);
+    color: #ffffff;
 }
 
 /* ==========================================
@@ -524,8 +527,8 @@ body {
     padding: 10px 16px;
     border: none;
     border-radius: 8px;
-    background-color: #003049;
-    color: white;
+    background-color: var(--navy-dark);
+    color: #ffffff;
     font-size: 16px;
     font-weight: bold;
     text-decoration: none;
@@ -534,8 +537,8 @@ body {
 }
 
 .cart-header-btn:hover {
-    background-color: #669BBC;
-    color: white;
+    background-color: var(--navy-light);
+    color: #ffffff;
 }
 
 .cart-header-icon {
@@ -600,7 +603,7 @@ body {
 }
 
 .remove-btn {
-    background: #d9534f;
+    background: var(--danger);
     color: #ffffff;
     border: none;
     padding: 8px 18px;
@@ -610,7 +613,7 @@ body {
 }
 
 .remove-btn:hover {
-    background: #c9302c;
+    background: var(--danger-hover);
 }
 
 .cart-total {
@@ -650,7 +653,8 @@ body {
 }
 
 .continue-btn:hover {
-    background: rgba(6, 57, 112, 0.05);
+    background: var(--navy-dark);
+    color: #ffffff;
 }
 
 .checkout-btn {
@@ -778,6 +782,7 @@ body {
 .track-btn:hover,
 .locator-container .btn:hover {
     background: var(--navy-light);
+    color: #ffffff;
 }
 
 /* ==========================================
@@ -790,8 +795,8 @@ body {
     text-align: center;
     padding: 15px;
     background: transparent;
-    color: #d9534f;
-    border: 2px solid #d9534f;
+    color: var(--danger);
+    border: 2px solid var(--danger);
     text-decoration: none;
     border-radius: 30px;
     font-size: 18px;
@@ -801,7 +806,7 @@ body {
 }
 
 .logout-btn:hover {
-    background: #d9534f;
+    background: var(--danger);
     color: #ffffff;
 }
 
@@ -848,16 +853,18 @@ body {
 
 .admin-login-button {
     display: inline-block;
-    background-color: #C1121F;
-    color: white;
+    background-color: var(--navy-dark);
+    color: #ffffff;
     padding: 12px 24px;
     border-radius: 6px;
     text-decoration: none;
     font-weight: bold;
+    transition: background-color 0.3s ease;
 }
 
 .admin-login-button:hover {
-    background-color: #780000;
+    background-color: var(--navy-light);
+    color: #ffffff;
 }
 
 /* ==========================================
