@@ -1,24 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Shop Medication - Pill Point Delivery</title>
+
     <link rel="stylesheet" href="style.css">
-    
+
     <style>
+
+        /* GENERAL */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        /* HEADER */
         .header {
             display: flex;
             align-items: center;
-            padding: 0 20px;
+            padding: 15px 20px;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             z-index: 1000;
-            box-sizing: border-box;
             background: #fff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .menu-btn {
+            cursor: pointer;
+            font-size: 25px;
+            color: #003049;
+            background: none;
+            border: none;
         }
 
         .header-title {
@@ -27,47 +48,15 @@
             transform: translateX(-50%);
             margin: 0;
             color: #003049;
-        }
-
-        .sidebar {
-            height: 100%;
-            width: 0;
-            position: fixed;
-            z-index: 2000;
-            top: 0;
-            left: 0;
-            background-color: #003049;
-            overflow-x: hidden;
-            transition: 0.3s;
-            padding-top: 60px;
-        }
-
-        .sidebar a {
-            padding: 10px 15px 10px 30px;
-            text-decoration: none;
-            font-size: 18px;
-            color: #fff;
-            display: block;
-            transition: 0.3s;
-        }
-
-        .sidebar a:hover {
-            background-color: #669BBC;
-        }
-
-        .sidebar .closebtn {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 36px;
+            font-size: 23px;
         }
 
         .cart-header-btn {
             margin-left: auto;
-            background-color: #0d6efd; 
+            background-color: #0d6efd;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 9px 16px;
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
@@ -80,6 +69,42 @@
             background-color: #0b5ed7;
         }
 
+        /* SIDEBAR */
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: #003049;
+            overflow-x: hidden;
+            transition: width 0.3s ease;
+            padding-top: 60px;
+            white-space: nowrap;
+        }
+
+        .sidebar a {
+            padding: 12px 15px 12px 30px;
+            text-decoration: none;
+            font-size: 17px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #669BBC;
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 5px;
+            right: 15px;
+            font-size: 36px;
+        }
+
+        /* SHOP CONTAINER */
         .shop-container {
             margin-top: 110px;
             width: 90%;
@@ -89,6 +114,29 @@
             margin-bottom: 40px;
         }
 
+        /* SEARCH */
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-box:focus {
+            border-color: #669BBC;
+        }
+
+        /* PRODUCTS GRID */
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        /* PRODUCT CARD */
         .product-card {
             display: flex;
             flex-direction: column;
@@ -101,32 +149,26 @@
         }
 
         .product-card img {
+            width: 100%;
             height: 140px;
             object-fit: contain;
         }
 
-        .products {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+        .product-card h3 {
+            color: #003049;
+            text-transform: capitalize;
         }
 
-        .search-box {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 7px;
-            font-size: 16px;
-            outline: none;
-            box-sizing: border-box;
+        .product-card p {
+            font-weight: bold;
         }
 
+        /* ADD TO CART BUTTON */
         .cart-btn {
             background: #669BBC;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
@@ -137,21 +179,76 @@
         .cart-btn:hover {
             background: #003049;
         }
+
+        .cart-btn:disabled {
+            background: #888;
+            cursor: not-allowed;
+        }
+
+        /* NOTIFICATION */
+        #cart-message {
+            display: none;
+            padding: 12px;
+            margin-top: 15px;
+            border-radius: 6px;
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        #cart-message.error {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        @media (max-width: 600px) {
+
+            .header-title {
+                font-size: 17px;
+            }
+
+            .cart-header-btn {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .sidebar {
+                max-width: 85%;
+            }
+
+            .shop-container {
+                width: 94%;
+            }
+
+        }
+
     </style>
+
 </head>
 
 <body>
 
-<!-- Header -->
-<div class="header">
-    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
-    <h1 class="header-title">Shop Medication</h1>
-    <a href="cart.html" class="cart-header-btn">
-        &#128722; Cart
-    </a>
-</div>
+    <!-- HEADER -->
+    <div class="header">
 
-<!-- CUSTOMER SIDEBAR -->
+        <button type="button"
+                class="menu-btn"
+                onclick="openNav()"
+                aria-label="Open menu">
+            &#9776;
+        </button>
+
+        <h1 class="header-title">
+            Shop Medication
+        </h1>
+
+        <a href="cart.html" class="cart-header-btn">
+            &#128722; Cart
+        </a>
+
+    </div>
+
+
+    <!-- CUSTOMER SIDEBAR -->
     <div id="sidebar" class="sidebar">
 
         <a href="javascript:void(0)"
@@ -160,307 +257,745 @@
            aria-label="Close menu">
             &times;
         </a>
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="medicines.html">Shop Medication</a>
-    <a href="prescription.html">Prescription</a>
-    <a href="cart.html">My Cart</a>
-    <a href="trackorder.html">Track Order</a>
-    <a href="reminders.html">Reminders</a>
-    <a href="storelocator.html">Store Locator</a>
-    <a href="myaccount.html">My Account</a>
-    <a href="#" onclick="handleLogout(event)">Logout</a>
-</div>
 
-<!-- Shop -->
-<div class="shop-container">
+        <a href="dashboard.html">Dashboard</a>
 
-<input type="text" id="searchInput" placeholder="Search medication..." onkeyup="searchMedicine()" class="search-box">
+        <a href="medicines.html">Shop Medication</a>
 
-<div class="products" id="products">
+        <a href="prescription.html">Prescription</a>
 
-    <!-- 1. Andolex-C Oral Gel -->
-    <div class="product-card">
-        <img src="medication/andolex-c-oralgel.jpg" alt="Andolex-C Oral Gel">
-        <div>
-            <h3>andolex-c oral gel</h3>
-            <h4>18g</h4>
-            <p>R126.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('andolex-c oral gel', 126.99)">Add to Cart</button>
+        <a href="cart.html">My Cart</a>
+
+        <a href="checkout.html">Checkout</a>
+
+        <a href="trackorder.html">Track Order</a>
+
+        <a href="reminders.html">Reminders</a>
+
+        <a href="viewreminders.html">My Reminders</a>
+
+        <a href="storelocator.html">Store Locator</a>
+
+        <a href="myaccount.html">My Account</a>
+
+        <a href="#" onclick="handleLogout(event)">Logout</a>
+
     </div>
 
-    <!-- 2. Vicks Syrup -->
-    <div class="product-card">
-        <img src="medication/vicks-syrup.jpeg" alt="Vicks Syrup">
-        <div>
-            <h3>Vicks Syrup</h3>
-            <p>R120.00</p>
+
+    <!-- SHOP CONTENT -->
+    <div class="shop-container">
+
+        <h2>Available Medication</h2>
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search medication..."
+            class="search-box"
+        >
+
+        <div id="cart-message"></div>
+
+
+        <div class="products" id="products">
+
+
+            <!-- 1. ANDOLEX-C ORAL GEL -->
+            <div class="product-card">
+
+                <img src="medication/andolex-c-oralgel.jpg"
+                     alt="Andolex-C Oral Gel">
+
+                <div>
+                    <h3>Andolex-C Oral Gel</h3>
+                    <h4>18g</h4>
+                    <p>R126.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Andolex-C Oral Gel', 126.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 2. VICKS SYRUP -->
+            <div class="product-card">
+
+                <img src="medication/vicks-syrup.jpeg"
+                     alt="Vicks Syrup">
+
+                <div>
+                    <h3>Vicks Syrup</h3>
+                    <p>R120.00</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Vicks Syrup', 120.00)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 3. ALLERGEX SYRUP -->
+            <div class="product-card">
+
+                <img src="medication/allergex-syrup.jpg"
+                     alt="Allergex Syrup">
+
+                <div>
+                    <h3>Allergex Syrup</h3>
+                    <p>R18.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Allergex Syrup', 18.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 4. ALLERGEX TABLETS -->
+            <div class="product-card">
+
+                <img src="medication/allergex-tablets.jpg"
+                     alt="Allergex Tablets">
+
+                <div>
+                    <h3>Allergex Tablets</h3>
+                    <p>R25.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Allergex Tablets', 25.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 5. BAND AID PLASTIC -->
+            <div class="product-card">
+
+                <img src="medication/band-aid-plastic.jpg"
+                     alt="Band Aid Plastic">
+
+                <div>
+                    <h3>Band Aid Plastic</h3>
+                    <p>R39.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Band Aid Plastic', 39.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 6. BENYLIN SYRUP -->
+            <div class="product-card">
+
+                <img src="medication/benelyin-syrup.jpg"
+                     alt="Benylin Syrup">
+
+                <div>
+                    <h3>Benylin Syrup</h3>
+                    <h4>100ml</h4>
+                    <p>R79.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Benylin Syrup', 79.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 7. BEROCCA -->
+            <div class="product-card">
+
+                <img src="medication/berocca.jpg"
+                     alt="Berocca">
+
+                <div>
+                    <h3>Berocca</h3>
+                    <p>R120.00</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Berocca', 120.00)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 8. CALPOL -->
+            <div class="product-card">
+
+                <img src="medication/calpol.jpg"
+                     alt="Calpol">
+
+                <div>
+                    <h3>Calpol</h3>
+                    <h4>100ml</h4>
+                    <p>R67.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Calpol', 67.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 9. CANVEX V -->
+            <div class="product-card">
+
+                <img src="medication/canvexv.jpeg"
+                     alt="Canvex V">
+
+                <div>
+                    <h3>Canvex V</h3>
+                    <p>R89.00</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Canvex V', 89.00)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 10. COMPRAL -->
+            <div class="product-card">
+
+                <img src="medication/compral.jpg"
+                     alt="Compral">
+
+                <div>
+                    <h3>Compral</h3>
+                    <p>R83.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Compral', 83.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 11. CORYX -->
+            <div class="product-card">
+
+                <img src="medication/coryx.png"
+                     alt="Coryx Effervescent Tablets">
+
+                <div>
+                    <h3>Coryx Effervescent Tablets</h3>
+                    <p>R72.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Coryx Effervescent Tablets', 72.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 12. DEEP HEAT -->
+            <div class="product-card">
+
+                <img src="medication/deepheat.jpg"
+                     alt="Deep Heat">
+
+                <div>
+                    <h3>Deep Heat</h3>
+                    <h4>35g</h4>
+                    <p>R74.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Deep Heat', 74.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 13. LINCTAGON -->
+            <div class="product-card">
+
+                <img src="medication/linctagon-tablets.jpg"
+                     alt="Linctagon Effervescent Tablet">
+
+                <div>
+                    <h3>Linctagon Effervescent Tablet</h3>
+                    <p>R178.00</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Linctagon Effervescent Tablet', 178.00)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 14. MED-LEMON -->
+            <div class="product-card">
+
+                <img src="medication/med-lemon.jpg"
+                     alt="Med-Lemon">
+
+                <div>
+                    <h3>Med-Lemon</h3>
+                    <p>R89.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Med-Lemon', 89.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 15. PANADO EFFERVESCENT -->
+            <div class="product-card">
+
+                <img src="medication/panado-effervescent.jpg"
+                     alt="Panado Effervescent Tablets">
+
+                <div>
+                    <h3>Panado Effervescent Tablets</h3>
+                    <p>R62.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Panado Effervescent Tablets', 62.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 16. PANADO TABLETS -->
+            <div class="product-card">
+
+                <img src="medication/panado-tablets.jpg"
+                     alt="Panado Tablets">
+
+                <div>
+                    <h3>Panado Tablets</h3>
+                    <h4>500mg</h4>
+                    <p>R37.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Panado Tablets', 37.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 17. RENNIE -->
+            <div class="product-card">
+
+                <img src="medication/rennie.jpg"
+                     alt="Rennie">
+
+                <div>
+                    <h3>Rennie</h3>
+                    <p>R143.20</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Rennie', 143.20)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 18. SINUTAB NASAL SPRAY -->
+            <div class="product-card">
+
+                <img src="medication/sinutab-nasalspray.jpg"
+                     alt="SinuTab Nasal Spray">
+
+                <div>
+                    <h3>SinuTab Nasal Spray</h3>
+                    <h4>10ml</h4>
+                    <p>R74.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('SinuTab Nasal Spray', 74.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
+            <!-- 19. SLOW MAG -->
+            <div class="product-card">
+
+                <img src="medication/slowmag.png"
+                     alt="Slow Mag">
+
+                <div>
+                    <h3>Slow Mag</h3>
+                    <p>R83.99</p>
+                </div>
+
+                <button type="button" class="cart-btn"
+                    onclick="addToCart('Slow Mag', 83.99)">
+                    Add to Cart
+                </button>
+
+            </div>
+
+
         </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Vicks Syrup', 120.00)">Add to Cart</button>
+
     </div>
 
-    <!-- 3. Allergex Syrup -->
-    <div class="product-card">
-        <img src="medication/allergex-syrup.jpg" alt="Allergex Syrup">
-        <div>
-            <h3>allergex syrup</h3>
-            <p>R18.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('allergex syrup', 18.99)">Add to Cart</button>
-    </div>
 
-    <!-- 4. Allergex Tablets -->
-    <div class="product-card">
-        <img src="medication/allergex-tablets.jpg" alt="Allergex Tablets">
-        <div>
-            <h3>allergex tablets</h3>
-            <p>R25.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('allergex tablets', 25.99)">Add to Cart</button>
-    </div>
+    <!-- FIREBASE AND SHOP JAVASCRIPT -->
+    <script type="module">
 
-    <!-- 5. Band Aid Plastic -->
-    <div class="product-card">
-        <img src="medication/band-aid-plastic.jpg" alt="Band Aid Plastic">
-        <div>
-            <h3>Band Aid Plastic</h3>
-            <p>R39.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Band Aid Plastic', 39.99)">Add to Cart</button>
-    </div>  
+        // IMPORT FIREBASE
+        import { db, auth } from "./firebase.js";
 
-    <!-- 6. Benylin Syrup -->
-    <div class="product-card">
-        <img src="medication/benelyin-syrup.jpg" alt="Benylin Syrup">
-        <div>
-            <h3>Benylin Syrup</h3>
-            <h4>100ml</h4>
-            <p>R79.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Benylin Syrup', 79.99)">Add to Cart</button>
-    </div>  
-  
-    <!-- 7. Berocca -->
-    <div class="product-card">
-        <img src="medication/berocca.jpg" alt="Berocca">
-        <div>
-            <h3>Berocca</h3>
-            <p>R120.00</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Berocca', 120.00)">Add to Cart</button>
-    </div>
-    
-    <!-- 8. Calpol -->
-    <div class="product-card">
-        <img src="medication/calpol.jpg" alt="Calpol">
-        <div>
-            <h3>Calpol</h3>
-            <h4>100ml</h4>
-            <p>R67.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Calpol', 67.99)">Add to Cart</button>
-    </div>  
+        import {
+            onAuthStateChanged,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-    <!-- 9. Canvex V -->
-    <div class="product-card">
-        <img src="medication/canvexv.jpeg" alt="Canvex V">
-        <div>
-            <h3>Canvex V</h3>
-            <p>R89.00</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Canvex V', 89.00)">Add to Cart</button>
-    </div>  
+        import {
+            collection,
+            addDoc,
+            query,
+            where,
+            getDocs,
+            updateDoc,
+            doc,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-    <!-- 10. Compral -->
-    <div class="product-card">
-        <img src="medication/compral.jpg" alt="Compral">
-        <div>
-            <h3>Compral</h3>
-            <p>R83.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Compral', 83.99)">Add to Cart</button>
-    </div> 
-    
-    <!-- 11. Coryx Effervescent Tablets -->
-    <div class="product-card">
-        <img src="medication/coryx.png" alt="Coryx Effervescent Tablets">
-        <div>
-            <h3>Coryx Effervescent Tablets</h3>
-            <p>R72.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Coryx Effervescent Tablets', 72.99)">Add to Cart</button>
-    </div> 
-    
-    <!-- 12. Deep Heat -->
-    <div class="product-card">
-        <img src="medication/deepheat.jpg" alt="Deep Heat">
-        <div>
-            <h3>Deep Heat</h3>
-            <h4>35g</h4>
-            <p>R74.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Deep Heat', 74.99)">Add to Cart</button>
-    </div>  
 
-    <!-- 13. Linctagon Effervescent Tablet -->
-    <div class="product-card">
-        <img src="medication/linctagon-tablets.jpg" alt="Linctagon Effervescent Tablet">
-        <div>
-            <h3>Linctagon Effervescent Tablet</h3>
-            <p>R178.00</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Linctagon Effervescent Tablet', 178.00)">Add to Cart</button>
-    </div>  
+        // KEEP TRACK OF THE AUTHENTICATED USER.
+        let currentUser = null;
 
-    <!-- 14. Med-Lemon -->
-    <div class="product-card">
-        <img src="medication/med-lemon.jpg" alt="Med-Lemon">
-        <div>
-            <h3>Med-Lemon</h3>
-            <p>R89.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Med-Lemon', 89.99)">Add to Cart</button>
-    </div>  
+        let authReadyResolve;
 
-    <!-- 15. Panado Effervescent Tablets -->
-    <div class="product-card">
-        <img src="medication/panado-effervescent.jpg" alt="Panado Effervescent Tablets">
-        <div>
-            <h3>Panado Effervescent Tablets</h3>
-            <p>R62.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Panado Effervescent Tablets', 62.99)">Add to Cart</button>
-    </div> 
-    
-    <!-- 16. Panado Tablets -->
-    <div class="product-card">
-        <img src="medication/panado-tablets.jpg" alt="Panado Tablets">
-        <div>
-            <h3>Panado Tablets</h3>
-            <h4>500mg</h4>
-            <p>R37.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Panado Tablets', 37.99)">Add to Cart</button>
-    </div>
-    
-    <!-- 17. Rennie -->
-    <div class="product-card">
-        <img src="medication/rennie.jpg" alt="Rennie">
-        <div>
-            <h3>Rennie</h3>
-            <p>R143.20</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Rennie', 143.20)">Add to Cart</button>
-    </div>  
+        const authReady = new Promise((resolve) => {
+            authReadyResolve = resolve;
+        });
 
-    <!-- 18. SinuTab Nasal Spray -->
-    <div class="product-card">
-        <img src="medication/sinutab-nasalspray.jpg" alt="SinuTab Nasal Spray">
-        <div>
-            <h3>SinuTab Nasal Spray</h3>
-            <h4>10ml</h4>
-            <p>R74.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('SinuTab Nasal Spray', 74.99)">Add to Cart</button>
-    </div>
-    
-    <!-- 19. Slow Mag -->
-    <div class="product-card">
-        <img src="medication/slowmag.png" alt="Slow Mag">
-        <div>
-            <h3>Slow Mag</h3>
-            <p>R83.99</p>
-        </div>
-        <button type="button" class="cart-btn" onclick="addToCart('Slow Mag', 83.99)">Add to Cart</button>
-    </div> 
 
-</div>
+        // CHECK LOGIN STATUS.
+        let firstAuthCheck = true;
 
-</div>
+        onAuthStateChanged(auth, (user) => {
 
-<!-- Firebase SDKs & Firestore Add to Cart Logic -->
-<script type="module">
-    import { db, auth } from "./script.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { collection, addDoc, query, where, getDocs, updateDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+            currentUser = user;
 
-    // 1. Verify Authentication on Load
-    onAuthStateChanged(auth, (user) => {
-        if (!user) {
-            alert('Please login first.');
-            window.location.href = 'login.html';
-        }
-    });
+            if (firstAuthCheck) {
 
-    // 2. Add to Cart Function (Cloud Firestore)
-    window.addToCart = async function(medicineName, price) {
-        const user = auth.currentUser;
-        if (!user) {
-            alert('Please login first.');
-            window.location.href = 'login.html';
-            return;
-        }
+                firstAuthCheck = false;
 
-        try {
-            const cartRef = collection(db, "cart");
-            // Query to see if this user already has this item in their cart
-            const q = query(cartRef, where("userId", "==", user.uid), where("medicine_name", "==", medicineName));
-            const querySnapshot = await getDocs(q);
+                authReadyResolve(user);
 
-            if (!querySnapshot.empty) {
-                // Item exists, increment quantity
-                const docSnap = querySnapshot.docs[0];
-                const currentQty = docSnap.data().quantity || 1;
-                const itemRef = doc(db, "cart", docSnap.id);
-                
-                await updateDoc(itemRef, {
-                    quantity: currentQty + 1
-                });
-            } else {
-                // Add new item to cart
-                await addDoc(cartRef, {
-                    userId: user.uid,
-                    medicine_name: medicineName,
-                    price: price,
-                    quantity: 1,
-                    created_at: serverTimestamp()
-                });
+                if (!user) {
+
+                    alert("Please login first.");
+
+                    window.location.href = "login.html";
+
+                }
+
             }
 
-            alert('Medication added to cart successfully!');
+        });
 
-        } catch (error) {
-            console.error("Error adding to cart:", error);
-            alert("Failed to add medication to cart.");
+
+        // CREATE A CONSISTENT MEDICATION ID.
+        function createMedicationID(name) {
+
+            return name
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9]+/g, "_")
+                .replace(/^_+|_+$/g, "");
+
         }
-    };
 
-    // Sidebar Helpers
-    window.openNav = function() {
-        document.getElementById("sidebar").style.width = "250px";
-    }
 
-    window.closeNav = function() {
-        document.getElementById("sidebar").style.width = "0";
-    }
-</script>
+        // DISPLAY MESSAGE.
+        function showCartMessage(message, isError = false) {
 
-<script>
-function searchMedicine(){
-    let input = document.getElementById("searchInput").value.toUpperCase();
-    let cards = document.getElementsByClassName("product-card");
+            const messageBox =
+                document.getElementById("cart-message");
 
-    for(let i=0; i<cards.length; i++){
-        let title = cards[i].getElementsByTagName("h3")[0];
-        if(title.innerHTML.toUpperCase().indexOf(input) > -1){
-            cards[i].style.display = "flex";
-        } else {
-            cards[i].style.display = "none";
+            messageBox.textContent = message;
+
+            messageBox.classList.toggle("error", isError);
+
+            messageBox.style.display = "block";
+
         }
-    }
-}
-</script>
+
+
+        // ADD TO CART FUNCTION.
+        window.addToCart = async function(medicineName, price) {
+
+            const buttons = document.querySelectorAll(".cart-btn");
+
+            let clickedButton = null;
+
+            // Find the clicked product button.
+            buttons.forEach((button) => {
+
+                if (
+                    button.getAttribute("onclick") &&
+                    button.getAttribute("onclick").includes(medicineName)
+                ) {
+                    clickedButton = button;
+                }
+
+            });
+
+            try {
+
+                if (clickedButton) {
+                    clickedButton.disabled = true;
+                    clickedButton.textContent = "Adding...";
+                }
+
+                // Wait for Firebase to check authentication.
+                const user = await authReady;
+
+                if (!user) {
+
+                    alert("Please login before adding medication.");
+
+                    window.location.href = "login.html";
+
+                    return;
+
+                }
+
+                const medicationID =
+                    createMedicationID(medicineName);
+
+                const unitPrice = Number(price);
+
+                // VALIDATE MEDICATION.
+                if (
+                    !medicineName ||
+                    !Number.isFinite(unitPrice) ||
+                    unitPrice <= 0
+                ) {
+
+                    throw new Error("Invalid medication name or price.");
+
+                }
+
+                const cartRef = collection(db, "cart");
+
+
+                // CHECK WHETHER THE ITEM ALREADY EXISTS.
+                const existingItemQuery = query(
+
+                    cartRef,
+
+                    where("userId", "==", user.uid),
+
+                    where("medicationID", "==", medicationID)
+
+                );
+
+
+                const existingItems =
+                    await getDocs(existingItemQuery);
+
+
+                if (!existingItems.empty) {
+
+                    // UPDATE EXISTING ITEM QUANTITY.
+                    const existingDocument =
+                        existingItems.docs[0];
+
+                    const currentQuantity =
+                        Number(existingDocument.data().quantity) || 0;
+
+                    const itemRef = doc(
+                        db,
+                        "cart",
+                        existingDocument.id
+                    );
+
+                    await updateDoc(itemRef, {
+
+                        quantity: currentQuantity + 1
+
+                    });
+
+                } else {
+
+                    // ADD NEW ITEM TO FIRESTORE.
+                    await addDoc(cartRef, {
+
+                        userId: user.uid,
+
+                        medicationID: medicationID,
+
+                        medicationName: medicineName,
+
+                        unitPrice: unitPrice,
+
+                        quantity: 1,
+
+                        addedAt: serverTimestamp()
+
+                    });
+
+                }
+
+
+                // SUCCESS MESSAGE.
+                showCartMessage(
+                    medicineName + " added to your cart successfully!"
+                );
+
+                alert(
+                    medicineName + " has been added to your cart!"
+                );
+
+
+            } catch (error) {
+
+                console.error("ADD TO CART ERROR:", error);
+
+                showCartMessage(
+                    "Could not add medication: " + error.message,
+                    true
+                );
+
+                alert(
+                    "Failed to add medication to cart.\n\n" +
+                    error.message
+                );
+
+            } finally {
+
+                if (clickedButton) {
+
+                    clickedButton.disabled = false;
+
+                    clickedButton.textContent = "Add to Cart";
+
+                }
+
+            }
+
+        };
+
+
+        // OPEN SIDEBAR.
+        window.openNav = function() {
+
+            document.getElementById("sidebar").style.width = "250px";
+
+        };
+
+
+        // CLOSE SIDEBAR.
+        window.closeNav = function() {
+
+            document.getElementById("sidebar").style.width = "0";
+
+        };
+
+
+        // LOGOUT.
+        window.handleLogout = async function(event) {
+
+            if (event) {
+                event.preventDefault();
+            }
+
+            try {
+
+                await signOut(auth);
+
+                window.location.href = "login.html";
+
+            } catch (error) {
+
+                console.error("Logout error:", error);
+
+                alert("Unable to log out. Please try again.");
+
+            }
+
+        };
+
+    </script>
+
+
+    <!-- MEDICATION SEARCH -->
+    <script>
+
+        function searchMedicine() {
+
+            const input = document
+                .getElementById("searchInput")
+                .value
+                .toUpperCase();
+
+            const cards = document.getElementsByClassName("product-card");
+
+            for (let i = 0; i < cards.length; i++) {
+
+                const title =
+                    cards[i].getElementsByTagName("h3")[0];
+
+                if (
+                    title.textContent.toUpperCase().includes(input)
+                ) {
+
+                    cards[i].style.display = "flex";
+
+                } else {
+
+                    cards[i].style.display = "none";
+
+                }
+
+            }
+
+        }
+
+        document
+            .getElementById("searchInput")
+            .addEventListener("input", searchMedicine);
+
+    </script>
 
 </body>
+
 </html>

@@ -1,11 +1,20 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Reminders - Pill Point Delivery</title>
+
     <link rel="stylesheet" href="style.css">
+
     <style>
+        body {
+            background: #DFEEF3;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
         .header {
             display: flex;
             justify-content: space-between;
@@ -15,6 +24,7 @@
             top: 0;
             left: 0;
             width: 100%;
+            height: 65px;
             z-index: 1000;
             box-sizing: border-box;
             background: #ffffff;
@@ -27,6 +37,7 @@
             transform: translateX(-50%);
             margin: 0;
             color: #003049;
+            font-size: 22px;
         }
 
         .sidebar {
@@ -36,7 +47,7 @@
             z-index: 2000;
             top: 0;
             left: 0;
-            background-color: #1d4ed8;
+            background-color: #003049;
             overflow-x: hidden;
             transition: 0.3s;
             padding-top: 60px;
@@ -49,6 +60,7 @@
             color: #fff;
             display: block;
             transition: 0.3s;
+            white-space: nowrap;
         }
 
         .sidebar a:hover {
@@ -60,22 +72,16 @@
             top: 10px;
             right: 20px;
             font-size: 36px;
-            margin-left: 50px;
-        }
-
-        body {
-            background: #f8f9fa;
-            margin: 0;
-            font-family: Arial, sans-serif;
         }
 
         .container {
-            max-width: 950px;
-            margin: 110px auto 40px auto;
+            max-width: 1100px;
+            margin: 110px auto 40px;
             background: #fff;
             padding: 35px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
 
         .container h2 {
@@ -83,40 +89,56 @@
             margin-bottom: 5px;
         }
 
-        .reminder-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 20px; 
-            background: #fff; 
+        .description {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 20px;
         }
 
-        .reminder-table th, .reminder-table td { 
-            border: 1px solid #e2e8f0; 
-            padding: 12px; 
-            text-align: left; 
+        .reminder-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+        }
+
+        .reminder-table th,
+        .reminder-table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
             font-size: 14px;
             color: #334155;
         }
 
-        .reminder-table th { 
-            background-color: #669BBC; 
-            color: white; 
+        .reminder-table th {
+            background-color: #669BBC;
+            color: white;
             font-weight: bold;
         }
 
-        .btn-delete { 
-            color: #fff; 
-            background-color: #dc3545; 
-            padding: 6px 12px; 
+        .reminder-table tbody tr:hover {
+            background: #f0f7fa;
+        }
+
+        .btn-delete {
+            color: #fff;
+            background-color: #dc3545;
+            padding: 7px 12px;
             border: none;
             cursor: pointer;
-            border-radius: 4px; 
-            font-size: 13px; 
+            border-radius: 4px;
+            font-size: 13px;
             font-weight: bold;
         }
 
         .btn-delete:hover {
             background-color: #b02a37;
+        }
+
+        .btn-delete:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .btn {
@@ -135,161 +157,616 @@
         .btn:hover {
             background: #003049;
         }
+
+        .message {
+            text-align: center;
+            color: #64748b;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c2c7;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .success-message {
+            background: #d1e7dd;
+            color: #0f5132;
+            border: 1px solid #badbcc;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                margin: 90px 12px 25px;
+                padding: 20px;
+            }
+
+            .header-title {
+                font-size: 17px;
+            }
+
+            .reminder-table {
+                min-width: 850px;
+            }
+        }
     </style>
 </head>
+
 <body>
 
-<div class="header">
-    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
-    <h1 class="header-title">Pill Point Delivery</h1>
-</div>
+    <!-- Header -->
+    <div class="header">
 
-<div id="sidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="medicines.html">Shop Medication</a>
-    <a href="prescription.html">Prescription</a>
-    <a href="reminders.html">Set Reminder</a>
-    <a href="viewreminders.html">My Reminders</a>
-    <a href="storelocator.html">Store Locator</a>
-    <a href="cart.html">Cart</a>
-    <a href="trackorder.html">Track Order</a>
-    <a href="myaccount.html">My Account</a>
-    <a href="#" id="logout-link">Logout</a>
-</div>
+        <span class="menu-btn"
+              onclick="openNav()"
+              style="cursor:pointer;font-size:22px;">
+            &#9776;
+        </span>
 
-<div class="container">
-    <h2>Scheduled Medication Reminders</h2>
-    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Manage and view all your active medical dosage schedules</p>
-    
-    <a href="reminders.html" class="btn" style="margin-bottom:15px;">+ Add New Reminder</a>
+        <h1 class="header-title">Pill Point Delivery</h1>
 
-    <table class="reminder-table">
-        <thead>
-            <tr>
-                <th>Medication</th>
-                <th>Dosage</th>
-                <th>Time</th>
-                <th>Date</th>
-                <th>Repeat</th>
-                <th>Notification</th>
-                <th>Notes</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="reminders-table-body">
-            <tr>
-                <td colspan="8" style="text-align: center; color: #64748b; padding: 20px;">Loading reminders...</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+    </div>
 
-<!-- Firebase SDKs and Reminders Display/Delete Logic -->
-<script type="module">
-    import { db, auth } from "./script.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { ref, get, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // 1. Monitor Authentication State & Fetch Reminders
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            fetchUserReminders(user.uid);
-        } else {
-            alert('Please login first.');
-            window.location.href = 'login.html';
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+
+        <a href="javascript:void(0)"
+           class="closebtn"
+           onclick="closeNav()">&times;</a>
+
+        <a href="dashboard.html">Dashboard</a>
+        <a href="medicines.html">Shop Medication</a>
+        <a href="prescription.html">Prescription</a>
+        <a href="reminders.html">Set Reminder</a>
+        <a href="viewreminders.html">My Reminders</a>
+        <a href="storelocator.html">Store Locator</a>
+        <a href="cart.html">Cart</a>
+        <a href="trackorder.html">Track Order</a>
+        <a href="myaccount.html">My Account</a>
+        <a href="#" id="logout-link">Logout</a>
+
+    </div>
+
+
+    <!-- Main Content -->
+    <div class="container">
+
+        <h2>Scheduled Medication Reminders</h2>
+
+        <p class="description">
+            Manage and view all your medication dosage schedules.
+        </p>
+
+        <a href="reminders.html" class="btn">
+            + Add New Reminder
+        </a>
+
+        <div id="error-message" class="error-message"></div>
+
+        <div id="success-message" class="success-message"></div>
+
+        <div class="table-wrapper">
+
+            <table class="reminder-table">
+
+                <thead>
+                    <tr>
+                        <th>Medication</th>
+                        <th>Dosage</th>
+                        <th>Time</th>
+                        <th>Date</th>
+                        <th>Repeat</th>
+                        <th>Notification</th>
+                        <th>Notes</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="reminders-table-body">
+
+                    <tr>
+                        <td colspan="8" class="message">
+                            Loading reminders...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- Firebase and Reminder Logic -->
+    <script type="module">
+
+        // Firebase configuration
+        import { db, auth } from "./firebase.js";
+
+        // Firebase Authentication
+        import {
+            onAuthStateChanged,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+        // Firestore functions
+        import {
+            collection,
+            query,
+            where,
+            getDocs,
+            doc,
+            getDoc,
+            deleteDoc
+        } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+
+        // Store the current user's reminders
+        let currentUser = null;
+
+        let userReminders = [];
+
+
+        // Escape HTML to protect displayed data
+        function escapeHtml(value) {
+
+            return String(value ?? "").replace(/[&<>"']/g, function(character) {
+
+                const characters = {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#039;"
+                };
+
+                return characters[character];
+
+            });
+
         }
-    });
 
-    // 2. Fetch Reminders from Firebase Realtime Database
-    async function fetchUserReminders(userId) {
-        const remindersRef = ref(db, `reminders/${userId}`);
-        try {
-            const snapshot = await get(remindersRef);
-            const tbody = document.getElementById('reminders-table-body');
 
-            if (snapshot.exists()) {
-                let rowsHtml = '';
-                const reminders = snapshot.val();
+        // Show an error message
+        function showError(message) {
 
-                // Loop through each reminder node (newest first by sorting keys or object entries)
-                const entries = Object.entries(reminders).reverse();
+            const errorBox = document.getElementById("error-message");
 
-                for (const [reminderKey, item] of entries) {
-                    rowsHtml += `
-                        <tr>
-                            <td><strong>${escapeHtml(item.medication_name || '')}</strong></td>
-                            <td>${escapeHtml(item.dosage || 'N/A')}</td>
-                            <td>${escapeHtml(item.reminder_time || 'N/A')}</td>
-                            <td>${escapeHtml(item.reminder_date || 'N/A')}</td>
-                            <td>${escapeHtml(item.repeat_frequency || 'N/A')}</td>
-                            <td>${escapeHtml(item.notification_type || 'Push Notification')}</td>
-                            <td>${escapeHtml(item.notes || '-')}</td>
-                            <td>
-                                <button type="button" class="btn-delete" onclick="deleteReminder('${reminderKey}')">Delete</button>
-                            </td>
-                        </tr>`;
-                }
-                tbody.innerHTML = rowsHtml;
+            errorBox.textContent = message;
+            errorBox.style.display = "block";
+
+            document.getElementById("success-message").style.display = "none";
+
+        }
+
+
+        // Show a success message
+        function showSuccess(message) {
+
+            const successBox = document.getElementById("success-message");
+
+            successBox.textContent = message;
+            successBox.style.display = "block";
+
+            document.getElementById("error-message").style.display = "none";
+
+        }
+
+
+        // Format Firestore dates
+        function formatDate(value) {
+
+            if (!value) {
+                return "N/A";
+            }
+
+            let date;
+
+            if (typeof value.toDate === "function") {
+                date = value.toDate();
+            } else if (value.seconds) {
+                date = new Date(value.seconds * 1000);
             } else {
+                date = new Date(value);
+            }
+
+            if (isNaN(date.getTime())) {
+                return String(value);
+            }
+
+            return date.toLocaleDateString();
+
+        }
+
+
+        // Get reminder date
+        function getReminderDate(item) {
+
+            return item.reminderDate ??
+                   item.reminder_date ??
+                   item.startDate ??
+                   item.start_date ??
+                   null;
+
+        }
+
+
+        // Get reminder time
+        function getReminderTime(item) {
+
+            return item.reminderTime ??
+                   item.reminder_time ??
+                   "N/A";
+
+        }
+
+
+        // Get medication name
+        function getMedicationName(item) {
+
+            return item.medicationName ??
+                   item.medication_name ??
+                   "N/A";
+
+        }
+
+
+        // Get repeat frequency
+        function getRepeatFrequency(item) {
+
+            return item.repeatFrequency ??
+                   item.repeat_frequency ??
+                   item.frequency ??
+                   "N/A";
+
+        }
+
+
+        // Get notification type
+        function getNotificationType(item) {
+
+            return item.notificationType ??
+                   item.notification_type ??
+                   "Push Notification";
+
+        }
+
+
+        // Load reminders belonging to the signed-in user
+        async function fetchUserReminders(userId) {
+
+            const tbody = document.getElementById("reminders-table-body");
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="message">
+                        Loading reminders...
+                    </td>
+                </tr>
+            `;
+
+            try {
+
+                const remindersRef = collection(db, "reminders");
+
+                // Retrieve only this customer's reminders
+                const remindersQuery = query(
+                    remindersRef,
+                    where("userId", "==", userId)
+                );
+
+                const snapshot = await getDocs(remindersQuery);
+
+                userReminders = [];
+
+                snapshot.forEach((reminderDocument) => {
+
+                    userReminders.push({
+                        id: reminderDocument.id,
+                        ...reminderDocument.data()
+                    });
+
+                });
+
+
+                // Sort reminders by creation date, newest first
+                userReminders.sort((a, b) => {
+
+                    const dateA = a.createdAt?.toDate
+                        ? a.createdAt.toDate().getTime()
+                        : new Date(a.createdAt || 0).getTime();
+
+                    const dateB = b.createdAt?.toDate
+                        ? b.createdAt.toDate().getTime()
+                        : new Date(b.createdAt || 0).getTime();
+
+                    return dateB - dateA;
+
+                });
+
+
+                displayReminders();
+
+            } catch (error) {
+
+                console.error("Error loading reminders:", error);
+
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" style="text-align: center; color: #64748b; padding: 20px;">No reminders configured yet.</td>
-                    </tr>`;
+                        <td colspan="8" class="message" style="color:#b91c1c;">
+                            Unable to load reminders: ${escapeHtml(error.message)}
+                        </td>
+                    </tr>
+                `;
+
             }
-        } catch (error) {
-            console.error("Error fetching reminders:", error);
-        }
-    }
 
-    // 3. Delete Reminder Function
-    window.deleteReminder = async function(reminderKey) {
-        const user = auth.currentUser;
-        if (!user) {
-            alert('Please login first.');
-            window.location.href = 'login.html';
-            return;
         }
 
-        if (!confirm('Are you sure you want to delete this reminder?')) {
-            return;
+
+        // Display reminders in the table
+        function displayReminders() {
+
+            const tbody = document.getElementById("reminders-table-body");
+
+            if (userReminders.length === 0) {
+
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="message">
+                            No reminders configured yet.
+                            Click "Add New Reminder" to create one.
+                        </td>
+                    </tr>
+                `;
+
+                return;
+
+            }
+
+
+            let rowsHtml = "";
+
+            userReminders.forEach((item) => {
+
+                const medication = getMedicationName(item);
+
+                const dosage = item.dosage ?? "N/A";
+
+                const time = getReminderTime(item);
+
+                const date = getReminderDate(item);
+
+                const repeat = getRepeatFrequency(item);
+
+                const notification = getNotificationType(item);
+
+                const notes = item.notes ?? "-";
+
+                rowsHtml += `
+                    <tr>
+
+                        <td>
+                            <strong>${escapeHtml(medication)}</strong>
+                        </td>
+
+                        <td>${escapeHtml(dosage)}</td>
+
+                        <td>${escapeHtml(time)}</td>
+
+                        <td>${escapeHtml(formatDate(date))}</td>
+
+                        <td>${escapeHtml(repeat)}</td>
+
+                        <td>${escapeHtml(notification)}</td>
+
+                        <td>${escapeHtml(notes)}</td>
+
+                        <td>
+                            <button
+                                type="button"
+                                class="btn-delete"
+                                data-reminder-id="${escapeHtml(item.id)}">
+                                Delete
+                            </button>
+                        </td>
+
+                    </tr>
+                `;
+
+            });
+
+
+            tbody.innerHTML = rowsHtml;
+
+
+            // Attach delete button events
+            tbody.querySelectorAll(".btn-delete").forEach((button) => {
+
+                button.addEventListener("click", () => {
+
+                    const reminderId = button.dataset.reminderId;
+
+                    deleteReminder(reminderId, button);
+
+                });
+
+            });
+
         }
 
-        try {
-            const reminderRef = ref(db, `reminders/${user.uid}/${reminderKey}`);
-            await remove(reminderRef);
 
-            alert('Reminder deleted successfully.');
-            fetchUserReminders(user.uid); // Refresh table
-        } catch (error) {
-            console.error("Deletion Error: ", error);
-            alert('Unable to delete reminder. Please try again.');
+        // Delete a reminder from Firestore
+        async function deleteReminder(reminderId, button) {
+
+            if (!currentUser) {
+
+                alert("Please log in first.");
+
+                window.location.href = "login.html";
+
+                return;
+
+            }
+
+
+            const confirmed = confirm(
+                "Are you sure you want to delete this reminder?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            try {
+
+                button.disabled = true;
+
+                button.textContent = "Deleting...";
+
+
+                // Find the reminder document
+                const reminderRef = doc(db, "reminders", reminderId);
+
+                const reminderSnapshot = await getDoc(reminderRef);
+
+
+                if (!reminderSnapshot.exists()) {
+
+                    showError("This reminder no longer exists.");
+
+                    await fetchUserReminders(currentUser.uid);
+
+                    return;
+
+                }
+
+
+                // Verify that the reminder belongs to the signed-in user
+                const reminderData = reminderSnapshot.data();
+
+                if (reminderData.userId !== currentUser.uid) {
+
+                    showError("You are not allowed to delete this reminder.");
+
+                    button.disabled = false;
+
+                    button.textContent = "Delete";
+
+                    return;
+
+                }
+
+
+                // Delete the Firestore document
+                await deleteDoc(reminderRef);
+
+
+                // Remove the deleted reminder from the displayed list
+                userReminders = userReminders.filter(
+                    item => item.id !== reminderId
+                );
+
+
+                displayReminders();
+
+                showSuccess("Reminder deleted successfully.");
+
+            } catch (error) {
+
+                console.error("Reminder deletion error:", error);
+
+                showError(
+                    "Unable to delete reminder: " + error.message
+                );
+
+                button.disabled = false;
+
+                button.textContent = "Delete";
+
+            }
+
         }
-    };
 
-    // Sidebar Navigation Helpers
-    window.openNav = function() {
-        document.getElementById("sidebar").style.width = "250px";
-    }
 
-    window.closeNav = function() {
-        document.getElementById("sidebar").style.width = "0";
-    }
+        // Monitor Firebase Authentication
+        onAuthStateChanged(auth, async (user) => {
 
-    function escapeHtml(text) {
-        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-    }
+            if (user) {
 
-    // Handle Logout
-    document.getElementById('logout-link').addEventListener('click', (e) => {
-        e.preventDefault();
-        signOut(auth).then(() => {
-            window.location.href = 'login.html';
-        }).catch((error) => {
-            console.error('Logout error:', error);
+                currentUser = user;
+
+                await fetchUserReminders(user.uid);
+
+            } else {
+
+                currentUser = null;
+
+                alert("Please login first.");
+
+                window.location.href = "login.html";
+
+            }
+
         });
-    });
-</script>
+
+
+        // Sidebar navigation
+        window.openNav = function() {
+
+            document.getElementById("sidebar").style.width = "250px";
+
+        };
+
+
+        window.closeNav = function() {
+
+            document.getElementById("sidebar").style.width = "0";
+
+        };
+
+
+        // Logout
+        document.getElementById("logout-link").addEventListener("click", async (event) => {
+
+            event.preventDefault();
+
+            try {
+
+                await signOut(auth);
+
+                window.location.href = "login.html";
+
+            } catch (error) {
+
+                console.error("Logout error:", error);
+
+                alert("Unable to log out. Please try again.");
+
+            }
+
+        });
+
+    </script>
+
 </body>
 </html>

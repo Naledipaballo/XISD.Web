@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Track Order - Pill Point Delivery</title>
     <link rel="stylesheet" href="style.css">
+
     <style>
+        body {
+            background: #DFEEF3;
+        }
+
         .header {
             display: flex;
             justify-content: space-between;
@@ -15,6 +21,7 @@
             top: 0;
             left: 0;
             width: 100%;
+            height: 65px;
             z-index: 1000;
             box-sizing: border-box;
             background: #fff;
@@ -26,6 +33,8 @@
             left: 50%;
             transform: translateX(-50%);
             margin: 0;
+            color: #003049;
+            font-size: 22px;
         }
 
         .sidebar {
@@ -48,6 +57,7 @@
             color: #fff;
             display: block;
             transition: 0.3s;
+            white-space: nowrap;
         }
 
         .sidebar a:hover {
@@ -62,12 +72,13 @@
         }
 
         .track-container {
-            max-width: 650px;
-            margin: 110px auto 40px auto;
+            max-width: 750px;
+            margin: 110px auto 40px;
             background: #fff;
             padding: 35px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
 
         .track-container h2 {
@@ -76,7 +87,7 @@
             margin-bottom: 8px;
         }
 
-        .track-container p.subtitle {
+        .subtitle {
             text-align: center;
             color: #64748b;
             margin-bottom: 25px;
@@ -105,6 +116,10 @@
             outline: none;
         }
 
+        .form-group input:focus {
+            border-color: #669BBC;
+        }
+
         .btn {
             background: #669BBC;
             color: white;
@@ -121,13 +136,19 @@
             background: #003049;
         }
 
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .orders-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 25px;
+            margin-top: 20px;
         }
 
-        .orders-table th, .orders-table td {
+        .orders-table th,
+        .orders-table td {
             padding: 12px;
             border-bottom: 1px solid #e2e8f0;
             text-align: left;
@@ -138,7 +159,14 @@
         .orders-table th {
             background: #f8f9fa;
             color: #003049;
-            font-weight: bold;
+        }
+
+        .orders-table tbody tr {
+            cursor: pointer;
+        }
+
+        .orders-table tbody tr:hover {
+            background: #f0f7fa;
         }
 
         .result-box {
@@ -148,18 +176,79 @@
             border-radius: 8px;
             margin-top: 20px;
             display: none;
+            overflow-wrap: anywhere;
+        }
+
+        .result-box h3 {
+            color: #166534;
+            margin-top: 0;
+        }
+
+        .error-alert {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .section-title {
+            margin-top: 35px;
+            color: #003049;
+            font-size: 18px;
+        }
+
+        @media (max-width: 600px) {
+            .track-container {
+                margin: 90px 12px 25px;
+                padding: 20px;
+            }
+
+            .header-title {
+                font-size: 17px;
+            }
+
+            .orders-table th,
+            .orders-table td {
+                padding: 8px;
+                font-size: 12px;
+            }
+
+            .orders-table {
+                min-width: 500px;
+            }
+
+            #orders-list-container {
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
+
 <body>
 
 <div class="header">
-    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
+    <span class="menu-btn"
+          onclick="openNav()"
+          style="cursor:pointer;font-size:22px;">&#9776;</span>
+
     <h1 class="header-title">Pill Point Delivery</h1>
 </div>
 
 <div id="sidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+
+    <a href="javascript:void(0)"
+       class="closebtn"
+       onclick="closeNav()">&times;</a>
+
     <a href="dashboard.html">Dashboard</a>
     <a href="medicines.html">Shop Medication</a>
     <a href="prescription.html">Prescription</a>
@@ -170,156 +259,562 @@
     <a href="myaccount.html">My Account</a>
     <a href="contact.html">Contact Us</a>
     <a href="#" id="logout-link">Logout</a>
+
 </div>
 
 <div class="track-container">
-    <h2>Track Your Order</h2>
-    <p class="subtitle">Enter your tracking number to check delivery status</p>
 
-    <div id="error-alert" style="display:none; background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px;"></div>
+    <h2>Track Your Order</h2>
+
+    <p class="subtitle">
+        Enter your order number or Firestore order ID to check your delivery status.
+    </p>
+
+    <div id="error-alert" class="error-alert"></div>
 
     <form id="track-form">
+
         <div class="form-group">
-            <label>Order Number / ID</label>
-            <input type="text" id="order_number_input" required placeholder="e.g. PPD-ABC123">
+            <label for="order_number_input">Order Number / ID</label>
+
+            <input
+                type="text"
+                id="order_number_input"
+                required
+                placeholder="Enter your order ID">
         </div>
-        <button type="submit" class="btn">Track Order</button>
+
+        <button type="submit" class="btn" id="track-button">
+            Track Order
+        </button>
+
     </form>
 
-    <!-- Search Result Box -->
     <div class="result-box" id="search-result-box">
-        <h3 style="margin-top: 0; color: #166534;">Order Status Details</h3>
-        <p><strong>Order Number:</strong> <span id="res-order-num"></span></p>
-        <p><strong>Status:</strong> <span id="res-status" style="color: #2563eb; font-weight: bold;"></span></p>
-        <p><strong>Total Amount:</strong> R<span id="res-total"></span></p>
-        <p><strong>Delivery Address:</strong> <span id="res-address"></span></p>
-        <p><strong>Order Date:</strong> <span id="res-date"></span></p>
+
+        <h3>Order Status Details</h3>
+
+        <p><strong>Order Number:</strong>
+            <span id="res-order-num"></span>
+        </p>
+
+        <p><strong>Status:</strong>
+            <span id="res-status" class="status"></span>
+        </p>
+
+        <p><strong>Total Amount:</strong>
+            R<span id="res-total"></span>
+        </p>
+
+        <p><strong>Delivery Address:</strong>
+            <span id="res-address"></span>
+        </p>
+
+        <p><strong>Order Date:</strong>
+            <span id="res-date"></span>
+        </p>
+
     </div>
 
-    <h3 style="margin-top: 35px; color: #003049; font-size: 18px;">Your Existing Orders</h3>
+    <h3 class="section-title">Your Existing Orders</h3>
+
     <div id="orders-list-container">
-        <p style="color: #64748b; font-size: 14px;">Loading your orders...</p>
+        <p style="color:#64748b;font-size:14px;">
+            Loading your orders...
+        </p>
     </div>
+
 </div>
 
-<!-- Firebase SDKs and Order Tracking Logic -->
 <script type="module">
-    import { db, auth } from "./script.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    let allUserOrders = {};
+    // Firebase configuration
+    import { auth, db } from "./firebase.js";
 
-    // 1. Monitor Authentication & Load Orders
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            fetchUserOrders(user.uid);
-        } else {
-            alert('Please login first.');
-            window.location.href = 'login.html';
+    // Firebase Authentication
+    import {
+        onAuthStateChanged,
+        signOut
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+    // Firestore functions
+    import {
+        collection,
+        query,
+        where,
+        getDocs,
+        doc,
+        getDoc
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+
+    // Store the customer's orders
+    let allUserOrders = [];
+
+    let currentUser = null;
+
+
+    // HTML escaping
+    function escapeHtml(value) {
+
+        return String(value ?? "").replace(/[&<>"']/g, function(character) {
+
+            const characters = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            };
+
+            return characters[character];
+
+        });
+
+    }
+
+
+    // Format Firestore dates
+    function formatDate(value) {
+
+        if (!value) {
+            return "N/A";
         }
-    });
 
-    // 2. Fetch User Orders from Firebase
+        let date;
+
+        if (value.toDate) {
+            date = value.toDate();
+        } else if (value.seconds) {
+            date = new Date(value.seconds * 1000);
+        } else {
+            date = new Date(value);
+        }
+
+        if (isNaN(date.getTime())) {
+            return "N/A";
+        }
+
+        return date.toLocaleString();
+
+    }
+
+
+    // Display errors
+    function showError(message) {
+
+        const errorAlert = document.getElementById("error-alert");
+
+        errorAlert.textContent = message;
+        errorAlert.style.display = "block";
+
+    }
+
+
+    // Get order total from supported field names
+    function getOrderTotal(order) {
+
+        return Number(
+            order.totalAmount ??
+            order.total_amount ??
+            order.total ??
+            0
+        );
+
+    }
+
+
+    // Get delivery address
+    function getOrderAddress(order) {
+
+        return (
+            order.deliveryAddress ??
+            order.delivery_address ??
+            order.address ??
+            "N/A"
+        );
+
+    }
+
+
+    // Get order date
+    function getOrderDate(order) {
+
+        return (
+            order.orderDate ??
+            order.order_date ??
+            order.createdAt ??
+            order.created_at ??
+            order.timestamp ??
+            null
+        );
+
+    }
+
+
+    // Get order status
+    function getOrderStatus(order) {
+
+        return (
+            order.status ??
+            order.orderStatus ??
+            "Processing"
+        );
+
+    }
+
+
+    // Load the customer's Firestore orders
     async function fetchUserOrders(userId) {
-        const ordersRef = ref(db, `orders/${userId}`);
+
+        const container = document.getElementById("orders-list-container");
+
+        container.innerHTML = `
+            <p style="color:#64748b;">Loading your orders...</p>
+        `;
+
         try {
-            const snapshot = await get(ordersRef);
-            const container = document.getElementById('orders-list-container');
 
-            if (snapshot.exists()) {
-                allUserOrders = snapshot.val();
-                let tableHtml = `
-                    <table class="orders-table">
-                        <thead>
-                            <tr>
-                                <th>Order Number</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
+            const ordersRef = collection(db, "orders");
 
-                const entries = Object.entries(allUserOrders).reverse();
+            // Only retrieve orders belonging to the signed-in user
+            const ordersQuery = query(
+                ordersRef,
+                where("userId", "==", userId)
+            );
 
-                for (const [orderKey, ord] of entries) {
-                    const formattedDate = ord.order_date ? new Date(ord.order_date).toLocaleString() : 'N/A';
-                    tableHtml += `
-                        <tr>
-                            <td><strong>${escapeHtml(ord.order_number || orderKey)}</strong></td>
-                            <td>R${Number(ord.total_amount || 0).toFixed(2)}</td>
-                            <td><span style="font-weight: bold; color: #1d4ed8;">${escapeHtml(ord.status || 'Processing')}</span></td>
-                            <td>${formattedDate}</td>
-                        </tr>`;
+            const snapshot = await getDocs(ordersQuery);
+
+            allUserOrders = [];
+
+            snapshot.forEach((orderDocument) => {
+
+                allUserOrders.push({
+                    id: orderDocument.id,
+                    ...orderDocument.data()
+                });
+
+            });
+
+            // Sort newest first
+            allUserOrders.sort((a, b) => {
+
+                const dateA = getOrderDate(a);
+                const dateB = getOrderDate(b);
+
+                const timeA = dateA?.toDate
+                    ? dateA.toDate().getTime()
+                    : new Date(dateA || 0).getTime();
+
+                const timeB = dateB?.toDate
+                    ? dateB.toDate().getTime()
+                    : new Date(dateB || 0).getTime();
+
+                return timeB - timeA;
+
+            });
+
+            displayOrders();
+
+        } catch (error) {
+
+            console.error("Error fetching orders:", error);
+
+            container.innerHTML = `
+                <p style="color:#b91c1c;">
+                    Unable to load your orders. ${escapeHtml(error.message)}
+                </p>
+            `;
+
+        }
+
+    }
+
+
+    // Display orders in a table
+    function displayOrders() {
+
+        const container = document.getElementById("orders-list-container");
+
+        if (allUserOrders.length === 0) {
+
+            container.innerHTML = `
+                <p style="color:#64748b;font-size:14px;">
+                    You have no past orders yet.
+                </p>
+            `;
+
+            return;
+
+        }
+
+        let tableHtml = `
+            <table class="orders-table">
+
+                <thead>
+                    <tr>
+                        <th>Order Number</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+        `;
+
+        allUserOrders.forEach((order) => {
+
+            const orderNumber = order.orderNumber ??
+                                order.order_number ??
+                                order.id;
+
+            tableHtml += `
+                <tr data-order-id="${escapeHtml(order.id)}">
+
+                    <td>
+                        <strong>${escapeHtml(orderNumber)}</strong>
+                    </td>
+
+                    <td>
+                        R${getOrderTotal(order).toFixed(2)}
+                    </td>
+
+                    <td>
+                        <span class="status">
+                            ${escapeHtml(getOrderStatus(order))}
+                        </span>
+                    </td>
+
+                    <td>
+                        ${escapeHtml(formatDate(getOrderDate(order)))}
+                    </td>
+
+                </tr>
+            `;
+
+        });
+
+        tableHtml += `
+                </tbody>
+            </table>
+            <p style="font-size:12px;color:#64748b;">
+                Select an order to view its details.
+            </p>
+        `;
+
+        container.innerHTML = tableHtml;
+
+        // Allow customers to click an order
+        container.querySelectorAll("tbody tr").forEach((row) => {
+
+            row.addEventListener("click", () => {
+
+                const orderId = row.dataset.orderId;
+
+                const order = allUserOrders.find(
+                    item => item.id === orderId
+                );
+
+                if (order) {
+                    displayOrderDetails(order);
                 }
 
-                tableHtml += `</tbody></table>`;
-                container.innerHTML = tableHtml;
-            } else {
-                container.innerHTML = `<p style="color: #64748b; font-size: 14px;">You have no past orders yet.</p>`;
-            }
-        } catch (error) {
-            console.error("Error fetching orders:", error);
-        }
+            });
+
+        });
+
     }
 
-    // 3. Handle Order Search Form Submission
-    document.getElementById('track-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const searchInput = document.getElementById('order_number_input').value.trim().toUpperCase();
-        const errorAlert = document.getElementById('error-alert');
-        const resultBox = document.getElementById('search-result-box');
-        
-        errorAlert.style.display = 'none';
-        resultBox.style.display = 'none';
 
-        let foundOrder = null;
+    // Display a selected order
+    function displayOrderDetails(order) {
 
-        for (const [key, ord] of Object.entries(allUserOrders)) {
-            if (ord.order_number && ord.order_number.toUpperCase() === searchInput) {
-                foundOrder = ord;
-                break;
-            }
+        const orderNumber = order.orderNumber ??
+                            order.order_number ??
+                            order.id;
+
+        document.getElementById("res-order-num").textContent = orderNumber;
+
+        document.getElementById("res-status").textContent =
+            getOrderStatus(order);
+
+        document.getElementById("res-total").textContent =
+            getOrderTotal(order).toFixed(2);
+
+        document.getElementById("res-address").textContent =
+            getOrderAddress(order);
+
+        document.getElementById("res-date").textContent =
+            formatDate(getOrderDate(order));
+
+        document.getElementById("search-result-box").style.display = "block";
+
+        document.getElementById("error-alert").style.display = "none";
+
+        document.getElementById("search-result-box").scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+        });
+
+    }
+
+
+    // Search for an order
+    document.getElementById("track-form").addEventListener("submit", async (event) => {
+
+        event.preventDefault();
+
+        const searchInput = document
+            .getElementById("order_number_input")
+            .value.trim();
+
+        const resultBox = document.getElementById("search-result-box");
+
+        document.getElementById("error-alert").style.display = "none";
+
+        resultBox.style.display = "none";
+
+        if (!currentUser) {
+
+            showError("Please log in to track your orders.");
+
+            return;
+
         }
+
+        if (!searchInput) {
+
+            showError("Please enter an order number.");
+
+            return;
+
+        }
+
+        // Search the customer's already-loaded orders
+        const foundOrder = allUserOrders.find((order) => {
+
+            const orderNumber = String(
+                order.orderNumber ??
+                order.order_number ??
+                order.id
+            );
+
+            return (
+                orderNumber.toLowerCase() === searchInput.toLowerCase() ||
+                order.id.toLowerCase() === searchInput.toLowerCase()
+            );
+
+        });
 
         if (foundOrder) {
-            document.getElementById('res-order-num').textContent = foundOrder.order_number;
-            document.getElementById('res-status').textContent = foundOrder.status || 'Processing';
-            document.getElementById('res-total').textContent = Number(foundOrder.total_amount || 0).toFixed(2);
-            document.getElementById('res-address').textContent = foundOrder.delivery_address || 'N/A';
-            document.getElementById('res-date').textContent = foundOrder.order_date ? new Date(foundOrder.order_date).toLocaleString() : 'N/A';
-            
-            resultBox.style.display = 'block';
-        } else {
-            errorAlert.textContent = `No order found with number: ${searchInput}`;
-            errorAlert.style.display = 'block';
+
+            displayOrderDetails(foundOrder);
+
+            return;
+
         }
+
+        // Also check the document ID directly, but verify ownership
+        try {
+
+            const orderRef = doc(db, "orders", searchInput);
+
+            const orderSnapshot = await getDoc(orderRef);
+
+            if (orderSnapshot.exists()) {
+
+                const order = {
+                    id: orderSnapshot.id,
+                    ...orderSnapshot.data()
+                };
+
+                if (order.userId === currentUser.uid) {
+
+                    displayOrderDetails(order);
+
+                } else {
+
+                    showError("This order does not belong to your account.");
+
+                }
+
+            } else {
+
+                showError("No order found with that number or ID.");
+
+            }
+
+        } catch (error) {
+
+            console.error("Order search error:", error);
+
+            showError("Unable to search for this order. " + error.message);
+
+        }
+
     });
 
-    // Sidebar Navigation Helpers
+
+    // Monitor authentication
+    onAuthStateChanged(auth, async (user) => {
+
+        if (user) {
+
+            currentUser = user;
+
+            await fetchUserOrders(user.uid);
+
+        } else {
+
+            currentUser = null;
+
+            alert("Please log in first.");
+
+            window.location.href = "login.html";
+
+        }
+
+    });
+
+
+    // Sidebar navigation
     window.openNav = function() {
+
         document.getElementById("sidebar").style.width = "250px";
-    }
+
+    };
+
 
     window.closeNav = function() {
+
         document.getElementById("sidebar").style.width = "0";
-    }
 
-    function escapeHtml(text) {
-        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-    }
+    };
 
-    // Handle Logout
-    document.getElementById('logout-link').addEventListener('click', (e) => {
-        e.preventDefault();
-        signOut(auth).then(() => {
-            window.location.href = 'login.html';
-        }).catch((error) => {
-            console.error('Logout error:', error);
-        });
+
+    // Logout
+    document.getElementById("logout-link").addEventListener("click", async (event) => {
+
+        event.preventDefault();
+
+        try {
+
+            await signOut(auth);
+
+            window.location.href = "login.html";
+
+        } catch (error) {
+
+            console.error("Logout error:", error);
+
+            alert("Unable to log out. Please try again.");
+
+        }
+
     });
+
 </script>
+
 </body>
 </html>
