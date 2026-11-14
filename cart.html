@@ -1,22 +1,36 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Shopping Cart - Pill Point Delivery</title>
+
     <link rel="stylesheet" href="style.css">
+
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #DFEEF3;
+            color: #003049;
+            font-family: Arial, sans-serif;
+        }
+
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 20px;
+            height: 65px;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             z-index: 1000;
-            box-sizing: border-box;
             background: #fff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
@@ -27,6 +41,14 @@
             transform: translateX(-50%);
             margin: 0;
             color: #003049;
+            font-size: 22px;
+            white-space: nowrap;
+        }
+
+        .menu-btn {
+            cursor: pointer;
+            font-size: 22px;
+            z-index: 2;
         }
 
         .sidebar {
@@ -48,7 +70,6 @@
             font-size: 18px;
             color: #fff;
             display: block;
-            transition: 0.3s;
         }
 
         .sidebar a:hover {
@@ -116,18 +137,18 @@
         .cart-item-controls {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
             gap: 10px;
             margin-top: 8px;
         }
 
         .qty-input {
-            width: 50px;
+            width: 65px;
             text-align: center;
-            padding: 6px;
+            padding: 7px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-size: 14px;
-            outline: none;
         }
 
         .remove-btn {
@@ -137,7 +158,7 @@
             cursor: pointer;
             font-size: 13px;
             font-weight: bold;
-            padding: 6px 12px;
+            padding: 7px 12px;
             border-radius: 6px;
         }
 
@@ -204,215 +225,583 @@
             background: #003049;
             color: white;
         }
+
+        .empty-cart {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .message {
+            text-align: center;
+            margin: 15px 0;
+            color: #003049;
+        }
+
+        @media (max-width: 600px) {
+            .cart-action-buttons {
+                flex-direction: column;
+            }
+
+            .header-title {
+                font-size: 17px;
+            }
+        }
     </style>
 </head>
+
 <body>
 
-<!-- Header -->
-<div class="header">
-    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
-    <h1 class="header-title">Pill Point Delivery</h1>
-</div>
+    <!-- HEADER -->
+    <div class="header">
 
-<!-- Sidebar -->
-<!-- CUSTOMER SIDEBAR -->
+        <span class="menu-btn"
+              onclick="openNav()"
+              aria-label="Open navigation">
+            &#9776;
+        </span>
+
+        <h1 class="header-title">Pill Point Delivery</h1>
+
+    </div>
+
+
+    <!-- SIDEBAR -->
     <div id="sidebar" class="sidebar">
 
         <a href="javascript:void(0)"
            class="closebtn"
-           onclick="closeNav()"
-           aria-label="Close menu">
+           onclick="closeNav()">
             &times;
         </a>
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="medicines.html">Shop Medication</a>
-    <a href="prescription.html">Prescription</a>
-    <a href="reminders.html">Reminders</a>
-    <a href="storelocator.html">Store Locator</a>
-    <a href="cart.html">Cart</a>
-    <a href="trackorder.html">Track Order</a>
-    <a href="myaccount.html">My Account</a>
-    <a href="contact.html">Contact Us</a>
-    <a href="#" id="logout-link">Logout</a>
-</div>
 
-<div class="cart-page-container">
-    <h2 class="cart-page-title">Shopping Cart</h2>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="medicines.html">Shop Medication</a>
+        <a href="prescription.html">Prescription</a>
+        <a href="reminders.html">Reminders</a>
+        <a href="storelocator.html">Store Locator</a>
+        <a href="cart.html">Cart</a>
+        <a href="trackorder.html">Track Order</a>
+        <a href="myaccount.html">My Account</a>
+        <a href="contact.html">Contact Us</a>
+        <a href="#" id="logout-link">Logout</a>
 
-    <!-- Dynamic Cart Container -->
-    <div id="cart-content-area">
-        <p style="text-align: center; color: #64748b;">Loading cart items...</p>
     </div>
-</div>
 
-<!-- Firebase SDKs and Firestore Cart Logic -->
-<script type="module">
-    import { db, auth } from "./script.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const SHIPPING_FEE = 35.00;
-    let currentUserCartDocs = [];
+    <!-- CART CONTENT -->
+    <main class="cart-page-container">
 
-    // 1. Monitor Authentication State
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
+        <h2 class="cart-page-title">Shopping Cart</h2>
+
+        <p id="cart-message" class="message">
+            Loading cart items...
+        </p>
+
+        <div id="cart-content-area">
+
+            <p class="message">Please wait...</p>
+
+        </div>
+
+    </main>
+
+
+    <!-- FIREBASE AND CART LOGIC -->
+    <script type="module">
+
+        import { db, auth } from "./script.js";
+
+        import {
+            onAuthStateChanged,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+        import {
+            collection,
+            query,
+            where,
+            getDocs,
+            doc,
+            updateDoc,
+            deleteDoc
+        } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+
+        // =====================================
+        // CONFIGURATION
+        // =====================================
+
+        const SHIPPING_FEE = 50.00;
+
+        let currentUser = null;
+
+        let currentUserCartDocs = [];
+
+
+        const container =
+            document.getElementById("cart-content-area");
+
+        const message =
+            document.getElementById("cart-message");
+
+
+        // =====================================
+        // SIDEBAR
+        // =====================================
+
+        window.openNav = function () {
+
+            document.getElementById("sidebar").style.width = "250px";
+
+        };
+
+
+        window.closeNav = function () {
+
+            document.getElementById("sidebar").style.width = "0";
+
+        };
+
+
+        // =====================================
+        // AUTHENTICATION
+        // =====================================
+
+        onAuthStateChanged(auth, (user) => {
+
+            if (!user) {
+
+                window.location.href = "login.html";
+
+                return;
+            }
+
+            currentUser = user;
+
             fetchUserCart(user.uid);
-        } else {
-            alert('Please login first.');
-            window.location.href = 'login.html';
-        }
-    });
 
-    // 2. Fetch Cart Items from Cloud Firestore
-    async function fetchUserCart(userId) {
-        try {
-            const cartRef = collection(db, "cart");
-            const q = query(cartRef, where("userId", "==", userId));
-            const querySnapshot = await getDocs(q);
-            const container = document.getElementById('cart-content-area');
+        });
 
-            if (!querySnapshot.empty) {
+
+        // =====================================
+        // FETCH CART ITEMS
+        // =====================================
+
+        async function fetchUserCart(userId) {
+
+            try {
+
+                message.textContent = "Loading your cart...";
+
+                container.innerHTML = "";
+
+                const cartRef = collection(db, "cart");
+
+                const cartQuery = query(
+                    cartRef,
+                    where("userId", "==", userId)
+                );
+
+                const querySnapshot = await getDocs(cartQuery);
+
                 currentUserCartDocs = querySnapshot.docs;
-                let htmlContent = '';
+
+                if (querySnapshot.empty) {
+
+                    displayEmptyCart();
+
+                    return;
+                }
+
                 let subtotal = 0;
 
-                htmlContent += `<div class="cart-items-list" id="items-list-wrapper">`;
+                let htmlContent = `
+                    <div class="cart-items-list">
+                `;
 
                 currentUserCartDocs.forEach((docSnap) => {
+
                     const item = docSnap.data();
+
                     const cartId = docSnap.id;
-                    const itemTotal = item.price * item.quantity;
+
+                    // Support both Android and website field names.
+                    const itemName =
+                        item.medicationName ||
+                        item.medicine_name ||
+                        item.name ||
+                        "Unknown Medication";
+
+                    const itemPrice = Number(
+                        item.unitPrice ?? item.price ?? 0
+                    );
+
+                    const quantity = Number(item.quantity || 1);
+
+                    const itemTotal = itemPrice * quantity;
+
                     subtotal += itemTotal;
 
                     htmlContent += `
-                        <div class="cart-item-card" data-id="${cartId}">
+
+                        <div class="cart-item-card"
+                             data-id="${escapeHtml(cartId)}">
+
                             <div class="cart-item-details">
-                                <div class="cart-item-title">${escapeHtml(item.medicine_name)}</div>
-                                <div class="cart-item-price">R${Number(item.price).toFixed(2)}</div>
-                                
-                                <div class="cart-item-controls">
-                                    <label style="font-size: 13px; font-weight: bold; color: #003049;">Qty:</label>
-                                    <input type="number" value="${item.quantity}" min="1" class="qty-input" data-id="${cartId}" id="qty_${cartId}">
-                                    
-                                    <button type="button" class="remove-btn" onclick="removeItem('${cartId}')">Remove</button>
+
+                                <div class="cart-item-title">
+                                    ${escapeHtml(itemName)}
                                 </div>
+
+                                <div class="cart-item-price">
+                                    R${itemPrice.toFixed(2)}
+                                </div>
+
+                                <div class="cart-item-controls">
+
+                                    <label>Qty:</label>
+
+                                    <input
+                                        type="number"
+                                        value="${quantity}"
+                                        min="1"
+                                        max="99"
+                                        class="qty-input"
+                                        data-id="${escapeHtml(cartId)}"
+                                        id="qty_${escapeHtml(cartId)}"
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="remove-btn"
+                                        data-remove-id="${escapeHtml(cartId)}">
+
+                                        Remove
+
+                                    </button>
+
+                                </div>
+
                             </div>
-                        </div>`;
+
+                        </div>
+
+                    `;
+
                 });
+
 
                 htmlContent += `</div>`;
 
-                const grandTotal = subtotal > 0 ? subtotal + SHIPPING_FEE : 0.00;
 
-                // Summary Box & Actions
+                // =====================================
+                // CART TOTALS
+                // =====================================
+
+                const total = subtotal + SHIPPING_FEE;
+
+
                 htmlContent += `
+
                     <div class="cart-summary-box">
+
                         <div class="summary-row">
+
                             <span>Subtotal</span>
+
                             <span>R${subtotal.toFixed(2)}</span>
+
                         </div>
+
                         <div class="summary-row">
-                            <span>Shipping Fee</span>
+
+                            <span>Delivery Fee</span>
+
                             <span>R${SHIPPING_FEE.toFixed(2)}</span>
+
                         </div>
+
                         <div class="summary-row total-row">
+
                             <span>Total</span>
-                            <span>R${grandTotal.toFixed(2)}</span>
+
+                            <span>R${total.toFixed(2)}</span>
+
                         </div>
+
                     </div>
+
 
                     <div class="cart-action-buttons">
-                        <button type="button" class="btn btn-outline" onclick="updateQuantities()">Update Quantities</button>
-                        <a href="checkout.html" class="btn">Checkout Now</a>
+
+                        <button
+                            type="button"
+                            class="btn btn-outline"
+                            id="update-cart-btn">
+
+                            Update Quantities
+
+                        </button>
+
+                        <a href="checkout.html" class="btn">
+
+                            Checkout Now
+
+                        </a>
+
                     </div>
+
                 `;
+
 
                 container.innerHTML = htmlContent;
-            } else {
+
+                message.textContent =
+                    currentUserCartDocs.length +
+                    " item(s) in your shopping cart.";
+
+
+                // Attach remove button listeners.
+                container.querySelectorAll("[data-remove-id]")
+                    .forEach((button) => {
+
+                        button.addEventListener("click", () => {
+
+                            removeItem(button.dataset.removeId);
+
+                        });
+
+                    });
+
+
+                document.getElementById("update-cart-btn")
+                    .addEventListener("click", updateQuantities);
+
+
+            } catch (error) {
+
+                console.error("Error fetching cart:", error);
+
+                message.textContent =
+                    "Unable to load cart: " + error.message;
+
                 container.innerHTML = `
-                    <div style="background: #fff; border-radius: 12px; padding: 40px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
-                        <p style="font-size: 16px; color: #64748b; margin-bottom: 20px;">Your shopping cart is currently empty.</p>
-                        <a href="medicines.html" class="btn" style="display: inline-block; width: auto; padding: 12px 30px; text-decoration: none;">Shop Medication</a>
+                    <div class="empty-cart">
+                        <p>There was a problem loading your cart.</p>
+                        <p>Please check your connection and try again.</p>
                     </div>
                 `;
+
             }
-        } catch (error) {
-            console.error("Error fetching cart:", error);
+
         }
-    }
 
-    // 3. Update Quantities Functionality
-    window.updateQuantities = async function() {
-        const user = auth.currentUser;
-        if (!user) return;
 
-        try {
-            const updatePromises = currentUserCartDocs.map(async (docSnap) => {
-                const cartId = docSnap.id;
-                const qtyInput = document.getElementById(`qty_${cartId}`);
-                if (qtyInput) {
-                    const newQty = parseInt(qtyInput.value);
-                    if (newQty > 0) {
-                        const itemRef = doc(db, "cart", cartId);
-                        await updateDoc(itemRef, { quantity: newQty });
+        // =====================================
+        // EMPTY CART
+        // =====================================
+
+        function displayEmptyCart() {
+
+            currentUserCartDocs = [];
+
+            message.textContent = "Your cart is empty.";
+
+            container.innerHTML = `
+
+                <div class="empty-cart">
+
+                    <p style="font-size:16px; margin-bottom:20px;">
+
+                        Your shopping cart is currently empty.
+
+                    </p>
+
+                    <a href="medicines.html"
+                       class="btn"
+                       style="display:inline-block; width:auto; padding:12px 30px;">
+
+                        Shop Medication
+
+                    </a>
+
+                </div>
+
+            `;
+
+        }
+
+
+        // =====================================
+        // UPDATE QUANTITIES
+        // =====================================
+
+        window.updateQuantities = async function () {
+
+            if (!currentUser) {
+
+                alert("Please sign in first.");
+
+                return;
+            }
+
+            try {
+
+                const updatePromises = currentUserCartDocs.map(
+                    async (docSnap) => {
+
+                        const cartId = docSnap.id;
+
+                        const qtyInput =
+                            document.getElementById("qty_" + cartId);
+
+                        if (!qtyInput) return;
+
+                        const newQuantity = Number(qtyInput.value);
+
+                        if (
+                            !Number.isInteger(newQuantity) ||
+                            newQuantity < 1 ||
+                            newQuantity > 99
+                        ) {
+
+                            throw new Error(
+                                "Please enter a quantity between 1 and 99."
+                            );
+
+                        }
+
+                        const itemRef = doc(
+                            db,
+                            "cart",
+                            cartId
+                        );
+
+                        await updateDoc(itemRef, {
+                            quantity: newQuantity
+                        });
+
                     }
-                }
+                );
+
+
+                await Promise.all(updatePromises);
+
+                alert("Cart quantities updated successfully!");
+
+                await fetchUserCart(currentUser.uid);
+
+
+            } catch (error) {
+
+                console.error("Error updating cart:", error);
+
+                alert(
+                    "Could not update cart: " + error.message
+                );
+
+            }
+
+        };
+
+
+        // =====================================
+        // REMOVE ITEM
+        // =====================================
+
+        window.removeItem = async function (cartId) {
+
+            if (!currentUser) return;
+
+            const confirmed = confirm(
+                "Are you sure you want to remove this item?"
+            );
+
+            if (!confirmed) return;
+
+            try {
+
+                const itemRef = doc(
+                    db,
+                    "cart",
+                    cartId
+                );
+
+                await deleteDoc(itemRef);
+
+                await fetchUserCart(currentUser.uid);
+
+                message.textContent = "Item removed from your cart.";
+
+            } catch (error) {
+
+                console.error("Error removing item:", error);
+
+                alert(
+                    "Could not remove item: " + error.message
+                );
+
+            }
+
+        };
+
+
+        // =====================================
+        // ESCAPE HTML
+        // =====================================
+
+        function escapeHtml(value) {
+
+            if (value === null || value === undefined) {
+                return "";
+            }
+
+            return String(value).replace(/[&<>"']/g, (character) => {
+
+                const characters = {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#039;"
+                };
+
+                return characters[character];
+
             });
 
-            await Promise.all(updatePromises);
-            alert("Cart quantities updated successfully!");
-            fetchUserCart(user.uid);
-        } catch (error) {
-            console.error("Error updating quantities:", error);
-            alert("Failed to update quantities.");
         }
-    };
 
-    // 4. Remove Item Functionality
-    window.removeItem = async function(cartId) {
-        const user = auth.currentUser;
-        if (!user) return;
 
-        if (confirm("Are you sure you want to remove this item from your cart?")) {
-            try {
-                const itemRef = doc(db, "cart", cartId);
-                await deleteDoc(itemRef);
-                fetchUserCart(user.uid);
-            } catch (error) {
-                console.error("Error removing item:", error);
-                alert("Failed to remove item.");
-            }
-        }
-    };
+        // =====================================
+        // LOGOUT
+        // =====================================
 
-    // Sidebar Navigation Helpers
-    window.openNav = function() {
-        document.getElementById("sidebar").style.width = "250px";
-    }
+        document.getElementById("logout-link")
+            .addEventListener("click", async (event) => {
 
-    window.closeNav = function() {
-        document.getElementById("sidebar").style.width = "0";
-    }
+                event.preventDefault();
 
-    // Helper function to prevent XSS
-    function escapeHtml(text) {
-        if (!text) return '';
-        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
-    }
+                try {
 
-    // Handle Logout
-    document.getElementById('logout-link').addEventListener('click', (e) => {
-        e.preventDefault();
-        signOut(auth).then(() => {
-            window.location.href = 'login.html';
-        }).catch((error) => {
-            console.error('Logout error:', error);
-        });
-    });
-</script>
+                    await signOut(auth);
+
+                    window.location.href = "login.html";
+
+                } catch (error) {
+
+                    console.error("Logout error:", error);
+
+                    alert("Unable to log out. Please try again.");
+
+                }
+
+            });
+
+    </script>
 
 </body>
 </html>

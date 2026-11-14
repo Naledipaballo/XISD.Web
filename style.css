@@ -1,12 +1,17 @@
-/* GLOBAL STYLES & COLOR VARIABLES */
+
+/* ==========================================
+   PILL POINT DELIVERY
+   GLOBAL STYLES & COLOR VARIABLES
+========================================== */
+
 :root {
-    --page-bg: #E7F0F5;       /* Soft ice-blue background */
-    --card-bg: #FFFFFF;       /* Clean white card background */
-    --navy-dark: #063970;     /* Deep navy blue for buttons, titles, and icons */
-    --navy-light: #0d47c9;    /* Secondary blue accent */
-    --text-dark: #0A2540;     /* Primary text color */
-    --text-muted: #666666;    /* Subtitle and placeholder text color */
-    --border-color: #A0B0C0;  /* Subtle grey-blue border color */
+    --page-bg: #E7F0F5;
+    --card-bg: #FFFFFF;
+    --navy-dark: #063970;
+    --navy-light: #0d47c9;
+    --text-dark: #0A2540;
+    --text-muted: #666666;
+    --border-color: #A0B0C0;
 }
 
 * {
@@ -21,13 +26,13 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     background-color: var(--page-bg) !important;
     color: var(--text-dark);
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
 }
 
-/* AUTH / LOGIN / SIGNUP */
+/* ==========================================
+   AUTH / LOGIN / SIGNUP
+========================================== */
+
 .container {
     width: 100%;
     max-width: 500px;
@@ -35,7 +40,8 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding-bottom: 40px;
+    padding: 30px 15px 40px;
+    margin: 0 auto;
 }
 
 .logo {
@@ -43,7 +49,7 @@ body {
     max-width: 500px;
     height: auto;
     display: block;
-    margin: 0 auto 30px auto;
+    margin: 0 auto 30px;
     object-fit: contain;
 }
 
@@ -135,7 +141,6 @@ body {
     border-radius: 30px;
     font-size: 16px;
     outline: none;
-    box-sizing: border-box;
     background: #ffffff;
     color: var(--text-dark);
 }
@@ -160,7 +165,10 @@ body {
     text-decoration: underline;
 }
 
-/* HEADER & NAVBAR */
+/* ==========================================
+   HEADER & NAVBAR
+========================================== */
+
 .header {
     position: fixed;
     top: 0;
@@ -180,6 +188,7 @@ body {
     color: var(--navy-dark);
     font-size: 32px;
     font-weight: bold;
+    text-align: center;
 }
 
 .header .logo {
@@ -190,9 +199,19 @@ body {
 .menu-btn {
     position: absolute;
     left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
     font-size: 30px;
     cursor: pointer;
     color: var(--navy-dark);
+    z-index: 1001;
+    border: none;
+    background: transparent;
+    padding: 5px;
+}
+
+.menu-btn:hover {
+    color: var(--navy-light);
 }
 
 .profile-icon,
@@ -219,18 +238,27 @@ body {
     transform: scale(1.05);
 }
 
-/* SIDEBAR */
+/* ==========================================
+   SIDEBAR / HAMBURGER MENU
+========================================== */
+
 .sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    width: 250px;
+    width: 0;
     height: 100%;
     background: var(--navy-dark);
     overflow-x: hidden;
-    transition: 0.4s;
+    transition: width 0.3s ease;
     padding-top: 70px;
     z-index: 2000;
+    box-sizing: border-box;
+}
+
+/* Sidebar opens when JavaScript adds this class */
+.sidebar.sidebar-open {
+    width: 250px;
 }
 
 .closebtn {
@@ -240,6 +268,13 @@ body {
     font-size: 35px;
     color: #ffffff;
     text-decoration: none;
+    cursor: pointer;
+    padding: 0 !important;
+}
+
+.closebtn:hover {
+    background: transparent !important;
+    color: #ffffff !important;
 }
 
 .sidebar a {
@@ -249,6 +284,7 @@ body {
     text-decoration: none;
     font-size: 18px;
     transition: 0.3s;
+    white-space: nowrap;
 }
 
 .sidebar a:hover {
@@ -256,7 +292,10 @@ body {
     color: var(--navy-dark);
 }
 
-/* DASHBOARD MAIN LAYOUT */
+/* ==========================================
+   DASHBOARD MAIN LAYOUT
+========================================== */
+
 #main {
     margin-left: 250px;
     margin-top: 90px;
@@ -275,7 +314,10 @@ body {
     color: var(--text-muted);
 }
 
-/* DASHBOARD STATISTIC CARDS */
+/* ==========================================
+   DASHBOARD STATISTIC CARDS
+========================================== */
+
 .top-cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -304,7 +346,10 @@ body {
     margin-top: 4px;
 }
 
-/* WELCOME CARD */
+/* ==========================================
+   WELCOME CARD
+========================================== */
+
 .welcome-card {
     background: var(--card-bg);
     border-radius: 12px;
@@ -325,7 +370,10 @@ body {
     font-size: 14px;
 }
 
-/* FEATURE ACTION BUTTONS */
+/* ==========================================
+   FEATURE ACTION BUTTONS
+========================================== */
+
 .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -357,7 +405,10 @@ body {
     transform: translateY(-2px);
 }
 
-/* SHOP PAGE */
+/* ==========================================
+   SHOP PAGE
+========================================== */
+
 .shop-container {
     width: 90%;
     max-width: 1100px;
@@ -458,7 +509,43 @@ body {
     background: var(--navy-light);
 }
 
-/* CART PAGE */
+/* ==========================================
+   SHOPPING CART HEADER BUTTON
+========================================== */
+
+.cart-header-btn {
+    position: absolute;
+    right: 25px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 104px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: #003049;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.cart-header-btn:hover {
+    background-color: #669BBC;
+    color: white;
+}
+
+.cart-header-icon {
+    font-size: 19px;
+}
+
+/* ==========================================
+   CART PAGE
+========================================== */
+
 .cart-container {
     width: 90%;
     max-width: 1000px;
@@ -574,7 +661,11 @@ body {
     background: var(--navy-light);
 }
 
-/* FORMS (PRESCRIPTION / REMINDERS / ACCOUNT / TRACK) */
+/* ==========================================
+   FORMS:
+   PRESCRIPTION / REMINDERS / ACCOUNT / TRACK
+========================================== */
+
 .prescription-container,
 .reminder-container,
 .account-container,
@@ -636,7 +727,6 @@ body {
     border-radius: 12px;
     font-size: 16px;
     outline: none;
-    box-sizing: border-box;
     background: #ffffff;
 }
 
@@ -647,6 +737,10 @@ body {
 .track-container input:focus {
     border-color: var(--navy-dark);
 }
+
+/* ==========================================
+   PROFILE PICTURE
+========================================== */
 
 .profile-picture {
     text-align: center;
@@ -660,6 +754,10 @@ body {
     border: 4px solid var(--navy-dark);
     object-fit: cover;
 }
+
+/* ==========================================
+   FORM BUTTONS
+========================================== */
 
 .save-btn,
 .track-btn,
@@ -682,6 +780,10 @@ body {
     background: var(--navy-light);
 }
 
+/* ==========================================
+   LOGOUT BUTTON
+========================================== */
+
 .logout-btn {
     display: block;
     width: 100%;
@@ -703,7 +805,10 @@ body {
     color: #ffffff;
 }
 
-/* TRACKING STEPS */
+/* ==========================================
+   TRACKING STEPS
+========================================== */
+
 .progress {
     display: flex;
     justify-content: space-between;
@@ -726,6 +831,10 @@ body {
     color: #ffffff;
 }
 
+/* ==========================================
+   STORE LOCATOR MAP
+========================================== */
+
 #map {
     width: 100%;
     height: 450px;
@@ -733,17 +842,43 @@ body {
     border-radius: 15px;
 }
 
-/* RESPONSIVE DESIGN */
+/* ==========================================
+   ADMIN LOGIN BUTTON
+========================================== */
+
+.admin-login-button {
+    display: inline-block;
+    background-color: #C1121F;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.admin-login-button:hover {
+    background-color: #780000;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+========================================== */
+
 @media (max-width: 768px) {
+
+    /* Dashboard */
     #main {
         margin-left: 0;
+        margin-top: 90px;
         width: 100%;
+        padding: 15px;
     }
 
     .top-cards {
         grid-template-columns: repeat(2, 1fr);
     }
 
+    /* Forms */
     .row {
         flex-direction: column;
         gap: 15px;
@@ -759,6 +894,7 @@ body {
         padding: 20px;
     }
 
+    /* Shopping cart */
     .cart-table {
         display: block;
         overflow-x: auto;
@@ -774,47 +910,107 @@ body {
         text-align: center;
     }
 
-    /* Shopping cart button on Shop Medication page */
-.cart-header-btn {
-    position: absolute;
-    right: 25px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-width: 104px;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 8px;
-    background-color: #003049;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    text-decoration: none;
-    cursor: pointer;
-    transition: 0.3s;
+    /* Header */
+    .header-title {
+        font-size: 21px;
+    }
+
+    .menu-btn {
+        left: 10px;
+        font-size: 27px;
+    }
+
+    .profile-icon,
+    .profile {
+        right: 10px;
+    }
+
+    .profile img,
+    .profile-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .cart-header-btn {
+        right: 10px;
+        min-width: auto;
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .cart-header-icon {
+        font-size: 16px;
+    }
+
+    /* Page headings */
+    .shop-container h2,
+    .cart-container h2,
+    .box h2 {
+        font-size: 28px;
+    }
+
+    .content h1 {
+        font-size: 30px;
+    }
+
+    .cart-total h3 {
+        font-size: 23px;
+    }
+
+    /* Tracking */
+    .progress {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .step {
+        margin: 0;
+    }
+
+    /* Sidebar */
+    .sidebar.sidebar-open {
+        width: 250px;
+    }
 }
 
-.cart-header-btn:hover {
-    background-color: #669BBC;
-    color: white;
-}
+/* ==========================================
+   SMALL MOBILE SCREENS
+========================================== */
 
-.cart-header-icon {
-    font-size: 19px;
-}
+@media (max-width: 480px) {
 
-.admin-login-button {
-    display: inline-block;
-    background-color: #C1121F;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: bold;
-}
+    .top-cards {
+        grid-template-columns: 1fr;
+    }
 
-.admin-login-button:hover {
-    background-color: #780000;
-}
+    .header-title {
+        font-size: 18px;
+    }
+
+    .shop-container {
+        width: 95%;
+    }
+
+    .cart-container {
+        padding: 15px;
+    }
+
+    .cart-table th,
+    .cart-table td {
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .cart-header-btn {
+        padding: 7px;
+        font-size: 12px;
+    }
+
+    .menu-btn {
+        font-size: 25px;
+    }
+
+    .sidebar.sidebar-open {
+        width: 250px;
+    }
 }

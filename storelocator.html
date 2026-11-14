@@ -1,13 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Store Locator | Pill Point Delivery</title>
 
     <!-- Leaflet Map CSS -->
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
 
     <style>
         * {
@@ -48,12 +52,12 @@
             height: 100%;
             width: 0;
             position: fixed;
-            z-index: 1000;
+            z-index: 2000;
             top: 0;
             left: 0;
             background: #003049;
             overflow-x: hidden;
-            transition: 0.3s;
+            transition: width 0.3s ease;
             padding-top: 60px;
         }
 
@@ -63,6 +67,7 @@
             font-size: 17px;
             color: white;
             display: block;
+            white-space: nowrap;
         }
 
         .sidebar a:hover {
@@ -89,6 +94,7 @@
         .description {
             margin-bottom: 20px;
             color: #555;
+            line-height: 1.5;
         }
 
         .search-section {
@@ -103,6 +109,7 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 15px;
+            min-width: 0;
         }
 
         .search-section button {
@@ -114,12 +121,17 @@
             cursor: pointer;
         }
 
+        .search-section button:hover {
+            background: #780000;
+        }
+
         #map {
             width: 100%;
             height: 450px;
             border-radius: 10px;
             margin-bottom: 25px;
             border: 2px solid #669BBC;
+            z-index: 1;
         }
 
         .section-title {
@@ -128,7 +140,10 @@
 
         #pharmacy-list-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(250px, 1fr)
+            );
             gap: 15px;
         }
 
@@ -182,6 +197,11 @@
         #message {
             margin: 12px 0;
             color: #003049;
+            line-height: 1.5;
+        }
+
+        .loading {
+            color: #555;
         }
 
         footer {
@@ -200,6 +220,10 @@
             #map {
                 height: 350px;
             }
+
+            header h2 {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
@@ -208,8 +232,12 @@
 
     <!-- Navigation Sidebar -->
     <div id="mySidebar" class="sidebar">
-        <a href="javascript:void(0)" class="close-button"
-           onclick="closeNav()">&times;</a>
+
+        <a
+            href="javascript:void(0)"
+            class="close-button"
+            onclick="closeNav()"
+        >&times;</a>
 
         <a href="dashboard.html">Dashboard</a>
         <a href="shop.html">Shop Medication</a>
@@ -220,12 +248,22 @@
         <a href="storelocator.html">Store Locator</a>
         <a href="myaccount.html">My Account</a>
         <a href="#" id="logoutLink">Logout</a>
+
     </div>
 
     <!-- Header -->
     <header>
+
         <h2>Pill Point Delivery</h2>
-        <button class="menu-button" onclick="openNav()">☰ Menu</button>
+
+        <button
+            type="button"
+            class="menu-button"
+            onclick="openNav()"
+        >
+            ☰ Menu
+        </button>
+
     </header>
 
     <!-- Main Content -->
@@ -240,15 +278,25 @@
 
         <!-- Search -->
         <div class="search-section">
+
             <input
                 type="text"
                 id="address"
-                placeholder="Enter your location, suburb or city">
+                placeholder="Enter your location, suburb or city"
+            >
 
-            <button onclick="findStore()">Search Location</button>
+            <button
+                type="button"
+                id="searchButton"
+            >
+                Search Location
+            </button>
+
         </div>
 
-        <p id="message">Loading pharmacies...</p>
+        <p id="message" class="loading">
+            Loading pharmacies...
+        </p>
 
         <!-- Map -->
         <div id="map"></div>
@@ -262,6 +310,7 @@
 
     </main>
 
+    <!-- Footer -->
     <footer>
         <p>&copy; 2026 Pill Point Delivery. All rights reserved.</p>
     </footer>
@@ -272,20 +321,29 @@
     <!-- Firebase and Store Locator JavaScript -->
     <script type="module">
 
-        import { auth, db } from "./script.js";
+        // =====================================
+        // FIREBASE IMPORTS
+        // =====================================
+
+        // Import from your existing Firebase configuration.
+        // Do not import auth and db from script.js.
+        import { auth, db } from "./firebase.js";
 
         import {
             collection,
             onSnapshot
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
         import {
             onAuthStateChanged,
             signOut
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 
-        // HTML elements
+        // =====================================
+        // HTML ELEMENTS
+        // =====================================
+
         const pharmacyContainer =
             document.getElementById("pharmacy-list-container");
 
@@ -295,50 +353,126 @@
         const addressInput =
             document.getElementById("address");
 
+        const searchButton =
+            document.getElementById("searchButton");
 
-        // Store pharmacy information
-        let pharmacies = [];
+        const logoutLink =
+            document.getElementById("logoutLink");
+
+
+        // =====================================
+        // VARIABLES
+        // =====================================
+
+        const L = window.L;
 
         let map = null;
-
         let markersGroup = null;
+        let searchMarker = null;
+
+        let pharmacies = [];
+        let unsubscribePharmacies = null;
 
 
-        // Open sidebar
+        // =====================================
+        // SIDEBAR
+        // =====================================
+
         window.openNav = function () {
-            document.getElementById("mySidebar").style.width = "250px";
+
+            const sidebar =
+                document.getElementById("mySidebar");
+
+            if (sidebar) {
+                sidebar.style.width = "250px";
+            }
+
         };
 
 
-        // Close sidebar
         window.closeNav = function () {
-            document.getElementById("mySidebar").style.width = "0";
+
+            const sidebar =
+                document.getElementById("mySidebar");
+
+            if (sidebar) {
+                sidebar.style.width = "0";
+            }
+
         };
 
 
-        // Initialize Leaflet map
+        // =====================================
+        // INITIALIZE MAP
+        // =====================================
+
         function initializeMap() {
 
-            if (map) return;
+            if (!L) {
+
+                message.textContent =
+                    "Map library could not load. Check your internet connection.";
+
+                console.error("Leaflet library is unavailable.");
+
+                return false;
+            }
+
+            const mapElement =
+                document.getElementById("map");
+
+            if (!mapElement) {
+
+                message.textContent =
+                    "Map container could not be found.";
+
+                return false;
+            }
+
+            if (map) {
+
+                map.invalidateSize();
+
+                return true;
+            }
 
             map = L.map("map").setView(
-                [-26.2585, 28.4398],
+                [-26.2041, 28.0473],
                 10
             );
 
             L.tileLayer(
                 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 {
-                    attribution: "&copy; OpenStreetMap contributors",
+                    attribution:
+                        "&copy; OpenStreetMap contributors",
+
                     maxZoom: 19
                 }
             ).addTo(map);
 
-            markersGroup = L.layerGroup().addTo(map);
+            markersGroup =
+                L.layerGroup().addTo(map);
+
+            setTimeout(() => {
+
+                if (map) {
+                    map.invalidateSize();
+                }
+
+            }, 300);
+
+            message.textContent =
+                "Map loaded. Loading pharmacies...";
+
+            return true;
         }
 
 
-        // Safely convert Firestore coordinates
+        // =====================================
+        // GET PHARMACY COORDINATES
+        // =====================================
+
         function getCoordinates(pharmacy) {
 
             const latitude = Number(
@@ -357,6 +491,7 @@
                 longitude < -180 ||
                 longitude > 180
             ) {
+
                 return null;
             }
 
@@ -364,15 +499,28 @@
                 latitude,
                 longitude
             };
+
         }
 
 
-        // Load pharmacies from Firestore
+        // =====================================
+        // LOAD PHARMACIES FROM FIRESTORE
+        // =====================================
+
         function loadPharmacies() {
 
-            const pharmaciesRef = collection(db, "pharmacies");
+            if (unsubscribePharmacies) {
+                unsubscribePharmacies();
+            }
 
-            onSnapshot(
+            message.textContent =
+                "Loading pharmacies...";
+
+            const pharmaciesRef =
+                collection(db, "pharmacies");
+
+            unsubscribePharmacies = onSnapshot(
+
                 pharmaciesRef,
 
                 (snapshot) => {
@@ -381,9 +529,10 @@
 
                     snapshot.forEach((documentSnapshot) => {
 
-                        const data = documentSnapshot.data();
+                        const data =
+                            documentSnapshot.data();
 
-                        // Ignore inactive pharmacies
+                        // Ignore inactive pharmacies.
                         if (data.isActive === false) {
                             return;
                         }
@@ -392,28 +541,42 @@
 
                             id: documentSnapshot.id,
 
-                            name: data.name || data.pharmacyName || "Unnamed Pharmacy",
+                            name:
+                                data.name ||
+                                data.pharmacyName ||
+                                "Unnamed Pharmacy",
 
-                            address: data.address || "Address not available",
+                            address:
+                                data.address ||
+                                "Address not available",
 
-                            phone: data.phone || "Not provided",
+                            phone:
+                                data.phone ||
+                                "Not provided",
 
-                            email: data.email || "Not provided",
+                            email:
+                                data.email ||
+                                "Not provided",
 
-                            province: data.province || "",
+                            province:
+                                data.province || "",
 
-                            city: data.city || "",
+                            city:
+                                data.city || "",
 
                             operatingHours:
                                 data.operatingHours ||
                                 data.openingHours ||
                                 "Not provided",
 
-                            latitude: data.latitude ?? data.lat,
+                            latitude:
+                                data.latitude ?? data.lat,
 
-                            longitude: data.longitude ?? data.lng,
+                            longitude:
+                                data.longitude ?? data.lng,
 
-                            isOpen: data.isOpen
+                            isOpen:
+                                data.isOpen
 
                         });
 
@@ -421,31 +584,52 @@
 
                     displayPharmacies();
 
+                    const pharmaciesWithCoordinates =
+                        pharmacies.filter(
+                            pharmacy =>
+                                getCoordinates(pharmacy) !== null
+                        );
+
                     message.textContent =
                         pharmacies.length +
-                        " pharmacy/pharmacies found.";
+                        " pharmacy/pharmacies found. " +
+                        pharmaciesWithCoordinates.length +
+                        " have map coordinates.";
 
                 },
 
                 (error) => {
 
-                    console.error("Firestore error:", error);
+                    console.error(
+                        "Firestore pharmacy error:",
+                        error
+                    );
 
                     message.textContent =
-                        "Unable to load pharmacies. Please check your connection and permissions.";
+                        "Could not load pharmacies: " +
+                        error.message;
 
                     pharmacyContainer.textContent =
-                        "Could not retrieve pharmacy information.";
+                        "Unable to retrieve pharmacy information.";
 
                 }
+
             );
+
         }
 
 
-        // Display pharmacy cards and map markers
+        // =====================================
+        // DISPLAY PHARMACY CARDS AND MARKERS
+        // =====================================
+
         function displayPharmacies() {
 
             pharmacyContainer.replaceChildren();
+
+            if (!markersGroup || !map) {
+                return;
+            }
 
             markersGroup.clearLayers();
 
@@ -457,54 +641,62 @@
                 return;
             }
 
+            const markerBounds = [];
+
             pharmacies.forEach((pharmacy) => {
 
-                // Create pharmacy card
-                const card = document.createElement("div");
+                // -----------------------------
+                // CREATE PHARMACY CARD
+                // -----------------------------
+
+                const card =
+                    document.createElement("div");
 
                 card.className = "pharmacy-card";
 
-
-                const name = document.createElement("h3");
+                const name =
+                    document.createElement("h3");
 
                 name.textContent = pharmacy.name;
 
-
-                const address = document.createElement("p");
+                const address =
+                    document.createElement("p");
 
                 address.textContent =
                     "Address: " + pharmacy.address;
 
-
-                const city = document.createElement("p");
+                const city =
+                    document.createElement("p");
 
                 city.textContent =
-                    "City: " + (pharmacy.city || "Not provided");
+                    "City: " +
+                    (pharmacy.city || "Not provided");
 
-
-                const province = document.createElement("p");
+                const province =
+                    document.createElement("p");
 
                 province.textContent =
-                    "Province: " + (pharmacy.province || "Not provided");
+                    "Province: " +
+                    (pharmacy.province || "Not provided");
 
-
-                const phone = document.createElement("p");
+                const phone =
+                    document.createElement("p");
 
                 phone.textContent =
                     "Phone: " + pharmacy.phone;
 
-
-                const email = document.createElement("p");
+                const email =
+                    document.createElement("p");
 
                 email.textContent =
                     "Email: " + pharmacy.email;
 
-
-                const hours = document.createElement("p");
+                const hours =
+                    document.createElement("p");
 
                 hours.textContent =
-                    "Operating Hours: " + pharmacy.operatingHours;
-
+                    "Operating Hours: " +
+                    pharmacy.operatingHours;
 
                 card.append(
                     name,
@@ -517,34 +709,50 @@
                 );
 
 
+                // -----------------------------
+                // PHARMACY OPEN/CLOSED STATUS
+                // -----------------------------
+
                 if (typeof pharmacy.isOpen === "boolean") {
 
-                    const status = document.createElement("span");
+                    const status =
+                        document.createElement("span");
 
-                    status.className = pharmacy.isOpen
-                        ? "status open"
-                        : "status closed";
+                    status.className =
+                        pharmacy.isOpen
+                            ? "status open"
+                            : "status closed";
 
-                    status.textContent = pharmacy.isOpen
-                        ? "Open"
-                        : "Closed";
+                    status.textContent =
+                        pharmacy.isOpen
+                            ? "Open"
+                            : "Closed";
 
                     card.appendChild(status);
+
                 }
 
 
-                const button = document.createElement("button");
+                // -----------------------------
+                // VIEW ON MAP BUTTON
+                // -----------------------------
+
+                const button =
+                    document.createElement("button");
+
+                button.type = "button";
 
                 button.textContent = "View on Map";
 
                 button.addEventListener("click", () => {
 
-                    const coordinates = getCoordinates(pharmacy);
+                    const coordinates =
+                        getCoordinates(pharmacy);
 
                     if (!coordinates) {
 
                         message.textContent =
-                            "This pharmacy does not have map coordinates.";
+                            "This pharmacy has no valid map coordinates.";
 
                         return;
                     }
@@ -557,6 +765,32 @@
                         16
                     );
 
+                    // Find and open the pharmacy marker.
+                    markersGroup.eachLayer((marker) => {
+
+                        const position =
+                            marker.getLatLng();
+
+                        if (
+                            Math.abs(
+                                position.lat -
+                                coordinates.latitude
+                            ) < 0.000001 &&
+                            Math.abs(
+                                position.lng -
+                                coordinates.longitude
+                            ) < 0.000001
+                        ) {
+
+                            marker.openPopup();
+
+                        }
+
+                    });
+
+                    message.textContent =
+                        "Showing " + pharmacy.name + " on the map.";
+
                 });
 
                 card.appendChild(button);
@@ -564,27 +798,41 @@
                 pharmacyContainer.appendChild(card);
 
 
-                // Add map marker if coordinates exist
-                const coordinates = getCoordinates(pharmacy);
+                // -----------------------------
+                // CREATE MAP MARKER
+                // -----------------------------
+
+                const coordinates =
+                    getCoordinates(pharmacy);
 
                 if (coordinates) {
 
-                    const marker = L.marker([
+                    const position = [
                         coordinates.latitude,
                         coordinates.longitude
-                    ]);
+                    ];
 
-                    const popup = document.createElement("div");
+                    const marker =
+                        L.marker(position);
 
-                    const popupName = document.createElement("strong");
+                    // Create safe popup content.
+                    const popup =
+                        document.createElement("div");
 
-                    popupName.textContent = pharmacy.name;
+                    const popupName =
+                        document.createElement("strong");
 
-                    const popupAddress = document.createElement("p");
+                    popupName.textContent =
+                        pharmacy.name;
 
-                    popupAddress.textContent = pharmacy.address;
+                    const popupAddress =
+                        document.createElement("p");
 
-                    const popupPhone = document.createElement("p");
+                    popupAddress.textContent =
+                        pharmacy.address;
+
+                    const popupPhone =
+                        document.createElement("p");
 
                     popupPhone.textContent =
                         "Phone: " + pharmacy.phone;
@@ -598,17 +846,41 @@
                     marker.bindPopup(popup);
 
                     markersGroup.addLayer(marker);
+
+                    markerBounds.push(position);
+
                 }
 
             });
 
+
+            // -----------------------------
+            // ZOOM TO PHARMACIES
+            // -----------------------------
+
+            if (markerBounds.length > 0) {
+
+                map.fitBounds(
+                    markerBounds,
+                    {
+                        padding: [30, 30],
+                        maxZoom: 13
+                    }
+                );
+
+            }
+
         }
 
 
-        // Search for a location using OpenStreetMap Nominatim
+        // =====================================
+        // SEARCH LOCATION
+        // =====================================
+
         window.findStore = async function () {
 
-            const location = addressInput.value.trim();
+            const location =
+                addressInput.value.trim();
 
             if (!location) {
 
@@ -618,7 +890,8 @@
                 return;
             }
 
-            message.textContent = "Searching for location...";
+            message.textContent =
+                "Searching for location...";
 
             try {
 
@@ -633,39 +906,69 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error("Location search failed.");
+
+                    throw new Error(
+                        "Location search failed."
+                    );
+
                 }
 
-                const results = await response.json();
+                const results =
+                    await response.json();
 
-                if (results.length === 0) {
+                if (!results || results.length === 0) {
 
                     message.textContent =
-                        "Location not found. Please try another search.";
+                        "Location not found. Try another location.";
 
                     return;
                 }
 
-                const latitude = Number(results[0].lat);
+                const latitude =
+                    Number(results[0].lat);
 
-                const longitude = Number(results[0].lon);
+                const longitude =
+                    Number(results[0].lon);
+
+                if (
+                    !Number.isFinite(latitude) ||
+                    !Number.isFinite(longitude)
+                ) {
+
+                    throw new Error(
+                        "The location returned invalid coordinates."
+                    );
+
+                }
 
                 map.setView(
                     [latitude, longitude],
                     13
                 );
 
-                L.marker([latitude, longitude])
-                    .addTo(map)
+                if (searchMarker) {
+                    map.removeLayer(searchMarker);
+                }
+
+                searchMarker =
+                    L.marker([
+                        latitude,
+                        longitude
+                    ]).addTo(map);
+
+                searchMarker
                     .bindPopup("Your searched location")
                     .openPopup();
 
                 message.textContent =
-                    "Location found. Nearby pharmacy markers are shown on the map.";
+                    "Location found. Pharmacy markers are displayed where coordinates are available.";
 
             } catch (error) {
 
-                console.error(error);
+                console.error(
+                    "Location search error:",
+                    error
+                );
 
                 message.textContent =
                     "Could not search for this location. Please try again.";
@@ -675,7 +978,13 @@
         };
 
 
-        // Search when Enter is pressed
+        // Search button.
+        searchButton.addEventListener("click", () => {
+            window.findStore();
+        });
+
+
+        // Press Enter to search.
         addressInput.addEventListener("keydown", (event) => {
 
             if (event.key === "Enter") {
@@ -685,45 +994,105 @@
         });
 
 
-        // Logout
-        document.getElementById("logoutLink")
-            .addEventListener("click", async (event) => {
+        // =====================================
+        // LOGOUT
+        // =====================================
+
+        logoutLink.addEventListener(
+            "click",
+            async (event) => {
 
                 event.preventDefault();
 
                 try {
 
+                    if (unsubscribePharmacies) {
+                        unsubscribePharmacies();
+                    }
+
                     await signOut(auth);
 
-                    window.location.href = "login.html";
+                    window.location.href =
+                        "login.html";
 
                 } catch (error) {
 
-                    console.error("Logout error:", error);
+                    console.error(
+                        "Logout error:",
+                        error
+                    );
 
                     message.textContent =
-                        "Unable to log out. Please try again.";
+                        "Unable to log out: " +
+                        error.message;
 
                 }
 
-            });
+            }
+        );
 
 
-        // Check whether user is signed in
-        onAuthStateChanged(auth, (user) => {
+        // =====================================
+        // START MAP AND CHECK AUTHENTICATION
+        // =====================================
 
-            if (!user) {
+        try {
 
-                window.location.href = "login.html";
+            const mapInitialized =
+                initializeMap();
 
-                return;
+            if (!mapInitialized) {
+                throw new Error(
+                    "The map could not be initialized."
+                );
             }
 
-            initializeMap();
+            onAuthStateChanged(
+                auth,
+                (user) => {
 
-            loadPharmacies();
+                    if (!user) {
 
-        });
+                        window.location.href =
+                            "login.html";
+
+                        return;
+                    }
+
+                    console.log(
+                        "Store Locator user authenticated:",
+                        user.uid
+                    );
+
+                    loadPharmacies();
+
+                },
+                (error) => {
+
+                    console.error(
+                        "Authentication error:",
+                        error
+                    );
+
+                    message.textContent =
+                        "Authentication error: " +
+                        error.message;
+
+                }
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Store Locator initialization error:",
+                error
+            );
+
+            message.textContent =
+                "The Store Locator could not start: " +
+                error.message;
+
+        }
 
     </script>
 
