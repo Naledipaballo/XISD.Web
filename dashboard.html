@@ -1,15 +1,22 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Dashboard - Pill Point Delivery</title>
 
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* SIDEBAR */
+
+        /* =====================================
+           SIDEBAR
+        ===================================== */
+
         .sidebar {
             height: 100%;
             width: 0;
@@ -50,7 +57,11 @@
             padding: 5px 12px;
         }
 
-        /* HEADER */
+
+        /* =====================================
+           HEADER
+        ===================================== */
+
         .header {
             display: flex;
             justify-content: space-between;
@@ -85,14 +96,22 @@
             object-fit: cover;
         }
 
-        /* MAIN CONTENT */
+
+        /* =====================================
+           MAIN CONTENT
+        ===================================== */
+
         #main {
             padding: 100px 20px 40px;
             max-width: 1100px;
             margin: auto;
         }
 
-        /* DASHBOARD METRICS */
+
+        /* =====================================
+           DASHBOARD METRICS
+        ===================================== */
+
         .top-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -112,7 +131,11 @@
             color: #003049;
         }
 
-        /* WELCOME CARD */
+
+        /* =====================================
+           WELCOME CARD
+        ===================================== */
+
         .welcome-card {
             background: #DFEEF3;
             padding: 20px;
@@ -124,7 +147,11 @@
             color: #003049;
         }
 
-        /* MAIN DASHBOARD ACTION CARDS */
+
+        /* =====================================
+           MAIN DASHBOARD ACTION CARDS
+        ===================================== */
+
         .cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -142,20 +169,32 @@
             color: #003049;
         }
 
+
+        /* =====================================
+           BLUE DASHBOARD BUTTONS
+        ===================================== */
+
         .card a {
             display: inline-block;
-            background: #C1121F;
+            background: #003049;
             color: #fff;
             padding: 10px 20px;
             border-radius: 5px;
             text-decoration: none;
             margin-top: 10px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         .card a:hover {
-            background: #780000;
+            background: #669BBC;
+            color: #fff;
         }
+
+
+        /* =====================================
+           ACCESSIBILITY
+        ===================================== */
 
         a:focus-visible,
         button:focus-visible {
@@ -163,7 +202,13 @@
             outline-offset: 3px;
         }
 
+
+        /* =====================================
+           RESPONSIVE DESIGN
+        ===================================== */
+
         @media (max-width: 600px) {
+
             .sidebar.sidebar-open {
                 width: 85%;
                 max-width: 280px;
@@ -172,13 +217,21 @@
             #main {
                 padding: 90px 15px 30px;
             }
+
         }
+
     </style>
+
 </head>
+
 
 <body>
 
-    <!-- CUSTOMER SIDEBAR -->
+
+    <!-- =====================================
+         CUSTOMER SIDEBAR
+    ===================================== -->
+
     <div id="sidebar" class="sidebar">
 
         <a href="#" class="closebtn" id="close-menu"
@@ -187,70 +240,115 @@
         </a>
 
         <a href="dashboard.html">Dashboard</a>
+
         <a href="medicines.html">Shop Medication</a>
+
         <a href="cart.html">My Cart</a>
+
         <a href="checkout.html">Checkout</a>
+
         <a href="prescription.html">Prescription</a>
+
         <a href="reminders.html">Set Reminder</a>
+
         <a href="viewreminders.html">My Reminders</a>
+
         <a href="storelocator.html">Store Locator</a>
+
         <a href="trackorder.html">Track Order</a>
+
         <a href="myaccount.html">My Account</a>
+
         <a href="#" id="logout-link">Logout</a>
 
     </div>
 
 
-    <!-- HEADER -->
+
+    <!-- =====================================
+         HEADER
+    ===================================== -->
+
     <div class="header">
 
-        <button type="button"
-                class="menu-btn"
-                id="open-menu"
-                aria-label="Open navigation menu"
-                aria-expanded="false">
+        <button
+            type="button"
+            class="menu-btn"
+            id="open-menu"
+            aria-label="Open navigation menu"
+            aria-expanded="false">
+
             &#9776;
+
         </button>
 
+
         <a href="myaccount.html" class="profile">
+
             <img src="photo.jpeg" alt="Profile">
+
         </a>
 
     </div>
 
 
-    <!-- MAIN DASHBOARD -->
+
+    <!-- =====================================
+         MAIN DASHBOARD
+    ===================================== -->
+
     <main id="main">
 
         <h1>Dashboard</h1>
 
+
         <!-- DASHBOARD METRICS -->
+
         <div class="top-cards">
 
+
             <div class="top-card">
+
                 <h2 id="metric-cart-count">0</h2>
+
                 <p>Cart Items</p>
+
             </div>
 
+
             <div class="top-card">
+
                 <h2 id="metric-prescription-count">0</h2>
+
                 <p>Prescriptions</p>
+
             </div>
 
+
             <div class="top-card">
+
                 <h2 id="metric-reminder-count">0</h2>
+
                 <p>Reminders</p>
+
             </div>
 
+
             <div class="top-card">
+
                 <h2 id="metric-cart-total">R0.00</h2>
+
                 <p>Total Cart Value</p>
+
             </div>
+
 
         </div>
 
 
+
         <!-- PERSONALIZED WELCOME CARD -->
+
         <div class="welcome-card" id="welcome-message-box">
 
             <h2>Welcome to Pill Point Delivery!</h2>
@@ -260,44 +358,96 @@
         </div>
 
 
-        <!-- MAIN DASHBOARD ACTION CARDS -->
-        <!-- Track Order and Reminders are intentionally NOT included here. -->
+
+        <!-- =====================================
+             MAIN DASHBOARD ACTION CARDS
+             TRACK ORDER AND REMINDERS ARE NOT
+             INCLUDED IN THIS SECTION.
+        ===================================== -->
 
         <div class="cards">
 
+
+            <!-- SHOP MEDICATION -->
+
             <div class="card">
+
                 <h3>Shop Medication</h3>
+
                 <p>Browse available medication.</p>
-                <a href="medicines.html">Open Shop</a>
+
+                <a href="medicines.html">
+                    Open Shop
+                </a>
+
             </div>
 
+
+
+            <!-- SHOPPING CART -->
+
             <div class="card">
+
                 <h3>View Shopping Cart</h3>
+
                 <p>View the medication you have added.</p>
-                <a href="cart.html">View Cart</a>
+
+                <a href="cart.html">
+                    View Cart
+                </a>
+
             </div>
 
+
+
+            <!-- PRESCRIPTION -->
+
             <div class="card">
+
                 <h3>Upload Prescription</h3>
+
                 <p>Upload your prescription for processing.</p>
-                <a href="prescription.html">Upload Prescription</a>
+
+                <a href="prescription.html">
+                    Upload Prescription
+                </a>
+
             </div>
 
+
+
+            <!-- STORE LOCATOR -->
+
             <div class="card">
+
                 <h3>Store Locator</h3>
+
                 <p>Find nearby pharmacies.</p>
-                <a href="storelocator.html">Find Pharmacy</a>
+
+                <a href="storelocator.html">
+                    Find Pharmacy
+                </a>
+
             </div>
+
 
         </div>
 
     </main>
 
 
-    <!-- FIREBASE DASHBOARD LOGIC -->
+
+    <!-- =====================================
+         FIREBASE DASHBOARD LOGIC
+    ===================================== -->
+
     <script type="module">
 
+
+        // =====================================
         // FIREBASE IMPORTS
+        // =====================================
+
         import { db, auth } from "./firebase.js";
 
         import {
@@ -315,11 +465,13 @@
         } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 
-        // -----------------------------------------
-        // SIDEBAR BUTTONS
-        // -----------------------------------------
 
-        const sidebar = document.getElementById("sidebar");
+        // =====================================
+        // SIDEBAR BUTTONS
+        // =====================================
+
+        const sidebar =
+            document.getElementById("sidebar");
 
         const openMenuButton =
             document.getElementById("open-menu");
@@ -329,85 +481,117 @@
 
 
         function openNav() {
+
             sidebar.classList.add("sidebar-open");
 
             openMenuButton.setAttribute(
                 "aria-expanded",
                 "true"
             );
+
         }
 
 
         function closeNav() {
+
             sidebar.classList.remove("sidebar-open");
 
             openMenuButton.setAttribute(
                 "aria-expanded",
                 "false"
             );
+
         }
 
 
-        openMenuButton.addEventListener("click", openNav);
+        openMenuButton.addEventListener(
+            "click",
+            openNav
+        );
 
 
-        closeMenuButton.addEventListener("click", function(event) {
-            event.preventDefault();
-            closeNav();
-        });
+        closeMenuButton.addEventListener(
+            "click",
+            function(event) {
+
+                event.preventDefault();
+
+                closeNav();
+
+            }
+        );
+
 
 
         // CLOSE SIDEBAR WHEN CLICKING OUTSIDE
-        document.addEventListener("click", function(event) {
 
-            if (!sidebar.classList.contains("sidebar-open")) {
-                return;
+        document.addEventListener(
+            "click",
+            function(event) {
+
+                if (!sidebar.classList.contains("sidebar-open")) {
+                    return;
+                }
+
+                if (
+                    !sidebar.contains(event.target) &&
+                    !openMenuButton.contains(event.target)
+                ) {
+
+                    closeNav();
+
+                }
+
             }
+        );
 
-            if (
-                !sidebar.contains(event.target) &&
-                !openMenuButton.contains(event.target)
-            ) {
-                closeNav();
-            }
-
-        });
 
 
         // CLOSE SIDEBAR USING ESCAPE
-        document.addEventListener("keydown", function(event) {
 
-            if (event.key === "Escape") {
-                closeNav();
+        document.addEventListener(
+            "keydown",
+            function(event) {
+
+                if (event.key === "Escape") {
+
+                    closeNav();
+
+                }
+
             }
+        );
 
-        });
 
 
-        // -----------------------------------------
+        // =====================================
         // ESCAPE HTML
-        // -----------------------------------------
+        // =====================================
 
         function escapeHtml(value) {
 
             const characters = {
+
                 "&": "&amp;",
                 "<": "&lt;",
                 ">": "&gt;",
                 '"': "&quot;",
                 "'": "&#039;"
+
             };
 
             return String(value ?? "").replace(
                 /[&<>"']/g,
                 character => characters[character]
             );
+
         }
 
 
-        // -----------------------------------------
+
+        // =====================================
         // LOAD CUSTOMER USERNAME FROM FIRESTORE
-        // -----------------------------------------
+        // =====================================
 
         async function loadCustomerUsername(user) {
 
@@ -415,16 +599,27 @@
 
             try {
 
-                // Automatically retrieve signed-in customer's UID.
-                const userRef = doc(db, "users", user.uid);
+                // Automatically retrieve the signed-in customer's UID.
+
+                const userRef = doc(
+                    db,
+                    "users",
+                    user.uid
+                );
+
 
                 const userSnapshot = await getDoc(userRef);
+
 
                 if (userSnapshot.exists()) {
 
                     const userData = userSnapshot.data();
 
-                    console.log("Customer profile:", userData);
+                    console.log(
+                        "Customer profile:",
+                        userData
+                    );
+
 
                     username =
                         userData.username ||
@@ -449,71 +644,100 @@
 
             }
 
+
             // FALLBACK IF FIRESTORE USERNAME IS NOT AVAILABLE
+
             if (!username) {
 
                 username =
                     user.displayName ||
-                    (user.email
-                        ? user.email.split("@")[0]
-                        : "Customer");
+                    (
+                        user.email
+                            ? user.email.split("@")[0]
+                            : "Customer"
+                    );
 
             }
 
+
             return username;
+
         }
 
 
-        // -----------------------------------------
+
+        // =====================================
         // CHECK CUSTOMER LOGIN
-        // -----------------------------------------
+        // =====================================
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(
+            auth,
+            async (user) => {
 
-            if (user) {
+                if (user) {
 
-                console.log("PILL POINT DASHBOARD");
+                    console.log(
+                        "PILL POINT DASHBOARD"
+                    );
 
-                console.log("Signed-in email:", user.email);
+                    console.log(
+                        "Signed-in email:",
+                        user.email
+                    );
 
-                console.log("Signed-in UID:", user.uid);
+                    console.log(
+                        "Signed-in UID:",
+                        user.uid
+                    );
 
 
-                // LOAD CUSTOMER USERNAME
-                const username =
-                    await loadCustomerUsername(user);
+                    // LOAD CUSTOMER USERNAME
+
+                    const username =
+                        await loadCustomerUsername(user);
 
 
-                // LOAD DASHBOARD METRICS
-                await loadDashboardMetrics(
-                    user.uid,
-                    username
-                );
+                    // LOAD DASHBOARD METRICS
 
-            } else {
+                    await loadDashboardMetrics(
+                        user.uid,
+                        username
+                    );
 
-                window.location.href = "login.html";
+                } else {
+
+                    window.location.href = "login.html";
+
+                }
 
             }
+        );
 
-        });
 
 
-        // -----------------------------------------
+        // =====================================
         // LOAD DASHBOARD METRICS
-        // -----------------------------------------
+        // =====================================
 
-        async function loadDashboardMetrics(userId, username) {
+        async function loadDashboardMetrics(
+            userId,
+            username
+        ) {
 
             const welcomeBox =
                 document.getElementById("welcome-message-box");
 
+
             try {
 
-                console.log("Loading dashboard for UID:", userId);
+                console.log(
+                    "Loading dashboard for UID:",
+                    userId
+                );
 
 
                 // CUSTOMER CART QUERY
+
                 const cartQuery = query(
                     collection(db, "cart"),
                     where("userId", "==", userId)
@@ -521,6 +745,7 @@
 
 
                 // CUSTOMER PRESCRIPTIONS QUERY
+
                 const prescQuery = query(
                     collection(db, "prescriptions"),
                     where("userId", "==", userId)
@@ -528,6 +753,7 @@
 
 
                 // CUSTOMER REMINDERS QUERY
+
                 const remQuery = query(
                     collection(db, "reminders"),
                     where("userId", "==", userId)
@@ -535,6 +761,7 @@
 
 
                 // LOAD COLLECTIONS
+
                 const [
                     cartSnap,
                     prescSnap,
@@ -542,17 +769,24 @@
                 ] = await Promise.all([
 
                     getDocs(cartQuery),
+
                     getDocs(prescQuery),
+
                     getDocs(remQuery)
 
                 ]);
 
 
-                // -----------------------------------------
-                // CART DIAGNOSTICS
-                // -----------------------------------------
 
-                console.log("Cart documents found:", cartSnap.size);
+                // =====================================
+                // CART DIAGNOSTICS
+                // =====================================
+
+                console.log(
+                    "Cart documents found:",
+                    cartSnap.size
+                );
+
 
                 cartSnap.forEach((document) => {
 
@@ -569,13 +803,15 @@
                 });
 
 
-                // -----------------------------------------
+
+                // =====================================
                 // CALCULATE CART TOTAL
-                // -----------------------------------------
+                // =====================================
 
                 let cartCount = 0;
 
                 let cartTotal = 0;
+
 
                 cartSnap.forEach((document) => {
 
@@ -585,7 +821,10 @@
                         Number(item.quantity) || 0;
 
                     const price =
-                        Number(item.unitPrice ?? item.price) || 0;
+                        Number(
+                            item.unitPrice ?? item.price
+                        ) || 0;
+
 
                     cartCount += quantity;
 
@@ -594,15 +833,20 @@
                 });
 
 
+
                 // OTHER DASHBOARD COUNTS
-                const prescriptionCount = prescSnap.size;
 
-                const reminderCount = remSnap.size;
+                const prescriptionCount =
+                    prescSnap.size;
+
+                const reminderCount =
+                    remSnap.size;
 
 
-                // -----------------------------------------
+
+                // =====================================
                 // UPDATE DASHBOARD METRICS
-                // -----------------------------------------
+                // =====================================
 
                 document.getElementById(
                     "metric-cart-count"
@@ -621,24 +865,32 @@
 
                 document.getElementById(
                     "metric-cart-total"
-                ).textContent = `R${cartTotal.toFixed(2)}`;
+                ).textContent =
+                    `R${cartTotal.toFixed(2)}`;
 
 
-                // -----------------------------------------
+
+                // =====================================
                 // UPDATE PERSONALIZED WELCOME MESSAGE
-                // -----------------------------------------
+                // =====================================
 
-                const safeUsername = escapeHtml(username);
+                const safeUsername =
+                    escapeHtml(username);
+
 
                 welcomeBox.innerHTML = `
+
                     <h2>Welcome back, ${safeUsername}!</h2>
 
                     <p>
+
                         We are happy to have you at
                         Pill Point Delivery.
                         Manage your medication and shop
                         conveniently from your dashboard.
+
                     </p>
+
                 `;
 
 
@@ -654,15 +906,23 @@
                     error
                 );
 
-                // Keep the welcome message visible
-                // even if statistics cannot load.
+
+                // KEEP WELCOME MESSAGE VISIBLE
+                // EVEN IF STATISTICS CANNOT LOAD.
+
                 welcomeBox.innerHTML = `
-                    <h2>Welcome back, ${escapeHtml(username)}!</h2>
+
+                    <h2>
+                        Welcome back, ${escapeHtml(username)}!
+                    </h2>
 
                     <p>
+
                         Your dashboard is available,
                         but some information could not be loaded.
+
                     </p>
+
                 `;
 
             }
@@ -670,12 +930,15 @@
         }
 
 
-        // -----------------------------------------
+
+        // =====================================
         // LOGOUT BUTTON
-        // -----------------------------------------
+        // =====================================
 
         document.getElementById("logout-link").addEventListener(
+
             "click",
+
             async function(event) {
 
                 event.preventDefault();
@@ -688,16 +951,24 @@
 
                 } catch (error) {
 
-                    console.error("Logout error:", error);
+                    console.error(
+                        "Logout error:",
+                        error
+                    );
 
-                    alert("Unable to log out. Please try again.");
+                    alert(
+                        "Unable to log out. Please try again."
+                    );
 
                 }
 
             }
+
         );
+
 
     </script>
 
 </body>
+
 </html>
