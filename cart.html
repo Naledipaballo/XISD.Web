@@ -1,6 +1,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,6 +21,8 @@
             font-family: Arial, sans-serif;
             margin: 0;
         }
+
+        /* HEADER */
 
         .header {
             display: flex;
@@ -52,10 +55,10 @@
             color: #003049;
             background: none;
             border: none;
-            z-index: 2;
         }
 
         /* SIDEBAR */
+
         .sidebar {
             height: 100%;
             width: 0;
@@ -93,11 +96,12 @@
             font-size: 36px;
         }
 
-        /* CART */
+        /* CART PAGE */
+
         .cart-page-container {
             width: 90%;
             max-width: 750px;
-            margin: 110px auto 40px auto;
+            margin: 110px auto 40px;
         }
 
         .cart-page-title {
@@ -184,6 +188,8 @@
             background: #780000;
         }
 
+        /* SUMMARY */
+
         .cart-summary-box {
             background: #fff;
             border-radius: 12px;
@@ -211,6 +217,8 @@
             margin-top: 12px;
         }
 
+        /* BUTTONS */
+
         .cart-action-buttons {
             display: flex;
             gap: 12px;
@@ -234,6 +242,11 @@
             background: #003049;
         }
 
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .btn-outline {
             background: transparent;
             color: #003049;
@@ -244,6 +257,8 @@
             background: #003049;
             color: white;
         }
+
+        /* EMPTY CART */
 
         .empty-cart {
             background: white;
@@ -260,7 +275,13 @@
             line-height: 1.5;
         }
 
+        .error-message {
+            color: #C1121F;
+            font-weight: bold;
+        }
+
         @media (max-width: 600px) {
+
             .cart-action-buttons {
                 flex-direction: column;
             }
@@ -276,71 +297,99 @@
             .cart-item-card {
                 padding: 14px;
             }
+
+            .sidebar.sidebar-open {
+                width: 85%;
+                max-width: 280px;
+            }
         }
     </style>
+
 </head>
 
 <body>
 
     <!-- HEADER -->
+
     <div class="header">
 
-        <button
-            type="button"
-            class="menu-btn"
-            onclick="openNav()"
-            aria-label="Open navigation">
+        <button type="button"
+                class="menu-btn"
+                id="open-menu"
+                aria-label="Open navigation">
             &#9776;
         </button>
 
-        <h1 class="header-title">Pill Point Delivery</h1>
+        <h1 class="header-title">
+            Pill Point Delivery
+        </h1>
 
     </div>
 
+
     <!-- SIDEBAR -->
+
     <div id="sidebar" class="sidebar">
 
-        <a href="javascript:void(0)"
-           class="closebtn"
-           onclick="closeNav()">
+        <a href="#" class="closebtn" id="close-menu">
             &times;
         </a>
 
         <a href="dashboard.html">Dashboard</a>
+
         <a href="medicines.html">Shop Medication</a>
+
         <a href="prescription.html">Prescription</a>
+
         <a href="reminders.html">Reminders</a>
+
         <a href="storelocator.html">Store Locator</a>
+
         <a href="cart.html">Cart</a>
+
         <a href="checkout.html">Checkout</a>
+
         <a href="trackorder.html">Track Order</a>
+
         <a href="myaccount.html">My Account</a>
+
         <a href="contact.html">Contact Us</a>
+
         <a href="#" id="logout-link">Logout</a>
 
     </div>
 
+
     <!-- CART CONTENT -->
+
     <main class="cart-page-container">
 
-        <h2 class="cart-page-title">Shopping Cart</h2>
+        <h2 class="cart-page-title">
+            Shopping Cart
+        </h2>
 
         <p id="cart-message" class="message">
-            Loading cart items...
+            Connecting to your account...
         </p>
 
         <div id="cart-content-area">
-            <p class="message">Please wait...</p>
+
+            <p class="message">
+                Please wait...
+            </p>
+
         </div>
 
     </main>
 
-    <!-- FIREBASE AND CART LOGIC -->
+
+    <!-- FIREBASE CART LOGIC -->
+
     <script type="module">
 
-        // =====================================
+        // =========================================
         // FIREBASE IMPORTS
-        // =====================================
+        // =========================================
 
         import { db, auth } from "./firebase.js";
 
@@ -360,14 +409,17 @@
         } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 
-        // =====================================
-        // VARIABLES
-        // =====================================
+        // =========================================
+        // SETTINGS
+        // =========================================
 
         const SHIPPING_FEE = 50.00;
 
         let currentUser = null;
+
         let currentUserCartDocs = [];
+
+        let cartLoading = false;
 
         const container =
             document.getElementById("cart-content-area");
@@ -376,46 +428,79 @@
             document.getElementById("cart-message");
 
 
-        // =====================================
+        // =========================================
         // SIDEBAR
-        // =====================================
+        // =========================================
 
-        window.openNav = function () {
+        const sidebar =
+            document.getElementById("sidebar");
 
-            document
-                .getElementById("sidebar")
-                .classList.add("sidebar-open");
+        const openButton =
+            document.getElementById("open-menu");
 
-        };
-
-        window.closeNav = function () {
-
-            document
-                .getElementById("sidebar")
-                .classList.remove("sidebar-open");
-
-        };
+        const closeButton =
+            document.getElementById("close-menu");
 
 
-        // =====================================
-        // ESCAPE HTML
-        // =====================================
+        openButton.addEventListener("click", () => {
+
+            sidebar.classList.add("sidebar-open");
+
+        });
+
+
+        closeButton.addEventListener("click", (event) => {
+
+            event.preventDefault();
+
+            sidebar.classList.remove("sidebar-open");
+
+        });
+
+
+        document.addEventListener("click", (event) => {
+
+            if (
+                sidebar.classList.contains("sidebar-open") &&
+                !sidebar.contains(event.target) &&
+                !openButton.contains(event.target)
+            ) {
+
+                sidebar.classList.remove("sidebar-open");
+
+            }
+
+        });
+
+
+        document.addEventListener("keydown", (event) => {
+
+            if (event.key === "Escape") {
+
+                sidebar.classList.remove("sidebar-open");
+
+            }
+
+        });
+
+
+        // =========================================
+        // SAFE HTML
+        // =========================================
 
         function escapeHtml(value) {
 
-            if (value === null || value === undefined) {
-                return "";
-            }
-
             const characters = {
+
                 "&": "&amp;",
                 "<": "&lt;",
                 ">": "&gt;",
                 '"': "&quot;",
                 "'": "&#039;"
+
             };
 
-            return String(value).replace(
+            return String(value ?? "").replace(
                 /[&<>"']/g,
                 character => characters[character]
             );
@@ -423,306 +508,446 @@
         }
 
 
-        // =====================================
-        // CHECK FIREBASE AUTHENTICATION
-        // =====================================
+        // =========================================
+        // AUTHENTICATION
+        // =========================================
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(
 
-            if (!user) {
+            auth,
 
-                currentUser = null;
+            async (user) => {
 
-                window.location.href = "login.html";
+                if (!user) {
 
-                return;
-            }
+                    currentUser = null;
 
-            currentUser = user;
+                    message.textContent =
+                        "Please sign in to view your cart.";
 
-            console.log("Cart user:", user.uid);
+                    container.innerHTML = "";
 
-            fetchUserCart(user.uid);
-
-        });
-
-
-        // =====================================
-        // LOAD CUSTOMER CART
-        // =====================================
-
-        async function fetchUserCart(userId) {
-
-            try {
-
-                message.textContent =
-                    "Loading your cart...";
-
-                container.innerHTML = "";
-
-                const cartRef =
-                    collection(db, "cart");
-
-                const cartQuery = query(
-                    cartRef,
-                    where("userId", "==", userId)
-                );
-
-                const querySnapshot =
-                    await getDocs(cartQuery);
-
-                currentUserCartDocs =
-                    querySnapshot.docs;
-
-                console.log(
-                    "Cart documents found:",
-                    querySnapshot.size
-                );
-
-                if (querySnapshot.empty) {
-
-                    displayEmptyCart();
+                    window.location.href = "login.html";
 
                     return;
-                }
-
-
-                // =====================================
-                // CALCULATE CART TOTALS
-                // =====================================
-
-                let subtotal = 0;
-                let totalQuantity = 0;
-
-                let htmlContent = `
-                    <div class="cart-items-list">
-                `;
-
-
-                // =====================================
-                // DISPLAY EACH CART ITEM
-                // =====================================
-
-                currentUserCartDocs.forEach((docSnap) => {
-
-                    const item = docSnap.data();
-
-                    const cartId = docSnap.id;
-
-                    const itemName =
-                        item.medicationName ||
-                        item.medicine_name ||
-                        item.name ||
-                        "Unknown Medication";
-
-                    const itemPrice = Number(
-                        item.unitPrice ?? item.price ?? 0
-                    );
-
-                    const quantity = Number(
-                        item.quantity ?? 1
-                    );
-
-                    if (
-                        !Number.isFinite(itemPrice) ||
-                        !Number.isInteger(quantity) ||
-                        quantity < 1
-                    ) {
-
-                        console.error(
-                            "Invalid cart item:",
-                            cartId,
-                            item
-                        );
-
-                        return;
-                    }
-
-                    const itemTotal =
-                        itemPrice * quantity;
-
-                    subtotal += itemTotal;
-                    totalQuantity += quantity;
-
-
-                    htmlContent += `
-
-                        <div class="cart-item-card">
-
-                            <div class="cart-item-details">
-
-                                <div class="cart-item-title">
-                                    ${escapeHtml(itemName)}
-                                </div>
-
-                                <div class="cart-item-price">
-                                    Unit Price: R${itemPrice.toFixed(2)}
-                                </div>
-
-                                <div class="cart-item-subtotal">
-                                    Item Total: R${itemTotal.toFixed(2)}
-                                </div>
-
-                                <div class="cart-item-controls">
-
-                                    <label for="qty_${escapeHtml(cartId)}">
-                                        Quantity:
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        value="${quantity}"
-                                        min="1"
-                                        max="99"
-                                        class="qty-input"
-                                        id="qty_${escapeHtml(cartId)}"
-                                    >
-
-                                    <button
-                                        type="button"
-                                        class="remove-btn"
-                                        data-remove-id="${escapeHtml(cartId)}">
-                                        Remove
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    `;
-
-                });
-
-
-                htmlContent += `</div>`;
-
-
-                // =====================================
-                // CART SUMMARY
-                // =====================================
-
-                const total = subtotal + SHIPPING_FEE;
-
-                htmlContent += `
-
-                    <div class="cart-summary-box">
-
-                        <div class="summary-row">
-                            <span>Total Items</span>
-                            <span>${totalQuantity}</span>
-                        </div>
-
-                        <div class="summary-row">
-                            <span>Subtotal</span>
-                            <span>R${subtotal.toFixed(2)}</span>
-                        </div>
-
-                        <div class="summary-row">
-                            <span>Delivery Fee</span>
-                            <span>R${SHIPPING_FEE.toFixed(2)}</span>
-                        </div>
-
-                        <div class="summary-row total-row">
-                            <span>Total</span>
-                            <span>R${total.toFixed(2)}</span>
-                        </div>
-
-                    </div>
-
-                    <div class="cart-action-buttons">
-
-                        <button
-                            type="button"
-                            class="btn btn-outline"
-                            id="update-cart-btn">
-                            Update Quantities
-                        </button>
-
-                        <a href="checkout.html" class="btn">
-                            Checkout Now
-                        </a>
-
-                    </div>
-
-                `;
-
-
-                // =====================================
-                // DISPLAY CART
-                // =====================================
-
-                container.innerHTML = htmlContent;
-
-                message.textContent =
-                    currentUserCartDocs.length +
-                    " medication item(s) in your cart.";
-
-
-                // =====================================
-                // REMOVE BUTTONS
-                // =====================================
-
-                container
-                    .querySelectorAll("[data-remove-id]")
-                    .forEach((button) => {
-
-                        button.addEventListener(
-                            "click",
-                            () => {
-
-                                removeItem(
-                                    button.dataset.removeId
-                                );
-
-                            }
-                        );
-
-                    });
-
-
-                // =====================================
-                // UPDATE BUTTON
-                // =====================================
-
-                const updateButton =
-                    document.getElementById("update-cart-btn");
-
-                if (updateButton) {
-
-                    updateButton.addEventListener(
-                        "click",
-                        updateQuantities
-                    );
 
                 }
 
-            } catch (error) {
+                currentUser = user;
+
+                console.log("PILL POINT DELIVERY CART");
+
+                console.log("Customer email:", user.email);
+
+                console.log("Customer UID:", user.uid);
+
+                await fetchUserCart();
+
+            },
+
+            (error) => {
 
                 console.error(
-                    "Error fetching cart:",
+                    "Authentication error:",
                     error
                 );
 
                 message.textContent =
-                    "Unable to load cart: " + error.message;
+                    "Unable to verify your account. Please refresh the page.";
+
+                container.innerHTML = "";
+
+            }
+
+        );
+
+
+        // =========================================
+        // FETCH CUSTOMER CART
+        // =========================================
+
+        async function fetchUserCart() {
+
+            if (!currentUser || cartLoading) {
+                return;
+            }
+
+            cartLoading = true;
+
+            message.textContent = "Loading your cart...";
+
+            container.innerHTML = "";
+
+            try {
+
+                // Automatically retrieve the logged-in user's UID.
+                const userId = currentUser.uid;
+
+                console.log(
+                    "Fetching cart for authenticated UID:",
+                    userId
+                );
+
+
+                // FIRESTORE CART COLLECTION
+                const cartRef = collection(db, "cart");
+
+
+                // GET ONLY THE CURRENT CUSTOMER'S CART ITEMS
+                const cartQuery = query(
+
+                    cartRef,
+
+                    where("userId", "==", userId)
+
+                );
+
+
+                const snapshot = await getDocs(cartQuery);
+
+                currentUserCartDocs = snapshot.docs;
+
+
+                console.log(
+                    "Cart documents found:",
+                    snapshot.size
+                );
+
+
+                snapshot.forEach((document) => {
+
+                    console.log(
+                        "Cart item:",
+                        document.id,
+                        document.data()
+                    );
+
+                });
+
+
+                if (snapshot.empty) {
+
+                    displayEmptyCart();
+
+                    return;
+
+                }
+
+
+                renderCartItems();
+
+
+            } catch (error) {
+
+                console.error(
+                    "FIRESTORE CART ERROR:",
+                    error
+                );
+
+                message.textContent =
+                    "Unable to load your cart.";
 
                 container.innerHTML = `
-                    <div class="empty-cart">
-                        <p>There was a problem loading your cart.</p>
+
+                    <div class="empty-cart error-message">
+
+                        <h3>Cart Loading Error</h3>
+
                         <p>${escapeHtml(error.message)}</p>
+
+                        <button
+                            type="button"
+                            class="btn"
+                            id="retry-cart">
+
+                            Try Again
+
+                        </button>
+
                     </div>
+
                 `;
+
+
+                document.getElementById("retry-cart")
+                    .addEventListener("click", fetchUserCart);
+
+            } finally {
+
+                cartLoading = false;
 
             }
 
         }
 
 
-        // =====================================
+        // =========================================
+        // DISPLAY CART ITEMS
+        // =========================================
+
+        function renderCartItems() {
+
+            let subtotal = 0;
+
+            let totalQuantity = 0;
+
+            let html = `
+                <div class="cart-items-list">
+            `;
+
+
+            currentUserCartDocs.forEach((document) => {
+
+                const item = document.data();
+
+                const cartId = document.id;
+
+
+                // GET MEDICATION DETAILS
+                const itemName =
+                    item.medicationName ||
+                    item.name ||
+                    item.medicationID ||
+                    "Medication";
+
+
+                const itemPrice = Number(
+                    item.unitPrice ?? item.price
+                );
+
+
+                const quantity = Number(item.quantity);
+
+
+                // VALIDATE DATA
+                if (
+
+                    !Number.isFinite(itemPrice) ||
+                    itemPrice < 0 ||
+
+                    !Number.isInteger(quantity) ||
+                    quantity < 1
+
+                ) {
+
+                    console.error(
+                        "Invalid cart item:",
+                        cartId,
+                        item
+                    );
+
+                    return;
+
+                }
+
+
+                // CALCULATE ITEM TOTAL
+                const itemSubtotal = itemPrice * quantity;
+
+                subtotal += itemSubtotal;
+
+                totalQuantity += quantity;
+
+
+                // BUILD CART ITEM
+                html += `
+
+                    <div class="cart-item-card">
+
+                        <div class="cart-item-details">
+
+                            <div class="cart-item-title">
+
+                                ${escapeHtml(itemName)}
+
+                            </div>
+
+
+                            <div class="cart-item-price">
+
+                                Unit Price:
+                                R${itemPrice.toFixed(2)}
+
+                            </div>
+
+
+                            <div class="cart-item-subtotal">
+
+                                Item Total:
+                                R${itemSubtotal.toFixed(2)}
+
+                            </div>
+
+
+                            <div class="cart-item-controls">
+
+                                <label for="qty-${escapeHtml(cartId)}">
+
+                                    Quantity:
+
+                                </label>
+
+
+                                <input
+
+                                    type="number"
+
+                                    class="qty-input"
+
+                                    id="qty-${escapeHtml(cartId)}"
+
+                                    value="${quantity}"
+
+                                    min="1"
+
+                                    max="99"
+
+                                >
+
+
+                                <button
+
+                                    type="button"
+
+                                    class="remove-btn"
+
+                                    data-remove-id="${escapeHtml(cartId)}">
+
+                                    Remove
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            });
+
+
+            html += `</div>`;
+
+
+            // CHECK IF THERE ARE VALID ITEMS
+            if (totalQuantity === 0) {
+
+                displayEmptyCart();
+
+                return;
+
+            }
+
+
+            // CALCULATE FINAL TOTAL
+            const total = subtotal + SHIPPING_FEE;
+
+
+            // CART SUMMARY
+            html += `
+
+                <div class="cart-summary-box">
+
+
+                    <div class="summary-row">
+
+                        <span>Total Items</span>
+
+                        <span>${totalQuantity}</span>
+
+                    </div>
+
+
+                    <div class="summary-row">
+
+                        <span>Subtotal</span>
+
+                        <span>R${subtotal.toFixed(2)}</span>
+
+                    </div>
+
+
+                    <div class="summary-row">
+
+                        <span>Delivery Fee</span>
+
+                        <span>R${SHIPPING_FEE.toFixed(2)}</span>
+
+                    </div>
+
+
+                    <div class="summary-row total-row">
+
+                        <span>Total</span>
+
+                        <span>R${total.toFixed(2)}</span>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="cart-action-buttons">
+
+
+                    <button
+
+                        type="button"
+
+                        class="btn btn-outline"
+
+                        id="update-cart-btn">
+
+                        Update Quantities
+
+                    </button>
+
+
+                    <a href="checkout.html" class="btn">
+
+                        Checkout Now
+
+                    </a>
+
+
+                </div>
+
+            `;
+
+
+            container.innerHTML = html;
+
+
+            message.textContent =
+                `${totalQuantity} medication item(s) in your cart.`;
+
+
+            // REMOVE BUTTON EVENTS
+            container.querySelectorAll("[data-remove-id]")
+                .forEach((button) => {
+
+                    button.addEventListener("click", () => {
+
+                        removeItem(button.dataset.removeId);
+
+                    });
+
+                });
+
+
+            // UPDATE QUANTITIES BUTTON
+            document.getElementById("update-cart-btn")
+                .addEventListener("click", updateQuantities);
+
+        }
+
+
+        // =========================================
         // EMPTY CART
-        // =====================================
+        // =========================================
 
         function displayEmptyCart() {
 
@@ -735,15 +960,28 @@
 
                 <div class="empty-cart">
 
-                    <p style="font-size:16px; margin-bottom:20px;">
-                        Your shopping cart is currently empty.
+                    <h3>Your Shopping Cart is Empty</h3>
+
+                    <p>
+
+                        You have not added any medication
+                        to your cart yet.
+
                     </p>
 
+
                     <a
+
                         href="medicines.html"
+
                         class="btn"
-                        style="display:inline-block; width:auto; padding:12px 30px;">
+
+                        style="display:inline-block;
+                               width:auto;
+                               padding:12px 30px;">
+
                         Shop Medication
+
                     </a>
 
                 </div>
@@ -753,9 +991,9 @@
         }
 
 
-        // =====================================
+        // =========================================
         // UPDATE QUANTITIES
-        // =====================================
+        // =========================================
 
         async function updateQuantities() {
 
@@ -764,31 +1002,60 @@
                 alert("Please sign in first.");
 
                 return;
+
             }
+
+
+            const button =
+                document.getElementById("update-cart-btn");
+
+
+            button.disabled = true;
+
+            button.textContent = "Updating...";
+
 
             try {
 
-                const updatePromises =
-                    currentUserCartDocs.map(async (docSnap) => {
+                const updates = currentUserCartDocs.map(
+                    async (cartDocument) => {
 
-                        const cartId = docSnap.id;
+                        const cartId = cartDocument.id;
 
-                        const qtyInput =
-                            document.getElementById(
-                                "qty_" + cartId
+                        const itemData = cartDocument.data();
+
+
+                        // VERIFY OWNERSHIP
+                        if (itemData.userId !== currentUser.uid) {
+
+                            throw new Error(
+                                "You cannot update another customer's cart."
                             );
 
-                        if (!qtyInput) {
+                        }
+
+
+                        const input = document.getElementById(
+                            "qty-" + cartId
+                        );
+
+
+                        if (!input) {
                             return;
                         }
 
-                        const newQuantity =
-                            Number(qtyInput.value);
+
+                        const newQuantity = Number(input.value);
+
 
                         if (
+
                             !Number.isInteger(newQuantity) ||
+
                             newQuantity < 1 ||
+
                             newQuantity > 99
+
                         ) {
 
                             throw new Error(
@@ -797,47 +1064,54 @@
 
                         }
 
-                        const itemRef = doc(
-                            db,
-                            "cart",
-                            cartId
+
+                        // UPDATE FIRESTORE
+                        await updateDoc(
+
+                            doc(db, "cart", cartId),
+
+                            {
+                                quantity: newQuantity
+                            }
+
                         );
 
-                        await updateDoc(itemRef, {
-                            quantity: newQuantity
-                        });
-
-                    });
+                    }
+                );
 
 
-                await Promise.all(updatePromises);
+                await Promise.all(updates);
+
 
                 alert(
                     "Cart quantities updated successfully!"
                 );
 
-                await fetchUserCart(currentUser.uid);
+
+                await fetchUserCart();
+
 
             } catch (error) {
 
                 console.error(
-                    "Error updating cart:",
+                    "Quantity update error:",
                     error
                 );
 
                 alert(
-                    "Could not update cart: " +
-                    error.message
+                    "Unable to update cart: " + error.message
                 );
+
+                await fetchUserCart();
 
             }
 
         }
 
 
-        // =====================================
-        // REMOVE ITEM
-        // =====================================
+        // =========================================
+        // REMOVE CART ITEM
+        // =========================================
 
         async function removeItem(cartId) {
 
@@ -845,39 +1119,78 @@
                 return;
             }
 
+
             const confirmed = confirm(
-                "Are you sure you want to remove this item?"
+                "Are you sure you want to remove this medication?"
             );
+
 
             if (!confirmed) {
                 return;
             }
 
+
             try {
 
-                const itemRef = doc(
-                    db,
-                    "cart",
+                const itemToRemove = currentUserCartDocs.find(
+
+                    document => document.id === cartId
+
+                );
+
+
+                if (!itemToRemove) {
+
+                    throw new Error(
+                        "Cart item was not found."
+                    );
+
+                }
+
+
+                const itemData = itemToRemove.data();
+
+
+                // VERIFY ITEM OWNERSHIP
+                if (itemData.userId !== currentUser.uid) {
+
+                    throw new Error(
+                        "You cannot remove another customer's item."
+                    );
+
+                }
+
+
+                // DELETE CART DOCUMENT
+                await deleteDoc(
+
+                    doc(db, "cart", cartId)
+
+                );
+
+
+                console.log(
+                    "Cart item removed:",
                     cartId
                 );
 
-                await deleteDoc(itemRef);
 
-                await fetchUserCart(currentUser.uid);
+                await fetchUserCart();
+
 
                 message.textContent =
-                    "Item removed from your cart.";
+                    "Medication removed from your cart.";
+
 
             } catch (error) {
 
                 console.error(
-                    "Error removing item:",
+                    "Remove item error:",
                     error
                 );
 
                 alert(
-                    "Could not remove item: " +
-                    error.message
+                    "Unable to remove item: " + error.message
                 );
 
             }
@@ -885,12 +1198,11 @@
         }
 
 
-        // =====================================
+        // =========================================
         // LOGOUT
-        // =====================================
+        // =========================================
 
-        document
-            .getElementById("logout-link")
+        document.getElementById("logout-link")
             .addEventListener("click", async (event) => {
 
                 event.preventDefault();
@@ -899,8 +1211,7 @@
 
                     await signOut(auth);
 
-                    window.location.href =
-                        "login.html";
+                    window.location.href = "login.html";
 
                 } catch (error) {
 
@@ -917,9 +1228,10 @@
 
             });
 
-
     </script>
 
 </body>
+
 </html>
+
 

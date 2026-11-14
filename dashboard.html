@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,7 +25,6 @@
             white-space: nowrap;
         }
 
-        /* IMPORTANT: This makes the sidebar visible */
         .sidebar.sidebar-open {
             width: 250px;
         }
@@ -92,7 +92,7 @@
             margin: auto;
         }
 
-        /* DASHBOARD CARDS */
+        /* DASHBOARD METRICS */
         .top-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -112,6 +112,7 @@
             color: #003049;
         }
 
+        /* WELCOME CARD */
         .welcome-card {
             background: #DFEEF3;
             padding: 20px;
@@ -119,6 +120,11 @@
             margin-bottom: 25px;
         }
 
+        .welcome-card h2 {
+            color: #003049;
+        }
+
+        /* MAIN DASHBOARD ACTION CARDS */
         .cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -136,7 +142,6 @@
             color: #003049;
         }
 
-        /* DASHBOARD ACTION LINKS */
         .card a {
             display: inline-block;
             background: #C1121F;
@@ -195,6 +200,7 @@
 
     </div>
 
+
     <!-- HEADER -->
     <div class="header">
 
@@ -212,7 +218,8 @@
 
     </div>
 
-    <!-- MAIN CONTENT -->
+
+    <!-- MAIN DASHBOARD -->
     <main id="main">
 
         <h1>Dashboard</h1>
@@ -242,13 +249,20 @@
 
         </div>
 
-        <!-- WELCOME MESSAGE -->
+
+        <!-- PERSONALIZED WELCOME CARD -->
         <div class="welcome-card" id="welcome-message-box">
+
             <h2>Welcome to Pill Point Delivery!</h2>
+
             <p>Loading your profile...</p>
+
         </div>
 
-        <!-- DASHBOARD ACTION CARDS -->
+
+        <!-- MAIN DASHBOARD ACTION CARDS -->
+        <!-- Track Order and Reminders are intentionally NOT included here. -->
+
         <div class="cards">
 
             <div class="card">
@@ -275,38 +289,15 @@
                 <a href="storelocator.html">Find Pharmacy</a>
             </div>
 
-            <div class="card">
-                <h3>Medication Reminders</h3>
-                <p>Create medication reminders.</p>
-                <a href="reminders.html">Set Reminder</a>
-            </div>
-
-            <div class="card">
-                <h3>My Reminders</h3>
-                <p>View your saved reminders.</p>
-                <a href="viewreminders.html">View Reminders</a>
-            </div>
-
-            <div class="card">
-                <h3>Track Order</h3>
-                <p>Check the status of your orders.</p>
-                <a href="trackorder.html">Track Order</a>
-            </div>
-
-            <div class="card">
-                <h3>My Account</h3>
-                <p>View your customer account.</p>
-                <a href="myaccount.html">My Account</a>
-            </div>
-
         </div>
 
     </main>
 
+
     <!-- FIREBASE DASHBOARD LOGIC -->
     <script type="module">
 
-        // Import Firebase from firebase.js, NOT script.js
+        // FIREBASE IMPORTS
         import { db, auth } from "./firebase.js";
 
         import {
@@ -318,7 +309,9 @@
             collection,
             query,
             where,
-            getDocs
+            getDocs,
+            doc,
+            getDoc
         } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 
@@ -327,26 +320,44 @@
         // -----------------------------------------
 
         const sidebar = document.getElementById("sidebar");
-        const openMenuButton = document.getElementById("open-menu");
-        const closeMenuButton = document.getElementById("close-menu");
+
+        const openMenuButton =
+            document.getElementById("open-menu");
+
+        const closeMenuButton =
+            document.getElementById("close-menu");
+
 
         function openNav() {
             sidebar.classList.add("sidebar-open");
-            openMenuButton.setAttribute("aria-expanded", "true");
+
+            openMenuButton.setAttribute(
+                "aria-expanded",
+                "true"
+            );
         }
+
 
         function closeNav() {
             sidebar.classList.remove("sidebar-open");
-            openMenuButton.setAttribute("aria-expanded", "false");
+
+            openMenuButton.setAttribute(
+                "aria-expanded",
+                "false"
+            );
         }
 
+
         openMenuButton.addEventListener("click", openNav);
+
+
         closeMenuButton.addEventListener("click", function(event) {
             event.preventDefault();
             closeNav();
         });
 
-        // Close sidebar when clicking outside it.
+
+        // CLOSE SIDEBAR WHEN CLICKING OUTSIDE
         document.addEventListener("click", function(event) {
 
             if (!sidebar.classList.contains("sidebar-open")) {
@@ -359,14 +370,98 @@
             ) {
                 closeNav();
             }
+
         });
 
-        // Close sidebar using Escape key.
+
+        // CLOSE SIDEBAR USING ESCAPE
         document.addEventListener("keydown", function(event) {
+
             if (event.key === "Escape") {
                 closeNav();
             }
+
         });
+
+
+        // -----------------------------------------
+        // ESCAPE HTML
+        // -----------------------------------------
+
+        function escapeHtml(value) {
+
+            const characters = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            };
+
+            return String(value ?? "").replace(
+                /[&<>"']/g,
+                character => characters[character]
+            );
+        }
+
+
+        // -----------------------------------------
+        // LOAD CUSTOMER USERNAME FROM FIRESTORE
+        // -----------------------------------------
+
+        async function loadCustomerUsername(user) {
+
+            let username = "";
+
+            try {
+
+                // Automatically retrieve signed-in customer's UID.
+                const userRef = doc(db, "users", user.uid);
+
+                const userSnapshot = await getDoc(userRef);
+
+                if (userSnapshot.exists()) {
+
+                    const userData = userSnapshot.data();
+
+                    console.log("Customer profile:", userData);
+
+                    username =
+                        userData.username ||
+                        userData.firstName ||
+                        userData.first_name ||
+                        "";
+
+                } else {
+
+                    console.warn(
+                        "Customer document not found in users collection."
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Error loading customer username:",
+                    error
+                );
+
+            }
+
+            // FALLBACK IF FIRESTORE USERNAME IS NOT AVAILABLE
+            if (!username) {
+
+                username =
+                    user.displayName ||
+                    (user.email
+                        ? user.email.split("@")[0]
+                        : "Customer");
+
+            }
+
+            return username;
+        }
 
 
         // -----------------------------------------
@@ -377,11 +472,23 @@
 
             if (user) {
 
-                const username =
-                    user.displayName ||
-                    (user.email ? user.email.split("@")[0] : "Customer");
+                console.log("PILL POINT DASHBOARD");
 
-                await loadDashboardMetrics(user.uid, username);
+                console.log("Signed-in email:", user.email);
+
+                console.log("Signed-in UID:", user.uid);
+
+
+                // LOAD CUSTOMER USERNAME
+                const username =
+                    await loadCustomerUsername(user);
+
+
+                // LOAD DASHBOARD METRICS
+                await loadDashboardMetrics(
+                    user.uid,
+                    username
+                );
 
             } else {
 
@@ -403,45 +510,63 @@
 
             try {
 
-                // Get the signed-in customer's cart.
+                console.log("Loading dashboard for UID:", userId);
+
+
+                // CUSTOMER CART QUERY
                 const cartQuery = query(
                     collection(db, "cart"),
                     where("userId", "==", userId)
                 );
 
-                // Get the customer's prescriptions.
+
+                // CUSTOMER PRESCRIPTIONS QUERY
                 const prescQuery = query(
                     collection(db, "prescriptions"),
                     where("userId", "==", userId)
                 );
 
-                // Get the customer's reminders.
+
+                // CUSTOMER REMINDERS QUERY
                 const remQuery = query(
                     collection(db, "reminders"),
                     where("userId", "==", userId)
                 );
 
-                // Get the customer's orders.
-                const orderQuery = query(
-                    collection(db, "orders"),
-                    where("userId", "==", userId)
-                );
 
-
-                // Load all four collections.
+                // LOAD COLLECTIONS
                 const [
                     cartSnap,
                     prescSnap,
-                    remSnap,
-                    orderSnap
+                    remSnap
                 ] = await Promise.all([
 
                     getDocs(cartQuery),
                     getDocs(prescQuery),
-                    getDocs(remQuery),
-                    getDocs(orderQuery)
+                    getDocs(remQuery)
 
                 ]);
+
+
+                // -----------------------------------------
+                // CART DIAGNOSTICS
+                // -----------------------------------------
+
+                console.log("Cart documents found:", cartSnap.size);
+
+                cartSnap.forEach((document) => {
+
+                    console.log(
+                        "Cart document ID:",
+                        document.id
+                    );
+
+                    console.log(
+                        "Cart document data:",
+                        document.data()
+                    );
+
+                });
 
 
                 // -----------------------------------------
@@ -449,6 +574,7 @@
                 // -----------------------------------------
 
                 let cartCount = 0;
+
                 let cartTotal = 0;
 
                 cartSnap.forEach((document) => {
@@ -458,37 +584,40 @@
                     const quantity =
                         Number(item.quantity) || 0;
 
-                    // Your Firestore cart uses unitPrice.
                     const price =
                         Number(item.unitPrice ?? item.price) || 0;
 
                     cartCount += quantity;
+
                     cartTotal += quantity * price;
 
                 });
 
 
-                // Other dashboard counts.
+                // OTHER DASHBOARD COUNTS
                 const prescriptionCount = prescSnap.size;
+
                 const reminderCount = remSnap.size;
-                const orderCount = orderSnap.size;
 
 
                 // -----------------------------------------
-                // UPDATE DASHBOARD CARDS
+                // UPDATE DASHBOARD METRICS
                 // -----------------------------------------
 
                 document.getElementById(
                     "metric-cart-count"
                 ).textContent = cartCount;
 
+
                 document.getElementById(
                     "metric-prescription-count"
                 ).textContent = prescriptionCount;
 
+
                 document.getElementById(
                     "metric-reminder-count"
                 ).textContent = reminderCount;
+
 
                 document.getElementById(
                     "metric-cart-total"
@@ -496,38 +625,27 @@
 
 
                 // -----------------------------------------
-                // UPDATE WELCOME MESSAGE
+                // UPDATE PERSONALIZED WELCOME MESSAGE
                 // -----------------------------------------
 
                 const safeUsername = escapeHtml(username);
 
-                const isFirstTime =
-                    orderCount === 0 &&
-                    prescriptionCount === 0 &&
-                    reminderCount === 0;
+                welcomeBox.innerHTML = `
+                    <h2>Welcome back, ${safeUsername}!</h2>
 
-                if (isFirstTime) {
+                    <p>
+                        We are happy to have you at
+                        Pill Point Delivery.
+                        Manage your medication and shop
+                        conveniently from your dashboard.
+                    </p>
+                `;
 
-                    welcomeBox.innerHTML = `
-                        <h2>Welcome to Pill Point Delivery, ${safeUsername}!</h2>
-                        <p>
-                            We are excited to have you on board.
-                            Start by exploring our shop or setting
-                            your medication reminders.
-                        </p>
-                    `;
 
-                } else {
+                console.log(
+                    "Dashboard metrics loaded successfully."
+                );
 
-                    welcomeBox.innerHTML = `
-                        <h2>Welcome back, ${safeUsername}!</h2>
-                        <p>
-                            Your trusted online pharmacy —
-                            Pill Point Delivery.
-                        </p>
-                    `;
-
-                }
 
             } catch (error) {
 
@@ -536,37 +654,18 @@
                     error
                 );
 
+                // Keep the welcome message visible
+                // even if statistics cannot load.
                 welcomeBox.innerHTML = `
-                    <h2>Welcome to Pill Point Delivery!</h2>
+                    <h2>Welcome back, ${escapeHtml(username)}!</h2>
+
                     <p>
-                        Your dashboard could not load all information.
-                        Please refresh the page or try again later.
+                        Your dashboard is available,
+                        but some information could not be loaded.
                     </p>
                 `;
 
             }
-
-        }
-
-
-        // -----------------------------------------
-        // ESCAPE HTML
-        // -----------------------------------------
-
-        function escapeHtml(value) {
-
-            const characters = {
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-                "'": "&#039;"
-            };
-
-            return String(value).replace(
-                /[&<>"']/g,
-                character => characters[character]
-            );
 
         }
 
