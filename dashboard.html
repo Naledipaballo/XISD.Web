@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Pill Point Pharmacy</title>
     <link rel="stylesheet" href="style.css">
+
     <style>
+        /* SIDEBAR */
         .sidebar {
             height: 100%;
             width: 0;
@@ -15,8 +18,10 @@
             left: 0;
             background-color: #003049;
             overflow-x: hidden;
-            transition: 0.3s;
+            transition: width 0.3s ease;
             padding-top: 60px;
+            box-sizing: border-box;
+            white-space: nowrap;
         }
 
         .sidebar a {
@@ -39,6 +44,7 @@
             font-size: 36px;
         }
 
+        /* HEADER */
         .header {
             display: flex;
             justify-content: space-between;
@@ -54,194 +60,324 @@
             z-index: 1000;
         }
 
+        .menu-btn {
+            cursor: pointer;
+            font-size: 25px;
+            color: #003049;
+            background: none;
+            border: none;
+        }
+
         #main {
             padding: 100px 20px 40px 20px;
             max-width: 1100px;
             margin: auto;
         }
+
+        @media (max-width: 600px) {
+            .sidebar {
+                max-width: 85%;
+            }
+        }
     </style>
 </head>
+
 <body>
 
-<!-- Sidebar -->
-<div id="sidebar" class="sidebar">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="medicines.html">Shop Medication</a>
-    <a href="cart.html">My Cart</a>
-    <a href="checkout.html">Checkout</a>
-    <a href="prescription.html">Prescription</a>
-    <a href="reminders.html">Set Reminder</a>
-    <a href="viewreminders.html">My Reminders</a>
-    <a href="storelocator.html">Store Locator</a>
-    <a href="trackorder.html">Track Order</a>
-    <a href="myaccount.html">My Account</a>
-    <a href="#" id="logout-link">Logout</a>
-</div>
+    <!-- CUSTOMER SIDEBAR -->
+    <div id="sidebar" class="sidebar">
 
-<!-- Header -->
-<div class="header">
-    <span class="menu-btn" onclick="openNav()" style="cursor: pointer; font-size: 22px;">&#9776;</span>
-    <a href="myaccount.html" class="profile"> 
-        <img src="photo.jpeg" alt="profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-    </a>
-</div>
+        <a href="javascript:void(0)"
+           class="closebtn"
+           onclick="closeNav()"
+           aria-label="Close menu">
+            &times;
+        </a>
 
-<!-- Main Content -->
-<div id="main">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="medicines.html">Shop Medication</a>
+        <a href="cart.html">My Cart</a>
+        <a href="checkout.html">Checkout</a>
+        <a href="prescription.html">Prescription</a>
+        <a href="reminders.html">Set Reminder</a>
+        <a href="viewreminders.html">My Reminders</a>
+        <a href="storelocator.html">Store Locator</a>
+        <a href="trackorder.html">Track Order</a>
+        <a href="myaccount.html">My Account</a>
+        <a href="#" id="logout-link">Logout</a>
 
-    <h1>Dashboard</h1>
-
-    <div class="top-cards">
-        <div class="top-card">
-            <h2 id="metric-cart-count">0</h2>
-            <p>Cart Items</p>
-        </div>
-
-        <div class="top-card">
-            <h2 id="metric-prescription-count">0</h2>
-            <p>Prescriptions</p>
-        </div>
-
-        <div class="top-card">
-            <h2 id="metric-reminder-count">0</h2>
-            <p>Reminders</p>
-        </div>
-
-        <div class="top-card">
-            <h2 id="metric-cart-total">R0.00</h2>
-            <p>Total Cart Value</p>
-        </div>
     </div>
 
-    <div class="welcome-card" id="welcome-message-box">
-        <h2>Welcome to Pill Point Delivery!</h2>
-        <p>Loading your profile...</p>
+    <!-- HEADER -->
+    <div class="header">
+
+        <button type="button"
+                class="menu-btn"
+                onclick="openNav()"
+                aria-label="Open navigation menu">
+            &#9776;
+        </button>
+
+        <a href="myaccount.html" class="profile">
+            <img src="photo.jpeg"
+                 alt="Profile"
+                 style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
+        </a>
+
     </div>
 
-    <div class="cards">
-        <div class="card">
-            <h3>Shop Medication</h3>
-            <a href="medicines.html">Open</a>
+    <!-- MAIN CONTENT -->
+    <div id="main">
+
+        <h1>Dashboard</h1>
+
+        <div class="top-cards">
+
+            <div class="top-card">
+                <h2 id="metric-cart-count">0</h2>
+                <p>Cart Items</p>
+            </div>
+
+            <div class="top-card">
+                <h2 id="metric-prescription-count">0</h2>
+                <p>Prescriptions</p>
+            </div>
+
+            <div class="top-card">
+                <h2 id="metric-reminder-count">0</h2>
+                <p>Reminders</p>
+            </div>
+
+            <div class="top-card">
+                <h2 id="metric-cart-total">R0.00</h2>
+                <p>Total Cart Value</p>
+            </div>
+
         </div>
 
-        <div class="card">
-            <h3>View Shopping Cart</h3>
-            <a href="cart.html">View Cart</a>
+        <div class="welcome-card" id="welcome-message-box">
+            <h2>Welcome to Pill Point Delivery!</h2>
+            <p>Loading your profile...</p>
         </div>
 
-        <div class="card">
-            <h3>Upload Prescription</h3>
-            <a href="prescription.html">Upload</a>
+        <div class="cards">
+
+            <div class="card">
+                <h3>Shop Medication</h3>
+                <a href="medicines.html">Open</a>
+            </div>
+
+            <div class="card">
+                <h3>View Shopping Cart</h3>
+                <a href="cart.html">View Cart</a>
+            </div>
+
+            <div class="card">
+                <h3>Upload Prescription</h3>
+                <a href="prescription.html">Upload</a>
+            </div>
+
+            <div class="card">
+                <h3>Store Locator</h3>
+                <a href="storelocator.html">Locate</a>
+            </div>
+
         </div>
 
-        <div class="card">
-            <h3>Store Locator</h3>
-            <a href="storelocator.html">Locate</a>
-        </div>
     </div>
 
-</div>
+    <!-- LOAD SHARED SCRIPT -->
+    <script type="module" src="script.js"></script>
 
-<!-- Firebase SDKs and Firestore Dashboard Logic -->
-<script type="module">
-    import { db, auth } from "./script.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <!-- FIREBASE DASHBOARD LOGIC -->
+    <script type="module">
 
-    // 1. Monitor Authentication State & Load Metrics
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const username = user.displayName || user.email.split('@')[0];
-            await loadDashboardMetrics(user.uid, username);
-        } else {
-            alert('Please login first.');
-            window.location.href = 'login.html';
-        }
-    });
+        import { db, auth } from "./script.js";
 
-    // 2. Fetch Metrics from Cloud Firestore
-    async function loadDashboardMetrics(userId, username) {
-        try {
-            // Firestore queries filtered by userId
-            const cartQuery = query(collection(db, "cart"), where("userId", "==", userId));
-            const prescQuery = query(collection(db, "prescriptions"), where("userId", "==", userId));
-            const remQuery = query(collection(db, "reminders"), where("userId", "==", userId));
-            const orderQuery = query(collection(db, "orders"), where("userId", "==", userId));
+        import {
+            onAuthStateChanged,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-            const [cartSnap, prescSnap, remSnap, orderSnap] = await Promise.all([
-                getDocs(cartQuery),
-                getDocs(prescQuery),
-                getDocs(remQuery),
-                getDocs(orderQuery)
-            ]);
+        import {
+            collection,
+            query,
+            where,
+            getDocs
+        } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-            // Calculate Cart Metrics
-            let cartCount = 0;
-            let cartTotal = 0.00;
-            cartSnap.forEach((doc) => {
-                const item = doc.data();
-                const qty = parseInt(item.quantity) || 0;
-                const price = parseFloat(item.price) || 0.00;
-                cartCount += qty;
-                cartTotal += qty * price;
-            });
 
-            // Calculate Counts from query snapshots
-            const prescriptionCount = prescSnap.size;
-            const reminderCount = remSnap.size;
-            const orderCount = orderSnap.size;
+        // Monitor authentication.
+        onAuthStateChanged(auth, async (user) => {
 
-            // Update DOM Elements
-            document.getElementById('metric-cart-count').textContent = cartCount;
-            document.getElementById('metric-prescription-count').textContent = prescriptionCount;
-            document.getElementById('metric-reminder-count').textContent = reminderCount;
-            document.getElementById('metric-cart-total').textContent = `R${cartTotal.toFixed(2)}`;
+            if (user) {
 
-            // Welcome Message Logic (First-time vs Returning user)
-            const welcomeBox = document.getElementById('welcome-message-box');
-            const isFirstTime = (orderCount === 0 && prescriptionCount === 0 && reminderCount === 0);
+                const username =
+                    user.displayName || user.email.split('@')[0];
 
-            if (isFirstTime) {
-                welcomeBox.innerHTML = `
-                    <h2>Welcome to Pill Point Delivery, ${escapeHtml(username)}!</h2>
-                    <p>We are excited to have you on board. Start by exploring our shop or setting your dosage reminders!</p>`;
+                await loadDashboardMetrics(user.uid, username);
+
             } else {
-                welcomeBox.innerHTML = `
-                    <h2>Welcome back, ${escapeHtml(username)}!</h2>
-                    <p>Your trusted online pharmacy — Pill Point Delivery.</p>`;
+
+                alert("Please login first.");
+                window.location.href = "login.html";
+
             }
 
-        } catch (error) {
-            console.error("Error loading dashboard metrics:", error);
-        }
-    }
-
-    // Sidebar Navigation Helpers
-    window.openNav = function() {
-        document.getElementById("sidebar").style.width = "250px";
-    }
-
-    window.closeNav = function() {
-        document.getElementById("sidebar").style.width = "0";
-    }
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
-    }
-
-    // Handle Logout
-    document.getElementById('logout-link').addEventListener('click', (e) => {
-        e.preventDefault();
-        signOut(auth).then(() => {
-            window.location.href = 'login.html';
-        }).catch((error) => {
-            console.error('Logout error:', error);
         });
-    });
-</script>
+
+
+        // Load customer dashboard metrics.
+        async function loadDashboardMetrics(userId, username) {
+
+            try {
+
+                const cartQuery = query(
+                    collection(db, "cart"),
+                    where("userId", "==", userId)
+                );
+
+                const prescQuery = query(
+                    collection(db, "prescriptions"),
+                    where("userId", "==", userId)
+                );
+
+                const remQuery = query(
+                    collection(db, "reminders"),
+                    where("userId", "==", userId)
+                );
+
+                const orderQuery = query(
+                    collection(db, "orders"),
+                    where("userId", "==", userId)
+                );
+
+
+                const [cartSnap, prescSnap, remSnap, orderSnap] =
+                    await Promise.all([
+                        getDocs(cartQuery),
+                        getDocs(prescQuery),
+                        getDocs(remQuery),
+                        getDocs(orderQuery)
+                    ]);
+
+
+                // Calculate cart totals.
+                let cartCount = 0;
+                let cartTotal = 0;
+
+                cartSnap.forEach((document) => {
+
+                    const item = document.data();
+
+                    const qty = parseInt(item.quantity) || 0;
+                    const price = parseFloat(item.price) || 0;
+
+                    cartCount += qty;
+                    cartTotal += qty * price;
+
+                });
+
+
+                const prescriptionCount = prescSnap.size;
+                const reminderCount = remSnap.size;
+                const orderCount = orderSnap.size;
+
+
+                // Update dashboard cards.
+                document.getElementById("metric-cart-count").textContent =
+                    cartCount;
+
+                document.getElementById("metric-prescription-count").textContent =
+                    prescriptionCount;
+
+                document.getElementById("metric-reminder-count").textContent =
+                    reminderCount;
+
+                document.getElementById("metric-cart-total").textContent =
+                    `R${cartTotal.toFixed(2)}`;
+
+
+                // Update welcome message.
+                const welcomeBox =
+                    document.getElementById("welcome-message-box");
+
+                const isFirstTime =
+                    orderCount === 0 &&
+                    prescriptionCount === 0 &&
+                    reminderCount === 0;
+
+                if (isFirstTime) {
+
+                    welcomeBox.innerHTML = `
+                        <h2>Welcome to Pill Point Delivery, ${escapeHtml(username)}!</h2>
+                        <p>We are excited to have you on board. Start by exploring our shop or setting your dosage reminders!</p>
+                    `;
+
+                } else {
+
+                    welcomeBox.innerHTML = `
+                        <h2>Welcome back, ${escapeHtml(username)}!</h2>
+                        <p>Your trusted online pharmacy — Pill Point Delivery.</p>
+                    `;
+
+                }
+
+            } catch (error) {
+
+                console.error("Error loading dashboard metrics:", error);
+
+            }
+
+        }
+
+
+        // Escape HTML.
+        function escapeHtml(text) {
+
+            if (!text) return "";
+
+            const map = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            };
+
+            return text.toString().replace(
+                /[&<>"']/g,
+                function (character) {
+                    return map[character];
+                }
+            );
+
+        }
+
+
+        // Customer logout.
+        document.getElementById("logout-link").addEventListener(
+            "click",
+            async (event) => {
+
+                event.preventDefault();
+
+                try {
+
+                    await signOut(auth);
+
+                    window.location.href = "login.html";
+
+                } catch (error) {
+
+                    console.error("Logout error:", error);
+
+                }
+
+            }
+        );
+
+    </script>
 
 </body>
 </html>
