@@ -18,6 +18,7 @@
             background: #DFEEF3;
             color: #003049;
             font-family: Arial, sans-serif;
+            margin: 0;
         }
 
         .header {
@@ -47,10 +48,14 @@
 
         .menu-btn {
             cursor: pointer;
-            font-size: 22px;
+            font-size: 25px;
+            color: #003049;
+            background: none;
+            border: none;
             z-index: 2;
         }
 
+        /* SIDEBAR */
         .sidebar {
             height: 100%;
             width: 0;
@@ -60,8 +65,13 @@
             left: 0;
             background-color: #003049;
             overflow-x: hidden;
-            transition: 0.3s;
+            transition: width 0.3s ease;
             padding-top: 60px;
+            white-space: nowrap;
+        }
+
+        .sidebar.sidebar-open {
+            width: 250px;
         }
 
         .sidebar a {
@@ -83,9 +93,10 @@
             font-size: 36px;
         }
 
+        /* CART */
         .cart-page-container {
             width: 90%;
-            max-width: 650px;
+            max-width: 750px;
             margin: 110px auto 40px auto;
         }
 
@@ -117,14 +128,15 @@
 
         .cart-item-details {
             flex-grow: 1;
+            min-width: 0;
         }
 
         .cart-item-title {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: bold;
             color: #003049;
-            margin-bottom: 4px;
-            text-transform: capitalize;
+            margin-bottom: 8px;
+            overflow-wrap: anywhere;
         }
 
         .cart-item-price {
@@ -134,12 +146,18 @@
             margin-top: 4px;
         }
 
+        .cart-item-subtotal {
+            margin-top: 6px;
+            color: #475569;
+            font-size: 14px;
+        }
+
         .cart-item-controls {
             display: flex;
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 8px;
+            margin-top: 12px;
         }
 
         .qty-input {
@@ -158,7 +176,7 @@
             cursor: pointer;
             font-size: 13px;
             font-weight: bold;
-            padding: 7px 12px;
+            padding: 8px 12px;
             border-radius: 6px;
         }
 
@@ -178,6 +196,7 @@
         .summary-row {
             display: flex;
             justify-content: space-between;
+            gap: 15px;
             margin-bottom: 10px;
             font-size: 15px;
             color: #475569;
@@ -238,6 +257,7 @@
             text-align: center;
             margin: 15px 0;
             color: #003049;
+            line-height: 1.5;
         }
 
         @media (max-width: 600px) {
@@ -248,6 +268,14 @@
             .header-title {
                 font-size: 17px;
             }
+
+            .cart-page-title {
+                font-size: 26px;
+            }
+
+            .cart-item-card {
+                padding: 14px;
+            }
         }
     </style>
 </head>
@@ -257,16 +285,17 @@
     <!-- HEADER -->
     <div class="header">
 
-        <span class="menu-btn"
-              onclick="openNav()"
-              aria-label="Open navigation">
+        <button
+            type="button"
+            class="menu-btn"
+            onclick="openNav()"
+            aria-label="Open navigation">
             &#9776;
-        </span>
+        </button>
 
         <h1 class="header-title">Pill Point Delivery</h1>
 
     </div>
-
 
     <!-- SIDEBAR -->
     <div id="sidebar" class="sidebar">
@@ -283,13 +312,13 @@
         <a href="reminders.html">Reminders</a>
         <a href="storelocator.html">Store Locator</a>
         <a href="cart.html">Cart</a>
+        <a href="checkout.html">Checkout</a>
         <a href="trackorder.html">Track Order</a>
         <a href="myaccount.html">My Account</a>
         <a href="contact.html">Contact Us</a>
         <a href="#" id="logout-link">Logout</a>
 
     </div>
-
 
     <!-- CART CONTENT -->
     <main class="cart-page-container">
@@ -301,18 +330,19 @@
         </p>
 
         <div id="cart-content-area">
-
             <p class="message">Please wait...</p>
-
         </div>
 
     </main>
 
-
     <!-- FIREBASE AND CART LOGIC -->
     <script type="module">
 
-        import { db, auth } from "./script.js";
+        // =====================================
+        // FIREBASE IMPORTS
+        // =====================================
+
+        import { db, auth } from "./firebase.js";
 
         import {
             onAuthStateChanged,
@@ -331,15 +361,13 @@
 
 
         // =====================================
-        // CONFIGURATION
+        // VARIABLES
         // =====================================
 
         const SHIPPING_FEE = 50.00;
 
         let currentUser = null;
-
         let currentUserCartDocs = [];
-
 
         const container =
             document.getElementById("cart-content-area");
@@ -354,25 +382,56 @@
 
         window.openNav = function () {
 
-            document.getElementById("sidebar").style.width = "250px";
+            document
+                .getElementById("sidebar")
+                .classList.add("sidebar-open");
 
         };
 
-
         window.closeNav = function () {
 
-            document.getElementById("sidebar").style.width = "0";
+            document
+                .getElementById("sidebar")
+                .classList.remove("sidebar-open");
 
         };
 
 
         // =====================================
-        // AUTHENTICATION
+        // ESCAPE HTML
+        // =====================================
+
+        function escapeHtml(value) {
+
+            if (value === null || value === undefined) {
+                return "";
+            }
+
+            const characters = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            };
+
+            return String(value).replace(
+                /[&<>"']/g,
+                character => characters[character]
+            );
+
+        }
+
+
+        // =====================================
+        // CHECK FIREBASE AUTHENTICATION
         // =====================================
 
         onAuthStateChanged(auth, (user) => {
 
             if (!user) {
+
+                currentUser = null;
 
                 window.location.href = "login.html";
 
@@ -381,33 +440,44 @@
 
             currentUser = user;
 
+            console.log("Cart user:", user.uid);
+
             fetchUserCart(user.uid);
 
         });
 
 
         // =====================================
-        // FETCH CART ITEMS
+        // LOAD CUSTOMER CART
         // =====================================
 
         async function fetchUserCart(userId) {
 
             try {
 
-                message.textContent = "Loading your cart...";
+                message.textContent =
+                    "Loading your cart...";
 
                 container.innerHTML = "";
 
-                const cartRef = collection(db, "cart");
+                const cartRef =
+                    collection(db, "cart");
 
                 const cartQuery = query(
                     cartRef,
                     where("userId", "==", userId)
                 );
 
-                const querySnapshot = await getDocs(cartQuery);
+                const querySnapshot =
+                    await getDocs(cartQuery);
 
-                currentUserCartDocs = querySnapshot.docs;
+                currentUserCartDocs =
+                    querySnapshot.docs;
+
+                console.log(
+                    "Cart documents found:",
+                    querySnapshot.size
+                );
 
                 if (querySnapshot.empty) {
 
@@ -416,11 +486,22 @@
                     return;
                 }
 
+
+                // =====================================
+                // CALCULATE CART TOTALS
+                // =====================================
+
                 let subtotal = 0;
+                let totalQuantity = 0;
 
                 let htmlContent = `
                     <div class="cart-items-list">
                 `;
+
+
+                // =====================================
+                // DISPLAY EACH CART ITEM
+                // =====================================
 
                 currentUserCartDocs.forEach((docSnap) => {
 
@@ -428,7 +509,6 @@
 
                     const cartId = docSnap.id;
 
-                    // Support both Android and website field names.
                     const itemName =
                         item.medicationName ||
                         item.medicine_name ||
@@ -439,16 +519,35 @@
                         item.unitPrice ?? item.price ?? 0
                     );
 
-                    const quantity = Number(item.quantity || 1);
+                    const quantity = Number(
+                        item.quantity ?? 1
+                    );
 
-                    const itemTotal = itemPrice * quantity;
+                    if (
+                        !Number.isFinite(itemPrice) ||
+                        !Number.isInteger(quantity) ||
+                        quantity < 1
+                    ) {
+
+                        console.error(
+                            "Invalid cart item:",
+                            cartId,
+                            item
+                        );
+
+                        return;
+                    }
+
+                    const itemTotal =
+                        itemPrice * quantity;
 
                     subtotal += itemTotal;
+                    totalQuantity += quantity;
+
 
                     htmlContent += `
 
-                        <div class="cart-item-card"
-                             data-id="${escapeHtml(cartId)}">
+                        <div class="cart-item-card">
 
                             <div class="cart-item-details">
 
@@ -457,12 +556,18 @@
                                 </div>
 
                                 <div class="cart-item-price">
-                                    R${itemPrice.toFixed(2)}
+                                    Unit Price: R${itemPrice.toFixed(2)}
+                                </div>
+
+                                <div class="cart-item-subtotal">
+                                    Item Total: R${itemTotal.toFixed(2)}
                                 </div>
 
                                 <div class="cart-item-controls">
 
-                                    <label>Qty:</label>
+                                    <label for="qty_${escapeHtml(cartId)}">
+                                        Quantity:
+                                    </label>
 
                                     <input
                                         type="number"
@@ -470,7 +575,6 @@
                                         min="1"
                                         max="99"
                                         class="qty-input"
-                                        data-id="${escapeHtml(cartId)}"
                                         id="qty_${escapeHtml(cartId)}"
                                     >
 
@@ -478,9 +582,7 @@
                                         type="button"
                                         class="remove-btn"
                                         data-remove-id="${escapeHtml(cartId)}">
-
                                         Remove
-
                                     </button>
 
                                 </div>
@@ -498,42 +600,36 @@
 
 
                 // =====================================
-                // CART TOTALS
+                // CART SUMMARY
                 // =====================================
 
                 const total = subtotal + SHIPPING_FEE;
-
 
                 htmlContent += `
 
                     <div class="cart-summary-box">
 
                         <div class="summary-row">
-
-                            <span>Subtotal</span>
-
-                            <span>R${subtotal.toFixed(2)}</span>
-
+                            <span>Total Items</span>
+                            <span>${totalQuantity}</span>
                         </div>
 
                         <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span>R${subtotal.toFixed(2)}</span>
+                        </div>
 
+                        <div class="summary-row">
                             <span>Delivery Fee</span>
-
                             <span>R${SHIPPING_FEE.toFixed(2)}</span>
-
                         </div>
 
                         <div class="summary-row total-row">
-
                             <span>Total</span>
-
                             <span>R${total.toFixed(2)}</span>
-
                         </div>
 
                     </div>
-
 
                     <div class="cart-action-buttons">
 
@@ -541,15 +637,11 @@
                             type="button"
                             class="btn btn-outline"
                             id="update-cart-btn">
-
                             Update Quantities
-
                         </button>
 
                         <a href="checkout.html" class="btn">
-
                             Checkout Now
-
                         </a>
 
                     </div>
@@ -557,33 +649,61 @@
                 `;
 
 
+                // =====================================
+                // DISPLAY CART
+                // =====================================
+
                 container.innerHTML = htmlContent;
 
                 message.textContent =
                     currentUserCartDocs.length +
-                    " item(s) in your shopping cart.";
+                    " medication item(s) in your cart.";
 
 
-                // Attach remove button listeners.
-                container.querySelectorAll("[data-remove-id]")
+                // =====================================
+                // REMOVE BUTTONS
+                // =====================================
+
+                container
+                    .querySelectorAll("[data-remove-id]")
                     .forEach((button) => {
 
-                        button.addEventListener("click", () => {
+                        button.addEventListener(
+                            "click",
+                            () => {
 
-                            removeItem(button.dataset.removeId);
+                                removeItem(
+                                    button.dataset.removeId
+                                );
 
-                        });
+                            }
+                        );
 
                     });
 
 
-                document.getElementById("update-cart-btn")
-                    .addEventListener("click", updateQuantities);
+                // =====================================
+                // UPDATE BUTTON
+                // =====================================
 
+                const updateButton =
+                    document.getElementById("update-cart-btn");
+
+                if (updateButton) {
+
+                    updateButton.addEventListener(
+                        "click",
+                        updateQuantities
+                    );
+
+                }
 
             } catch (error) {
 
-                console.error("Error fetching cart:", error);
+                console.error(
+                    "Error fetching cart:",
+                    error
+                );
 
                 message.textContent =
                     "Unable to load cart: " + error.message;
@@ -591,7 +711,7 @@
                 container.innerHTML = `
                     <div class="empty-cart">
                         <p>There was a problem loading your cart.</p>
-                        <p>Please check your connection and try again.</p>
+                        <p>${escapeHtml(error.message)}</p>
                     </div>
                 `;
 
@@ -608,24 +728,22 @@
 
             currentUserCartDocs = [];
 
-            message.textContent = "Your cart is empty.";
+            message.textContent =
+                "Your cart is empty.";
 
             container.innerHTML = `
 
                 <div class="empty-cart">
 
                     <p style="font-size:16px; margin-bottom:20px;">
-
                         Your shopping cart is currently empty.
-
                     </p>
 
-                    <a href="medicines.html"
-                       class="btn"
-                       style="display:inline-block; width:auto; padding:12px 30px;">
-
+                    <a
+                        href="medicines.html"
+                        class="btn"
+                        style="display:inline-block; width:auto; padding:12px 30px;">
                         Shop Medication
-
                     </a>
 
                 </div>
@@ -639,7 +757,7 @@
         // UPDATE QUANTITIES
         // =====================================
 
-        window.updateQuantities = async function () {
+        async function updateQuantities() {
 
             if (!currentUser) {
 
@@ -650,17 +768,22 @@
 
             try {
 
-                const updatePromises = currentUserCartDocs.map(
-                    async (docSnap) => {
+                const updatePromises =
+                    currentUserCartDocs.map(async (docSnap) => {
 
                         const cartId = docSnap.id;
 
                         const qtyInput =
-                            document.getElementById("qty_" + cartId);
+                            document.getElementById(
+                                "qty_" + cartId
+                            );
 
-                        if (!qtyInput) return;
+                        if (!qtyInput) {
+                            return;
+                        }
 
-                        const newQuantity = Number(qtyInput.value);
+                        const newQuantity =
+                            Number(qtyInput.value);
 
                         if (
                             !Number.isInteger(newQuantity) ||
@@ -669,7 +792,7 @@
                         ) {
 
                             throw new Error(
-                                "Please enter a quantity between 1 and 99."
+                                "Enter a quantity between 1 and 99."
                             );
 
                         }
@@ -684,43 +807,51 @@
                             quantity: newQuantity
                         });
 
-                    }
-                );
+                    });
 
 
                 await Promise.all(updatePromises);
 
-                alert("Cart quantities updated successfully!");
+                alert(
+                    "Cart quantities updated successfully!"
+                );
 
                 await fetchUserCart(currentUser.uid);
 
-
             } catch (error) {
 
-                console.error("Error updating cart:", error);
+                console.error(
+                    "Error updating cart:",
+                    error
+                );
 
                 alert(
-                    "Could not update cart: " + error.message
+                    "Could not update cart: " +
+                    error.message
                 );
 
             }
 
-        };
+        }
 
 
         // =====================================
         // REMOVE ITEM
         // =====================================
 
-        window.removeItem = async function (cartId) {
+        async function removeItem(cartId) {
 
-            if (!currentUser) return;
+            if (!currentUser) {
+                return;
+            }
 
             const confirmed = confirm(
                 "Are you sure you want to remove this item?"
             );
 
-            if (!confirmed) return;
+            if (!confirmed) {
+                return;
+            }
 
             try {
 
@@ -734,44 +865,22 @@
 
                 await fetchUserCart(currentUser.uid);
 
-                message.textContent = "Item removed from your cart.";
+                message.textContent =
+                    "Item removed from your cart.";
 
             } catch (error) {
 
-                console.error("Error removing item:", error);
+                console.error(
+                    "Error removing item:",
+                    error
+                );
 
                 alert(
-                    "Could not remove item: " + error.message
+                    "Could not remove item: " +
+                    error.message
                 );
 
             }
-
-        };
-
-
-        // =====================================
-        // ESCAPE HTML
-        // =====================================
-
-        function escapeHtml(value) {
-
-            if (value === null || value === undefined) {
-                return "";
-            }
-
-            return String(value).replace(/[&<>"']/g, (character) => {
-
-                const characters = {
-                    "&": "&amp;",
-                    "<": "&lt;",
-                    ">": "&gt;",
-                    '"': "&quot;",
-                    "'": "&#039;"
-                };
-
-                return characters[character];
-
-            });
 
         }
 
@@ -780,7 +889,8 @@
         // LOGOUT
         // =====================================
 
-        document.getElementById("logout-link")
+        document
+            .getElementById("logout-link")
             .addEventListener("click", async (event) => {
 
                 event.preventDefault();
@@ -789,19 +899,27 @@
 
                     await signOut(auth);
 
-                    window.location.href = "login.html";
+                    window.location.href =
+                        "login.html";
 
                 } catch (error) {
 
-                    console.error("Logout error:", error);
+                    console.error(
+                        "Logout error:",
+                        error
+                    );
 
-                    alert("Unable to log out. Please try again.");
+                    alert(
+                        "Unable to log out. Please try again."
+                    );
 
                 }
 
             });
 
+
     </script>
 
 </body>
 </html>
+
