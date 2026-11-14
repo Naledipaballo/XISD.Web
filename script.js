@@ -1,31 +1,3 @@
-/* ==========================================
-   PILL POINT DELIVERY
-   Dashboard Navigation and Logout
-========================================== */
-
-
-/* ==========================================
-   1. DASHBOARD NAVIGATION
-========================================== */
-
-window.openNav = function () {
-
-    document.getElementById("sidebar").style.width = "250px";
-
-};
-
-
-window.closeNav = function () {
-
-    document.getElementById("sidebar").style.width = "0";
-
-};
-
-
-/* ==========================================
-   2. FIREBASE IMPORTS
-========================================== */
-
 import { auth } from "./firebase.js";
 
 import {
@@ -61,5 +33,31 @@ window.handleLogout = async function (e) {
         alert("Unable to log out. Please try again.");
 
     }
+
+    /* ==========================================
+   PILL POINT DELIVERY
+   CUSTOMER HAMBURGER MENU
+========================================== */
+
+// Open sidebar
+window.openNav = function () {
+    const sidebar = document.getElementById("sidebar");
+
+    if (sidebar) {
+        sidebar.style.width = "250px";
+    } else {
+        console.error("Sidebar element with ID 'sidebar' was not found.");
+    }
+};
+
+
+// Close sidebar
+window.closeNav = function () {
+    const sidebar = document.getElementById("sidebar");
+
+    if (sidebar) {
+        sidebar.style.width = "0";
+    }
+};
 
 };
